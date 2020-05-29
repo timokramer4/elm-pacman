@@ -1,7 +1,7 @@
 module PacMan exposing (main)
 
 import Browser
-import Html exposing (Html, div, p, text)
+import Html exposing (Html, div, node, text)
 import Html.Attributes exposing (class, style)
 import Svg exposing (Svg, rect, svg)
 import Svg.Attributes exposing (fill, height, width, x, y)
@@ -80,6 +80,19 @@ gameCss =
     ]
 
 
+styleContents : String
+styleContents =
+    """
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+    body {
+        background-color: black;
+    }
+    .headline {
+        font-family: 'VT323', monospace;
+    }
+    """
+
+
 
 ----------
 -- INIT --
@@ -116,21 +129,25 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div (class "wrapper" :: wrapperCss)
-        [ div (class "controlls" :: headlineCss)
-            [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
-            , div textCss [ Html.text "0" ]
-            , div textCss [ Html.text "500x500" ]
-            ]
-        , svg gameCss
-            [ rect
-                [ x (String.fromInt 0)
-                , y (String.fromInt 0)
-                , Svg.Attributes.width (String.fromInt 100)
-                , Svg.Attributes.height (String.fromInt 100)
-                , fill "red"
+    node "main"
+        []
+        [ node "style" [] [ text styleContents ]
+        , div (class "wrapper" :: wrapperCss)
+            [ div (class "headline" :: headlineCss)
+                [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
+                , div textCss [ Html.text "0" ]
+                , div textCss [ Html.text "500x500" ]
                 ]
-                []
+            , svg gameCss
+                [ rect
+                    [ x (String.fromInt 0)
+                    , y (String.fromInt 0)
+                    , Svg.Attributes.width (String.fromInt 100)
+                    , Svg.Attributes.height (String.fromInt 100)
+                    , fill "red"
+                    ]
+                    []
+                ]
             ]
         ]
 

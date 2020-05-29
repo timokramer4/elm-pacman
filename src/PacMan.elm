@@ -148,6 +148,12 @@ view model =
                     ]
                     []
                 ]
+            , div (class "headline" :: headlineCss)
+                [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Leben:" ]
+                , div textCss [ Html.text "3" ]
+                , div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Früchte:" ]
+                , div textCss [ Html.text "Kirsche" ]
+                ]
             ]
         ]
 

@@ -2,7 +2,7 @@ module PacMan exposing (main)
 
 import Browser
 import Html exposing (Html, div, img, node, text)
-import Html.Attributes exposing (class, src, style)
+import Html.Attributes exposing (class, id, src, style)
 import Svg exposing (Svg, path, polygon, svg)
 import Svg.Attributes exposing (d, fill, points, transform, x, y)
 
@@ -107,7 +107,8 @@ gameChildCss =
 
 pacmanSvgCss : List (Html.Attribute msg)
 pacmanSvgCss =
-    [ Html.Attributes.style "position" "absolute"
+    [ id "pacman"
+    , Html.Attributes.style "position" "absolute"
     , Html.Attributes.style "width" "30px"
     , Html.Attributes.style "height" "30px"
     , Html.Attributes.style "top" "283px"
@@ -177,7 +178,9 @@ view model =
             , div
                 gameCss
                 [ svg
-                    gameChildCss
+                    (gameChildCss
+                        ++ [ id "gameField" ]
+                    )
                     [ path [ fill gameColor, d "M200.3,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.2-5,5-5h65c2.8,0,5,2.3,5,5v19.3  C205.3,72.4,203.1,74.7,200.3,74.7z" ] []
                     , path [ fill gameColor, d "M364,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5h65c2.8,0,5,2.3,5,5v19.3C369,72.4,366.8,74.7,364,74.7z" ] []
                     , path [ fill gameColor, d "M92,74.7H44.7c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5H92c2.8,0,5,2.3,5,5v19.3C97,72.4,94.8,74.7,92,74.7z" ] []
@@ -204,7 +207,9 @@ view model =
                     , polygon [ fill gameColor, points "309.9,204.5 266.6,204.5 266.6,209.3 309.9,209.3 309.9,260.9 190.1,260.9 190.1,209.3 233,209.3   233,204.5 190.1,204.5 185.4,204.5 185.4,209.3 185.4,260.9 185.4,265.7 190.1,265.7 309.9,265.7 314.6,265.7 314.6,260.9   314.6,209.3 314.6,204.5 " ] []
                     ]
                 , div
-                    gameChildCss
+                    (gameChildCss
+                        ++ [ id "pacmanArea" ]
+                    )
                     [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png" ])
                         []
                     ]

@@ -16,12 +16,12 @@ import Time exposing (every)
 -----------------------
 
 
-fieldWidth : Int
+fieldWidth : Float
 fieldWidth =
     500
 
 
-fieldHeight : Int
+fieldHeight : Float
 fieldHeight =
     500
 
@@ -31,13 +31,14 @@ gameColor =
     "#3498DB"
 
 
-pacColor : String
-pacColor =
-    "#FFCC00"
+pacSettings : { ratio : Float }
+pacSettings =
+    { ratio = 30
+    }
 
 
-pixel : Int
-pixel =
+movement : Float
+movement =
     1
 
 
@@ -47,9 +48,9 @@ pixel =
 ------------
 
 
-type alias Model =
-    { xPosition : Int
-    , yPosition : Int
+type alias PacMan =
+    { xPosition : Float
+    , yPosition : Float
     , rotation : Int
     , state : State
     }
@@ -104,8 +105,8 @@ textCss =
 gameCss : List (Html.Attribute msg)
 gameCss =
     [ Html.Attributes.style "position" "relative"
-    , Html.Attributes.style "width" (String.fromInt fieldWidth ++ "px")
-    , Html.Attributes.style "height" (String.fromInt fieldHeight ++ "px")
+    , Html.Attributes.style "width" (String.fromFloat fieldWidth ++ "px")
+    , Html.Attributes.style "height" (String.fromFloat fieldHeight ++ "px")
     , Html.Attributes.style "margin" "0em auto"
     , Html.Attributes.style "border-left" "10px solid #000"
     , Html.Attributes.style "border-right" "10px solid #000"
@@ -119,8 +120,8 @@ gameChildCss =
     [ Html.Attributes.style "position" "absolute"
     , Html.Attributes.style "top" "0"
     , Html.Attributes.style "left" "0"
-    , Html.Attributes.style "width" (String.fromInt fieldWidth ++ "px")
-    , Html.Attributes.style "height" (String.fromInt fieldHeight ++ "px")
+    , Html.Attributes.style "width" (String.fromFloat fieldWidth ++ "px")
+    , Html.Attributes.style "height" (String.fromFloat fieldHeight ++ "px")
     , Html.Attributes.style "overflow" "hidden"
     ]
 
@@ -129,11 +130,8 @@ pacmanSvgCss : List (Html.Attribute msg)
 pacmanSvgCss =
     [ id "pacman"
     , Html.Attributes.style "position" "absolute"
-    , Html.Attributes.style "width" "30px"
-    , Html.Attributes.style "height" "30px"
-    , Html.Attributes.style "top" "283px"
-    , Html.Attributes.style "left" "250px"
-    , Html.Attributes.style "transform" "translateX(-50%) translateY(-50%)"
+    , Html.Attributes.style "width" (String.fromFloat pacSettings.ratio ++ "px")
+    , Html.Attributes.style "height" (String.fromFloat pacSettings.ratio ++ "px")
     ]
 
 
@@ -156,7 +154,7 @@ styleContents =
 ----------
 
 
-initialModel : Model
+initialModel : PacMan
 initialModel =
     { xPosition = 250
     , yPosition = 283
@@ -181,22 +179,38 @@ type State
 ------------
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> PacMan -> ( PacMan, Cmd Msg )
 update msg pacMan =
     case msg of
         MoveDirection d ->
             case d of
                 Left ->
-                    ( { pacMan | xPosition = pacMan.xPosition - pixel, state = Running d, rotation = 180 }, Cmd.none )
+                    if outOfBounds pacMan then
+                        ( { pacMan | xPosition = fieldWidth - pacSettings.ratio / 2, state = Running d, rotation = 180 }, Cmd.none )
+
+                    else
+                        ( { pacMan | xPosition = pacMan.xPosition - movement, state = Running d, rotation = 180 }, Cmd.none )
 
                 Right ->
-                    ( { pacMan | xPosition = pacMan.xPosition + pixel, state = Running d, rotation = 0 }, Cmd.none )
+                    if outOfBounds pacMan then
+                        ( { pacMan | xPosition = 0 - pacSettings.ratio / 2, state = Running d, rotation = 0 }, Cmd.none )
+
+                    else
+                        ( { pacMan | xPosition = pacMan.xPosition + movement, state = Running d, rotation = 0 }, Cmd.none )
 
                 Up ->
-                    ( { pacMan | yPosition = pacMan.yPosition - pixel, state = Running d, rotation = -90 }, Cmd.none )
+                    if outOfBounds pacMan then
+                        ( { pacMan | yPosition = fieldHeight - pacSettings.ratio / 2, state = Running d, rotation = -90 }, Cmd.none )
+
+                    else
+                        ( { pacMan | yPosition = pacMan.yPosition - movement, state = Running d, rotation = -90 }, Cmd.none )
 
                 Down ->
-                    ( { pacMan | yPosition = pacMan.yPosition + pixel, state = Running d, rotation = 90 }, Cmd.none )
+                    if outOfBounds pacMan then
+                        ( { pacMan | yPosition = 0 - pacSettings.ratio / 2, state = Running d, rotation = 90 }, Cmd.none )
+
+                    else
+                        ( { pacMan | yPosition = pacMan.yPosition + movement, state = Running d, rotation = 90 }, Cmd.none )
 
         Nothing ->
             case pacMan.state of
@@ -213,7 +227,7 @@ update msg pacMan =
 ----------
 
 
-view : Model -> Html Msg
+view : PacMan -> Html Msg
 view model =
     node "main"
         []
@@ -259,7 +273,7 @@ view model =
                     (gameChildCss
                         ++ [ id "pacmanArea" ]
                     )
-                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromInt model.yPosition ++ "px"), Html.Attributes.style "left" (String.fromInt model.xPosition ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt model.rotation ++ "deg)") ])
+                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromFloat model.yPosition ++ "px"), Html.Attributes.style "left" (String.fromFloat model.xPosition ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt model.rotation ++ "deg)") ])
                         []
                     ]
                 ]
@@ -279,7 +293,7 @@ view model =
 -------------------
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : PacMan -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Browser.Events.onKeyDown keyDecoder
@@ -298,7 +312,7 @@ subscriptions model =
 -------------------
 
 
-main : Program () Model Msg
+main : Program () PacMan Msg
 main =
     Browser.element
         { init = \_ -> ( initialModel, Cmd.none )
@@ -335,8 +349,10 @@ toKey string =
         "ArrowRight" ->
             MoveDirection Right
 
-        " " ->
-            Nothing
-
         _ ->
             Nothing
+
+
+outOfBounds : PacMan -> Bool
+outOfBounds pacman =
+    pacman.xPosition < (0 - pacSettings.ratio / 2) || pacman.xPosition > (fieldWidth - pacSettings.ratio / 2) || pacman.yPosition < (0 - pacSettings.ratio / 2) || pacman.yPosition > (fieldHeight - pacSettings.ratio / 2)

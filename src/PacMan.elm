@@ -172,7 +172,7 @@ type Msg
 
 type State
     = Running Direction
-    | Stopped
+    | Stopped Direction
 
 
 
@@ -199,7 +199,12 @@ update msg pacMan =
                     ( { pacMan | yPosition = pacMan.yPosition + pixel, state = Running d, rotation = 90 }, Cmd.none )
 
         Nothing ->
-            ( pacMan, Cmd.none )
+            case pacMan.state of
+                Running d ->
+                    ( { pacMan | state = Stopped d }, Cmd.none )
+
+                Stopped d ->
+                    ( { pacMan | state = Running d }, Cmd.none )
 
 
 
@@ -329,6 +334,9 @@ toKey string =
 
         "ArrowRight" ->
             MoveDirection Right
+
+        " " ->
+            Nothing
 
         _ ->
             Nothing

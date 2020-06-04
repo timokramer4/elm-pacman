@@ -4,7 +4,9 @@ import Browser
 import Html exposing (Html, div, node, text)
 import Html.Attributes exposing (class, style)
 import Svg exposing (Svg, path, polygon, svg)
-import Svg.Attributes exposing (d, fill, height, points, stroke, width, x, y)
+import Svg.Attributes exposing (d, fill, height, points, stroke, width, x, y, transform)
+import Json.Decode exposing (..)
+import Browser.Events exposing (onKeyDown)
 
 
 
@@ -33,6 +35,9 @@ pacColor =
     "#FFCC00"
 
 
+pixel : Int
+pixel =
+    1
 
 ------------
 -- MODELS --
@@ -40,9 +45,16 @@ pacColor =
 
 
 type alias Model =
-    Int
+    { xPosition : Int
+    , yPosition : Int
+    }
 
 
+type Direction
+    = Up
+    | Down
+    | Left
+    | Right
 
 -----------------------
 -- STYLESHEETS (CSS) --
@@ -112,14 +124,17 @@ styleContents =
 -- INIT --
 ----------
 
-
 initialModel : Model
 initialModel =
-    0
+    { xPosition = 45
+    , yPosition = 50
+    }
+
 
 
 type Msg
-    = Test
+    = MoveDirection Direction
+    | Nothing
 
 
 
@@ -128,11 +143,25 @@ type Msg
 ------------
 
 
-update : Msg -> Model -> Model
-update msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg pacMan =
     case msg of
-        Test ->
-            model + 1
+        MoveDirection d ->
+              case d of
+                    Left ->
+                        ({pacMan | xPosition = pacMan.xPosition-pixel}, Cmd.none)
+
+                    Right ->
+                        ({pacMan | xPosition = pacMan.xPosition+pixel}, Cmd.none)
+
+                    Up ->
+                       ({pacMan | yPosition = pacMan.yPosition-pixel}, Cmd.none)
+
+                    Down ->
+                        ({pacMan | yPosition = pacMan.yPosition+pixel}, Cmd.none)
+
+        Nothing ->
+             ( pacMan, Cmd.none )  
 
 
 
@@ -177,7 +206,7 @@ view model =
                 , path [ fill gameColor, d "M407.7,208.5v-42c0-2.8,2.2-5,5-5h83.9c1.5,0,2.7-1.2,2.7-2.7V8.9c0-1.5-1.2-2.7-2.7-2.7H4.8  c-1.5,0-2.7,1.2-2.7,2.7v150.4c0,1.5,1.2,2.7,2.7,2.7h81.8c2.8,0,5,2.2,5,5V208c0,2.8-2.2,5-5,5H0v5.4h94.3c1.5,0,2.7-1.2,2.7-2.7  v-56.3c0-1.5-1.2-2.7-2.7-2.7H12.5c-2.8,0-5-2.2-5-5v-135c0-2.8,2.2-5,5-5h221c2.8,0,5,2.2,5,5v53c0,2.8,2.2,5,5,5H255  c2.8,0,5-2.2,5-5v-53c0-2.8,2.2-5,5-5h223.9c2.8,0,5,2.2,5,5v134.5c0,2.8-2.2,5-5,5H405c-1.5,0-2.7,1.2-2.7,2.7v57.1  c0,0.1,0,0.1,0,0.2c0,0.1,0,0.1,0,0.2c0,1.5,1.2,2.7,2.7,2.7h95v-5.4h-87.3C409.9,213.5,407.7,211.3,407.7,208.5z" ] []
                 , path [ fill gameColor, d "M411.4,256.7H500v-5.3h-94.5c-1.2,0-2.2,1.2-2.2,2.7c0,0,0,0,0,0c0,0,0,0,0,0v57.3c0,1.5,1.2,2.7,2.7,2.7h85.4  c1.5,0,2.7,1.2,2.7,2.7v72.6c0,2.8-2.2,5-5,5h-24.9c-2.8,0-5,2.2-5,5v4.7c0,2.8,2.2,5,5,5h24.9c2.8,0,5,2.2,5,5v73.1  c0,1.5-1.2,2.7-2.7,2.7H10.1c-1.5,0-2.7-1.2-2.7-2.7V414c0-2.8,2.2-5,5-5h25.1c2.8,0,5-2.2,5-5v-4.7c0-2.8-2.2-5-5-5H12.4  c-2.8,0-5-2.2-5-5v-72.1c0-1.5,1.2-2.7,2.7-2.7h84.2c0.1,0,0.2,0,0.3,0c0.1,0,0.2,0,0.3,0c1.5,0,2.7-1.2,2.7-2.7v-57  c0-1.5-1.2-2.7-2.7-2.7H0v5.4h89.6c1.5,0,2.7,1.2,2.7,2.7v46.2c0,1.5-1.2,2.7-2.7,2.7H4.7c-1.5,0-2.7,1.2-2.7,2.7v180.6  c0,1.5,1.2,2.7,2.7,2.7h492.1c1.5,0,2.7-1.2,2.7-2.7V311.3c0-1.5-1.2-2.7-2.7-2.7h-85.4c-1.5,0-2.7-1.2-2.7-2.7v-46.6  C408.7,257.9,409.9,256.7,411.4,256.7z" ] []
                 , polygon [ fill gameColor, points "309.9,204.5 266.6,204.5 266.6,209.3 309.9,209.3 309.9,260.9 190.1,260.9 190.1,209.3 233,209.3   233,204.5 190.1,204.5 185.4,204.5 185.4,209.3 185.4,260.9 185.4,265.7 190.1,265.7 309.9,265.7 314.6,265.7 314.6,260.9   314.6,209.3 314.6,204.5 " ] []
-                , path [ fill pacColor, d "M241.1,285.9l-7.8-3.8l7.8-3.7l5.9-2.8c-2.5-5.1-7.7-8.6-13.7-8.6c-8.4,0-15.3,6.8-15.3,15.3  c0,8.4,6.8,15.3,15.3,15.3c6,0,11.3-3.5,13.7-8.6L241.1,285.9zz" ] []
+                , path [ fill pacColor, transform ("translate("++String.fromInt model.xPosition ++","++String.fromInt model.yPosition ++")"), d "M241.1,285.9l-7.8-3.8l7.8-3.7l5.9-2.8c-2.5-5.1-7.7-8.6-13.7-8.6c-8.4,0-15.3,6.8-15.3,15.3  c0,8.4,6.8,15.3,15.3,15.3c6,0,11.3-3.5,13.7-8.6L241.1,285.9zz" ] []
                 ]
             , div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Leben:" ]
@@ -197,10 +226,40 @@ view model =
 
 main : Program () Model Msg
 main =
-    Browser.sandbox { init = initialModel, view = view, update = update }
+    Browser.element 
+        { init = \_ -> ( initialModel, Cmd.none )
+        , subscriptions = \_ -> Browser.Events.onKeyDown keyDecoder
+        , view = view
+        , update = update
+        }
 
 
 
 ---------------
 -- FUNCTIONS --
 ---------------
+
+-- key functions
+
+keyDecoder : Json.Decode.Decoder Msg
+keyDecoder =
+    Json.Decode.map toKey (Json.Decode.field "key" Json.Decode.string)
+
+
+toKey : String -> Msg
+toKey string =
+    case string of
+        "ArrowUp" ->
+            MoveDirection Up
+
+        "ArrowDown" ->
+            MoveDirection Down
+
+        "ArrowLeft" ->
+            MoveDirection Left
+
+        "ArrowRight" ->
+            MoveDirection Right
+
+        _ ->
+            Nothing

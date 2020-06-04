@@ -50,6 +50,7 @@ pixel =
 type alias Model =
     { xPosition : Int
     , yPosition : Int
+    , rotation : Int
     , state : State
     }
 
@@ -120,6 +121,7 @@ gameChildCss =
     , Html.Attributes.style "left" "0"
     , Html.Attributes.style "width" (String.fromInt fieldWidth ++ "px")
     , Html.Attributes.style "height" (String.fromInt fieldHeight ++ "px")
+    , Html.Attributes.style "overflow" "hidden"
     ]
 
 
@@ -159,6 +161,7 @@ initialModel =
     { xPosition = 250
     , yPosition = 283
     , state = Running Right
+    , rotation = 0
     }
 
 
@@ -184,16 +187,16 @@ update msg pacMan =
         MoveDirection d ->
             case d of
                 Left ->
-                    ( { pacMan | xPosition = pacMan.xPosition - pixel, state = Running d }, Cmd.none )
+                    ( { pacMan | xPosition = pacMan.xPosition - pixel, state = Running d, rotation = 180 }, Cmd.none )
 
                 Right ->
-                    ( { pacMan | xPosition = pacMan.xPosition + pixel, state = Running d }, Cmd.none )
+                    ( { pacMan | xPosition = pacMan.xPosition + pixel, state = Running d, rotation = 0 }, Cmd.none )
 
                 Up ->
-                    ( { pacMan | yPosition = pacMan.yPosition - pixel, state = Running d }, Cmd.none )
+                    ( { pacMan | yPosition = pacMan.yPosition - pixel, state = Running d, rotation = -90 }, Cmd.none )
 
                 Down ->
-                    ( { pacMan | yPosition = pacMan.yPosition + pixel, state = Running d }, Cmd.none )
+                    ( { pacMan | yPosition = pacMan.yPosition + pixel, state = Running d, rotation = 90 }, Cmd.none )
 
         Nothing ->
             ( pacMan, Cmd.none )
@@ -251,7 +254,7 @@ view model =
                     (gameChildCss
                         ++ [ id "pacmanArea" ]
                     )
-                    [ img (pacmanSvgCss ++ [ Html.Attributes.style "top" (String.fromInt model.yPosition++ "px"), Html.Attributes.style "left" (String.fromInt model.xPosition++ "px"),  src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png" ])
+                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromInt model.yPosition ++ "px"), Html.Attributes.style "left" (String.fromInt model.xPosition ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt model.rotation ++ "deg)") ])
                         []
                     ]
                 ]

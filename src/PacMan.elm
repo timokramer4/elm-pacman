@@ -156,8 +156,8 @@ styleContents =
 
 initialModel : Model
 initialModel =
-    { xPosition = 45
-    , yPosition = 50
+    { xPosition = 250
+    , yPosition = 283
     , state = Running Right
     }
 
@@ -251,7 +251,7 @@ view model =
                     (gameChildCss
                         ++ [ id "pacmanArea" ]
                     )
-                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png" ])
+                    [ img (pacmanSvgCss ++ [ Html.Attributes.style "top" (String.fromInt model.yPosition++ "px"), Html.Attributes.style "left" (String.fromInt model.xPosition++ "px"),  src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png" ])
                         []
                     ]
                 ]
@@ -277,7 +277,7 @@ subscriptions model =
         [ Browser.Events.onKeyDown keyDecoder
         , case model.state of
             Running d ->
-                Time.every 200 (\_ -> MoveDirection d)
+                Time.every 20 (\_ -> MoveDirection d)
 
             _ ->
                 Sub.none

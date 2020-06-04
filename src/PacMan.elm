@@ -1,8 +1,8 @@
 module PacMan exposing (main)
 
 import Browser
-import Html exposing (Html, div, node, text)
-import Html.Attributes exposing (class, style)
+import Html exposing (Html, div, img, node, text)
+import Html.Attributes exposing (class, src, style)
 import Svg exposing (Svg, path, polygon, svg)
 import Svg.Attributes exposing (d, fill, points, transform, x, y)
 
@@ -108,11 +108,11 @@ gameChildCss =
 pacmanSvgCss : List (Html.Attribute msg)
 pacmanSvgCss =
     [ Html.Attributes.style "position" "absolute"
-    , Html.Attributes.style "width" "20px"
-    , Html.Attributes.style "height" "20px"
-    , Html.Attributes.style "top" "0"
-    , Html.Attributes.style "left" "0"
-    , Html.Attributes.style "background-color" "red"
+    , Html.Attributes.style "width" "30px"
+    , Html.Attributes.style "height" "30px"
+    , Html.Attributes.style "top" "283px"
+    , Html.Attributes.style "left" "250px"
+    , Html.Attributes.style "transform" "translateX(-50%) translateY(-50%)"
     ]
 
 
@@ -205,9 +205,8 @@ view model =
                     ]
                 , div
                     gameChildCss
-                    [ svg pacmanSvgCss
-                        [ path [ fill pacColor, d "M535.441,412.339A280.868,280.868 0 1,1 536.186,161.733L284.493,286.29Z" ] []
-                        ]
+                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png" ])
+                        []
                     ]
                 ]
             , div (class "headline" :: headlineCss)

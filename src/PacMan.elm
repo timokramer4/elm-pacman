@@ -2,6 +2,7 @@ module PacMan exposing (main)
 
 import Browser
 import Browser.Events exposing (onKeyDown)
+import Dict exposing (Dict, get)
 import Html exposing (Html, div, img, node, text)
 import Html.Attributes exposing (class, id, src, style)
 import Json.Decode exposing (..)
@@ -42,17 +43,36 @@ movement =
     1
 
 
+runMesh : Dict Int Line
+runMesh =
+    Dict.fromList
+        [ ( 1, Line { x = 170, y = 283 } { x = 330, y = 283 } )
+        ]
+
+
 
 ------------
 -- MODELS --
 ------------
 
 
+type alias Point =
+    { x : Float
+    , y : Float
+    }
+
+
+type alias Line =
+    { start : Point
+    , end : Point
+    }
+
+
 type alias PacMan =
-    { xPosition : Float
-    , yPosition : Float
+    { position : Point
     , rotation : Int
     , state : State
+    , highScore : Float
     }
 
 
@@ -156,10 +176,10 @@ styleContents =
 
 initialModel : PacMan
 initialModel =
-    { xPosition = 250 - pacSettings.ratio / 2
-    , yPosition = 283 - pacSettings.ratio / 2
+    { position = { x = 250 - pacSettings.ratio / 2, y = 283 - pacSettings.ratio / 2 }
     , state = Running Right
     , rotation = 0
+    , highScore = 0
     }
 
 
@@ -180,45 +200,51 @@ type State
 
 
 update : Msg -> PacMan -> ( PacMan, Cmd Msg )
-update msg pacMan =
+update msg pac =
     case msg of
         MoveDirection d ->
             case d of
                 Left ->
-                    if outOfBounds pacMan then
-                        ( { pacMan | xPosition = fieldWidth - pacSettings.ratio / 2, state = Running d, rotation = 180 }, Cmd.none )
+                    if outOfBounds pac then
+                        ( { pac | position = changeXPosition (fieldWidth - pacSettings.ratio / 2) pac, state = Running d, rotation = 180 }, Cmd.none )
+ 
+                    else if getMesh runMesh {x = pac.position.x - movement, y =pac.position.y} then
 
-                    else
-                        ( { pacMan | xPosition = pacMan.xPosition - movement, state = Running d, rotation = 180 }, Cmd.none )
+                        ( { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
+                    else 
+                        ( { pac | highScore = pac.position.x }, Cmd.none )     
 
                 Right ->
-                    if outOfBounds pacMan then
-                        ( { pacMan | xPosition = 0 - pacSettings.ratio / 2, state = Running d, rotation = 0 }, Cmd.none )
+                    if outOfBounds pac then
+                        ( { pac | position = changeXPosition (0 - pacSettings.ratio / 2) pac, state = Running d, rotation = 0 }, Cmd.none )
+
+                    else if getMesh runMesh  {x = pac.position.x + movement, y = pac.position.y} then
+                        ( { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
 
                     else
-                        ( { pacMan | xPosition = pacMan.xPosition + movement, state = Running d, rotation = 0 }, Cmd.none )
+                        ( { pac | highScore = pac.position.x }, Cmd.none )
 
                 Up ->
-                    if outOfBounds pacMan then
-                        ( { pacMan | yPosition = fieldHeight - pacSettings.ratio / 2, state = Running d, rotation = -90 }, Cmd.none )
+                    if outOfBounds pac then
+                        ( { pac | position = changeYPosition (fieldHeight - pacSettings.ratio / 2) pac, state = Running d, rotation = -90 }, Cmd.none )
 
                     else
-                        ( { pacMan | yPosition = pacMan.yPosition - movement, state = Running d, rotation = -90 }, Cmd.none )
+                        ( { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
 
                 Down ->
-                    if outOfBounds pacMan then
-                        ( { pacMan | yPosition = 0 - pacSettings.ratio / 2, state = Running d, rotation = 90 }, Cmd.none )
+                    if outOfBounds pac then
+                        ( { pac | position = changeYPosition (0 - pacSettings.ratio / 2) pac, state = Running d, rotation = 90 }, Cmd.none )
 
                     else
-                        ( { pacMan | yPosition = pacMan.yPosition + movement, state = Running d, rotation = 90 }, Cmd.none )
+                        ( { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
 
         Nothing ->
-            case pacMan.state of
+            case pac.state of
                 Running d ->
-                    ( { pacMan | state = Stopped d }, Cmd.none )
+                    ( { pac | state = Stopped d }, Cmd.none )
 
                 Stopped d ->
-                    ( { pacMan | state = Running d }, Cmd.none )
+                    ( { pac | state = Running d }, Cmd.none )
 
 
 
@@ -228,14 +254,14 @@ update msg pacMan =
 
 
 view : PacMan -> Html Msg
-view model =
+view pac =
     node "main"
         []
         [ node "style" [] [ text styleContents ]
         , div (class "wrapper" :: wrapperCss)
             [ div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
-                , div textCss [ Html.text "0" ]
+                , div textCss [ Html.text (String.fromFloat pac.highScore) ]
                 , div textCss [ Html.text "500x500" ]
                 ]
             , div
@@ -274,7 +300,7 @@ view model =
                     (gameChildCss
                         ++ [ id "pacmanArea" ]
                     )
-                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromFloat model.yPosition ++ "px"), Html.Attributes.style "left" (String.fromFloat model.xPosition ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt model.rotation ++ "deg)") ])
+                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromFloat pac.position.y ++ "px"), Html.Attributes.style "left" (String.fromFloat pac.position.x ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt pac.rotation ++ "deg)") ])
                         []
                     ]
                 ]
@@ -354,6 +380,35 @@ toKey string =
             Nothing
 
 
+changeXPosition : Float -> PacMan -> Point
+changeXPosition value pac =
+    let
+        oldPosition =
+            pac.position
+    in
+    { oldPosition | x = value }
+
+
+changeYPosition : Float -> PacMan -> Point
+changeYPosition value pac =
+    let
+        oldPosition =
+            pac.position
+    in
+    { oldPosition | y = value }
+
+
 outOfBounds : PacMan -> Bool
-outOfBounds pacman =
-    pacman.xPosition < (0 - pacSettings.ratio / 2) || pacman.xPosition > (fieldWidth - pacSettings.ratio / 2) || pacman.yPosition < (0 - pacSettings.ratio / 2) || pacman.yPosition > (fieldHeight - pacSettings.ratio / 2)
+outOfBounds pac =
+    pac.position.x < (0 - pacSettings.ratio / 2) || pac.position.x > (fieldWidth - pacSettings.ratio / 2) || pac.position.y < (0 - pacSettings.ratio / 2) || pac.position.y > (fieldHeight - pacSettings.ratio / 2)
+
+
+getMesh : Dict Int Line -> Point -> Bool
+getMesh mesh pos =
+    Dict.foldl ((\x -> checkPath x) pos) False mesh
+
+
+checkPath : Point -> Int -> Line -> Bool -> Bool
+checkPath pos _ line e =
+    (pos.x + pacSettings.ratio / 2 >= line.start.x  && pos.x + pacSettings.ratio / 2 <= line.end.x  && pos.y + pacSettings.ratio / 2 >= line.start.y && pos.y + pacSettings.ratio / 2 <= line.end.y) || e
+

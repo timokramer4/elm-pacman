@@ -186,6 +186,7 @@ initialModel =
 type Msg
     = MoveDirection Direction
     | Nothing
+    | NoMoving
 
 
 type State
@@ -207,36 +208,42 @@ update msg pac =
                 Left ->
                     if outOfBounds pac then
                         ( { pac | position = changeXPosition (fieldWidth - pacSettings.ratio / 2) pac, state = Running d, rotation = 180 }, Cmd.none )
- 
-                    else if getMesh runMesh {x = pac.position.x - movement, y =pac.position.y} then
 
+                    else if getMesh runMesh { x = pac.position.x - movement, y = pac.position.y } then
                         ( { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
-                    else 
-                        ( { pac | highScore = pac.position.x }, Cmd.none )     
+
+                    else
+                        update NoMoving pac
 
                 Right ->
                     if outOfBounds pac then
                         ( { pac | position = changeXPosition (0 - pacSettings.ratio / 2) pac, state = Running d, rotation = 0 }, Cmd.none )
 
-                    else if getMesh runMesh  {x = pac.position.x + movement, y = pac.position.y} then
+                    else if getMesh runMesh { x = pac.position.x + movement, y = pac.position.y } then
                         ( { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
 
                     else
-                        ( { pac | highScore = pac.position.x }, Cmd.none )
+                        update NoMoving pac
 
                 Up ->
                     if outOfBounds pac then
                         ( { pac | position = changeYPosition (fieldHeight - pacSettings.ratio / 2) pac, state = Running d, rotation = -90 }, Cmd.none )
 
-                    else
+                    else if getMesh runMesh { x = pac.position.x, y = pac.position.y - movement } then
                         ( { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
+
+                    else
+                        update NoMoving pac
 
                 Down ->
                     if outOfBounds pac then
                         ( { pac | position = changeYPosition (0 - pacSettings.ratio / 2) pac, state = Running d, rotation = 90 }, Cmd.none )
 
-                    else
+                    else if getMesh runMesh { x = pac.position.x, y = pac.position.y + movement } then
                         ( { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
+
+                    else
+                        update NoMoving pac
 
         Nothing ->
             case pac.state of
@@ -245,6 +252,9 @@ update msg pac =
 
                 Stopped d ->
                     ( { pac | state = Running d }, Cmd.none )
+
+        NoMoving ->
+            ( pac, Cmd.none )
 
 
 
@@ -410,5 +420,4 @@ getMesh mesh pos =
 
 checkPath : Point -> Int -> Line -> Bool -> Bool
 checkPath pos _ line e =
-    (pos.x + pacSettings.ratio / 2 >= line.start.x  && pos.x + pacSettings.ratio / 2 <= line.end.x  && pos.y + pacSettings.ratio / 2 >= line.start.y && pos.y + pacSettings.ratio / 2 <= line.end.y) || e
-
+    (pos.x + pacSettings.ratio / 2 >= line.start.x && pos.x + pacSettings.ratio / 2 <= line.end.x && pos.y + pacSettings.ratio / 2 >= line.start.y && pos.y + pacSettings.ratio / 2 <= line.end.y) || e

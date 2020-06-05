@@ -5,8 +5,8 @@ import Browser.Events exposing (onKeyDown)
 import Html exposing (Html, div, img, node, text)
 import Html.Attributes exposing (class, id, src, style)
 import Json.Decode exposing (..)
-import Svg exposing (Svg, path, polygon, svg)
-import Svg.Attributes exposing (d, fill, points, transform, x, y)
+import Svg exposing (Svg, circle, path, polygon, svg)
+import Svg.Attributes exposing (cx, cy, d, fill, points, r, transform, x, y)
 import Time exposing (every)
 
 
@@ -156,8 +156,8 @@ styleContents =
 
 initialModel : PacMan
 initialModel =
-    { xPosition = 250
-    , yPosition = 283
+    { xPosition = 250 - pacSettings.ratio / 2
+    , yPosition = 284 - pacSettings.ratio / 2
     , state = Running Right
     , rotation = 0
     }
@@ -244,7 +244,8 @@ view model =
                     (gameChildCss
                         ++ [ id "gameField" ]
                     )
-                    [ path [ fill gameColor, d "M200.3,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.2-5,5-5h65c2.8,0,5,2.3,5,5v19.3  C205.3,72.4,203.1,74.7,200.3,74.7z" ] []
+                    [ circle [ cx "330", cy "284", r "5", fill "red" ] []
+                    , path [ fill gameColor, d "M200.3,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.2-5,5-5h65c2.8,0,5,2.3,5,5v19.3  C205.3,72.4,203.1,74.7,200.3,74.7z" ] []
                     , path [ fill gameColor, d "M364,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5h65c2.8,0,5,2.3,5,5v19.3C369,72.4,366.8,74.7,364,74.7z" ] []
                     , path [ fill gameColor, d "M92,74.7H44.7c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5H92c2.8,0,5,2.3,5,5v19.3C97,72.4,94.8,74.7,92,74.7z" ] []
                     , path [ fill gameColor, d "M92,122.3H44.7c-2.8,0-5-2.3-5-5v-4.7c0-2.8,2.3-5,5-5H92c2.8,0,5,2.3,5,5v4.7C97,120.1,94.8,122.3,92,122.3z" ] []

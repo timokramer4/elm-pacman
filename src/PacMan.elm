@@ -429,4 +429,4 @@ getMesh mesh pos =
 
 checkPath : Point -> Int -> Line -> Bool -> Bool
 checkPath pos _ line e =
-    (pos.x >= line.start.x && pos.x <= line.end.x && pos.y >= line.start.y && pos.y <= line.end.y) || e
+    (pos.x >= min line.start.x line.end.x && pos.x <= max line.start.x line.end.x && pos.y >= min line.start.y line.end.y && pos.y <= max line.start.y line.end.y) || e

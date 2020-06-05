@@ -47,6 +47,9 @@ runMesh : Dict Int Line
 runMesh =
     Dict.fromList
         [ ( 1, Line { x = 170, y = 283 } { x = 330, y = 283 } )
+        , ( 2, Line { x = 330, y = 283 } { x = 330, y = 190 } )
+        , ( 3, Line { x = 330, y = 190 } { x = 170, y = 190 } )
+        , ( 4, Line { x = 170, y = 190 } { x = 170, y = 283 } )
         ]
 
 
@@ -281,6 +284,9 @@ view pac =
                         ++ [ id "gameField" ]
                     )
                     [ circle [ cx "330", cy "283", r "5", fill "red" ] []
+                    , circle [ cx "330", cy "190", r "5", fill "red" ] []
+                    , circle [ cx "170", cy "190", r "5", fill "red" ] []
+                    , circle [ cx "170", cy "283", r "5", fill "red" ] []
                     , path [ fill gameColor, d "M200.3,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.2-5,5-5h65c2.8,0,5,2.3,5,5v19.3  C205.3,72.4,203.1,74.7,200.3,74.7z" ] []
                     , path [ fill gameColor, d "M364,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5h65c2.8,0,5,2.3,5,5v19.3C369,72.4,366.8,74.7,364,74.7z" ] []
                     , path [ fill gameColor, d "M92,74.7H44.7c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5H92c2.8,0,5,2.3,5,5v19.3C97,72.4,94.8,74.7,92,74.7z" ] []

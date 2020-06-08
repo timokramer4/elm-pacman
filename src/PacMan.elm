@@ -46,10 +46,51 @@ movement =
 runMesh : Dict Int Line
 runMesh =
     Dict.fromList
-        [ ( 1, Line { x = 170, y = 283 } { x = 330, y = 283 } )
-        , ( 2, Line { x = 330, y = 283 } { x = 330, y = 187 } )
-        , ( 3, Line { x = 330, y = 187 } { x = 170, y = 187 } )
-        , ( 4, Line { x = 170, y = 187 } { x = 170, y = 283 } )
+        [ ( 1, Line { x = 168, y = 283 } { x = 332, y = 283 } )
+        , ( 2, Line { x = 168, y = 187 } { x = 168, y = 332 } )
+        , ( 3, Line { x = 332, y = 187 } { x = 168, y = 187 } )
+        , ( 4, Line { x = 332, y = 187 } { x = 332, y = 332 } )
+        , ( 5, Line { x = 24, y = 29 } { x = 222, y = 29 } )
+        , ( 6, Line { x = 24, y = 29 } { x = 24, y = 140 } )
+        , ( 7, Line { x = 24, y = 92 } { x = 477, y = 92 } )
+        , ( 8, Line { x = 114, y = 29 } { x = 114, y = 426 } )
+        , ( 9, Line { x = 222, y = 29 } { x = 222, y = 92 } )
+        , ( 10, Line { x = 278, y = 29 } { x = 278, y = 92 } )
+        , ( 11, Line { x = 278, y = 29 } { x = 477, y = 29 } )
+        , ( 12, Line { x = 386, y = 29 } { x = 386, y = 426 } )
+        , ( 13, Line { x = 477, y = 29 } { x = 477, y = 140 } )
+        , ( 14, Line { x = 477, y = 140 } { x = 386, y = 140 } )
+        , ( 15, Line { x = 331, y = 92 } { x = 331, y = 140 } )
+        , ( 16, Line { x = 331, y = 140 } { x = 278, y = 140 } )
+        , ( 17, Line { x = 278, y = 140 } { x = 278, y = 187 } )
+        , ( 18, Line { x = 169, y = 92 } { x = 169, y = 140 } )
+        , ( 19, Line { x = 169, y = 140 } { x = 222, y = 140 } )
+        , ( 20, Line { x = 222, y = 140 } { x = 222, y = 187 } )
+        , ( 21, Line { x = 168, y = 235 } { x = 0 - pacSettings.ratio / 2, y = 235 } )
+        , ( 22, Line { x = 332, y = 235 } { x = 500 + pacSettings.ratio / 2, y = 235 } )
+        , ( 23, Line { x = 24, y = 332 } { x = 222, y = 332 } )
+        , ( 24, Line { x = 278, y = 332 } { x = 477, y = 332 } )
+        , ( 25, Line { x = 386, y = 378 } { x = 115, y = 378 } )
+        , ( 26, Line { x = 222, y = 378 } { x = 222, y = 332 } )
+        , ( 27, Line { x = 278, y = 332 } { x = 278, y = 378 } )
+        , ( 28, Line { x = 24, y = 332 } { x = 24, y = 378 } )
+        , ( 29, Line { x = 24, y = 378 } { x = 59, y = 378 } )
+        , ( 30, Line { x = 59, y = 378 } { x = 59, y = 426 } )
+        , ( 31, Line { x = 24, y = 426 } { x = 114, y = 426 } )
+        , ( 32, Line { x = 477, y = 473 } { x = 24, y = 473 } )
+        , ( 33, Line { x = 169, y = 378 } { x = 169, y = 426 } )
+        , ( 34, Line { x = 169, y = 426 } { x = 222, y = 426 } )
+        , ( 35, Line { x = 222, y = 426 } { x = 222, y = 473 } )
+        , ( 36, Line { x = 24, y = 473 } { x = 24, y = 426 } )
+        , ( 37, Line { x = 331, y = 426 } { x = 331, y = 378 } )
+        , ( 38, Line { x = 279, y = 426 } { x = 331, y = 426 } )
+        , ( 39, Line { x = 279, y = 426 } { x = 279, y = 473 } )
+        , ( 40, Line { x = 477, y = 378 } { x = 477, y = 332 } )
+        , ( 41, Line { x = 442, y = 378 } { x = 477, y = 378 } )
+        , ( 42, Line { x = 442, y = 378 } { x = 442, y = 426 } )
+        , ( 43, Line { x = 386, y = 426 } { x = 477, y = 426 } )
+        , ( 44, Line { x = 477, y = 473 } { x = 477, y = 426 } )
+        , ( 45, Line { x = 24, y = 140 } { x = 114, y = 140 } )
         ]
 
 
@@ -75,8 +116,7 @@ type alias PacMan =
     { position : Point
     , rotation : Int
     , state : State
-    , highScore : Float
-    , highScore2 : Float
+    , score : Float
     }
 
 
@@ -183,8 +223,7 @@ initialModel =
     { position = { x = 250, y = 283 }
     , state = Running Right
     , rotation = 0
-    , highScore = 0
-    , highScore2 = 0
+    , score = 0
     }
 
 
@@ -218,9 +257,8 @@ update msg pac =
                         ( { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
 
                     else
-                        ( { pac | highScore = pac.position.x, highScore2 = pac.position.y }, Cmd.none )
+                        update NoMoving pac
 
-                -- update NoMoving pac
                 Right ->
                     if outOfBounds pac then
                         ( { pac | position = changeXPosition 0 pac, state = Running d, rotation = 0 }, Cmd.none )
@@ -229,7 +267,7 @@ update msg pac =
                         ( { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
 
                     else
-                        ( { pac | highScore = pac.position.x, highScore2 = pac.position.y }, Cmd.none )
+                        update NoMoving pac
 
                 Up ->
                     if outOfBounds pac then
@@ -239,7 +277,7 @@ update msg pac =
                         ( { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
 
                     else
-                        ( { pac | highScore = pac.position.x, highScore2 = pac.position.y }, Cmd.none )
+                        update NoMoving pac
 
                 Down ->
                     if outOfBounds pac then
@@ -249,7 +287,7 @@ update msg pac =
                         ( { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
 
                     else
-                        ( { pac | highScore = pac.position.x, highScore2 = pac.position.y }, Cmd.none )
+                        update NoMoving pac
 
         Nothing ->
             case pac.state of
@@ -277,7 +315,7 @@ view pac =
         , div (class "wrapper" :: wrapperCss)
             [ div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
-                , div textCss [ Html.text ("(" ++ String.fromFloat pac.highScore ++ ", " ++ String.fromFloat pac.highScore2 ++ ")") ]
+                , div textCss [ Html.text (String.fromFloat pac.score) ]
                 , div textCss [ Html.text "500x500" ]
                 ]
             , div
@@ -286,10 +324,7 @@ view pac =
                     (gameChildCss
                         ++ [ id "gameField" ]
                     )
-                    [ circle [ cx "330", cy "283", r "5", fill "#FCF3CF" ] []
-                    , circle [ cx "330", cy "187", r "5", fill "#FCF3CF" ] []
-                    , circle [ cx "170", cy "187", r "5", fill "#FCF3CF" ] []
-                    , circle [ cx "170", cy "283", r "5", fill "#FCF3CF" ] []
+                    [ circle [ cx "330", cy "283", r "5", fill "red" ] []
                     , path [ fill gameColor, d "M200.3,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.2-5,5-5h65c2.8,0,5,2.3,5,5v19.3  C205.3,72.4,203.1,74.7,200.3,74.7z" ] []
                     , path [ fill gameColor, d "M364,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5h65c2.8,0,5,2.3,5,5v19.3C369,72.4,366.8,74.7,364,74.7z" ] []
                     , path [ fill gameColor, d "M92,74.7H44.7c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5H92c2.8,0,5,2.3,5,5v19.3C97,72.4,94.8,74.7,92,74.7z" ] []

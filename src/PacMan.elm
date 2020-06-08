@@ -47,7 +47,7 @@ runMesh : Dict Int Line
 runMesh =
     Dict.fromList
         [ ( 1, Line { x = 168, y = 283 } { x = 332, y = 283 } )
-        , ( 2, Line { x = 168, y = 187 } { x = 168, y = 332 } ) 
+        , ( 2, Line { x = 168, y = 187 } { x = 168, y = 332 } )
         , ( 3, Line { x = 332, y = 187 } { x = 168, y = 187 } )
         , ( 4, Line { x = 332, y = 187 } { x = 332, y = 332 } )
         , ( 5, Line { x = 24, y = 29 } { x = 222, y = 29 } )
@@ -66,8 +66,8 @@ runMesh =
         , ( 18, Line { x = 169, y = 92 } { x = 169, y = 140 } )
         , ( 19, Line { x = 169, y = 140 } { x = 222, y = 140 } )
         , ( 20, Line { x = 222, y = 140 } { x = 222, y = 187 } )
-        , ( 21, Line { x = 168, y = 235 } { x = 0-pacSettings.ratio/2, y = 235 } )
-        , ( 22, Line { x = 332, y = 235 } { x = 500+pacSettings.ratio/2, y = 235 } )
+        , ( 21, Line { x = 168, y = 235 } { x = 0 - pacSettings.ratio / 2, y = 235 } )
+        , ( 22, Line { x = 332, y = 235 } { x = 500 + pacSettings.ratio / 2, y = 235 } )
         , ( 23, Line { x = 24, y = 332 } { x = 222, y = 332 } )
         , ( 24, Line { x = 278, y = 332 } { x = 477, y = 332 } )
         , ( 25, Line { x = 386, y = 378 } { x = 115, y = 378 } )
@@ -82,7 +82,7 @@ runMesh =
         , ( 34, Line { x = 169, y = 426 } { x = 222, y = 426 } )
         , ( 35, Line { x = 222, y = 426 } { x = 222, y = 473 } )
         , ( 36, Line { x = 24, y = 473 } { x = 24, y = 426 } )
-        , ( 37, Line { x = 331, y = 426 } { x = 331, y =  378} )
+        , ( 37, Line { x = 331, y = 426 } { x = 331, y = 378 } )
         , ( 38, Line { x = 279, y = 426 } { x = 331, y = 426 } )
         , ( 39, Line { x = 279, y = 426 } { x = 279, y = 473 } )
         , ( 40, Line { x = 477, y = 378 } { x = 477, y = 332 } )
@@ -116,8 +116,7 @@ type alias PacMan =
     { position : Point
     , rotation : Int
     , state : State
-    , highScore : Float
-    , highScore2 : Float
+    , score : Float
     }
 
 
@@ -224,8 +223,7 @@ initialModel =
     { position = { x = 250, y = 283 }
     , state = Running Right
     , rotation = 0
-    , highScore = 0
-    , highScore2 = 0
+    , score = 0
     }
 
 
@@ -259,9 +257,8 @@ update msg pac =
                         ( { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
 
                     else
-                        ( { pac | highScore = pac.position.x, highScore2 = pac.position.y }, Cmd.none )
+                        update NoMoving pac
 
-                -- update NoMoving pac
                 Right ->
                     if outOfBounds pac then
                         ( { pac | position = changeXPosition 0 pac, state = Running d, rotation = 0 }, Cmd.none )
@@ -270,7 +267,7 @@ update msg pac =
                         ( { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
 
                     else
-                        ( { pac | highScore = pac.position.x, highScore2 = pac.position.y }, Cmd.none )
+                        update NoMoving pac
 
                 Up ->
                     if outOfBounds pac then
@@ -280,7 +277,7 @@ update msg pac =
                         ( { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
 
                     else
-                        ( { pac | highScore = pac.position.x, highScore2 = pac.position.y }, Cmd.none )
+                        update NoMoving pac
 
                 Down ->
                     if outOfBounds pac then
@@ -290,7 +287,7 @@ update msg pac =
                         ( { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
 
                     else
-                        ( { pac | highScore = pac.position.x, highScore2 = pac.position.y }, Cmd.none )
+                        update NoMoving pac
 
         Nothing ->
             case pac.state of
@@ -318,7 +315,7 @@ view pac =
         , div (class "wrapper" :: wrapperCss)
             [ div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
-                , div textCss [ Html.text ("(" ++ String.fromFloat pac.highScore ++ ", " ++ String.fromFloat pac.highScore2 ++ ")") ]
+                , div textCss [ Html.text (String.fromFloat pac.score) ]
                 , div textCss [ Html.text "500x500" ]
                 ]
             , div

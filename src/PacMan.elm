@@ -6,6 +6,7 @@ import Dict exposing (Dict, get)
 import Html exposing (Html, div, img, node, text)
 import Html.Attributes exposing (class, id, src, style)
 import Json.Decode exposing (..)
+import Json.Encode exposing (bool)
 import Svg exposing (Svg, circle, path, polygon, svg)
 import Svg.Attributes exposing (cx, cy, d, fill, points, r, transform, x, y)
 import Time exposing (every)
@@ -116,6 +117,7 @@ type alias PacMan =
     { position : Point
     , rotation : Int
     , state : State
+    , nextDir : Direction
     , score : Float
     }
 
@@ -125,6 +127,7 @@ type Direction
     | Down
     | Left
     | Right
+    | None
 
 
 
@@ -222,6 +225,7 @@ initialModel : PacMan
 initialModel =
     { position = { x = 250, y = 283 }
     , state = Running Right
+    , nextDir = Right
     , rotation = 0
     , score = 0
     }
@@ -253,41 +257,60 @@ update msg pac =
                     if outOfBounds pac then
                         ( { pac | position = changeXPosition fieldWidth pac, state = Running d, rotation = 180 }, Cmd.none )
 
-                    else if getMesh runMesh { x = pac.position.x - movement, y = pac.position.y } then
-                        ( { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
+                    else if checkDir pac d then
+                        if checkDir pac pac.nextDir then
+                            ( { pac | state = Running pac.nextDir, nextDir = None, rotation = 180 }, Cmd.none )
+
+                        else
+                            ( { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
 
                     else
-                        update NoMoving pac
+                        ( { pac | nextDir = d }, Cmd.none )
 
                 Right ->
                     if outOfBounds pac then
                         ( { pac | position = changeXPosition 0 pac, state = Running d, rotation = 0 }, Cmd.none )
 
-                    else if getMesh runMesh { x = pac.position.x + movement, y = pac.position.y } then
-                        ( { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
+                    else if checkDir pac d then
+                        if checkDir pac pac.nextDir then
+                            ( { pac | state = Running pac.nextDir, nextDir = None, rotation = 0 }, Cmd.none )
+
+                        else
+                            ( { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
 
                     else
-                        update NoMoving pac
+                        ( { pac | nextDir = d }, Cmd.none )
 
                 Up ->
                     if outOfBounds pac then
                         ( { pac | position = changeYPosition fieldHeight pac, state = Running d, rotation = -90 }, Cmd.none )
 
-                    else if getMesh runMesh { x = pac.position.x, y = pac.position.y - movement } then
-                        ( { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
+                    else if checkDir pac d then
+                        if checkDir pac pac.nextDir then
+                            ( { pac | state = Running pac.nextDir, nextDir = None, rotation = -90 }, Cmd.none )
+
+                        else
+                            ( { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
 
                     else
-                        update NoMoving pac
+                        ( { pac | nextDir = d }, Cmd.none )
 
                 Down ->
                     if outOfBounds pac then
                         ( { pac | position = changeYPosition 0 pac, state = Running d, rotation = 90 }, Cmd.none )
 
-                    else if getMesh runMesh { x = pac.position.x, y = pac.position.y + movement } then
-                        ( { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
+                    else if checkDir pac d then
+                        if checkDir pac pac.nextDir then
+                            ( { pac | state = Running pac.nextDir, nextDir = None, rotation = 90 }, Cmd.none )
+
+                        else
+                            ( { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
 
                     else
-                        update NoMoving pac
+                        ( { pac | nextDir = d }, Cmd.none )
+
+                _ ->
+                    update NoMoving pac
 
         Nothing ->
             case pac.state of
@@ -455,6 +478,25 @@ changeYPosition value pac =
 outOfBounds : PacMan -> Bool
 outOfBounds pac =
     pac.position.x < 0 || pac.position.x > fieldWidth || pac.position.y < 0 || pac.position.y > fieldHeight
+
+
+checkDir : PacMan -> Direction -> Bool
+checkDir pac d =
+    case d of
+        Left ->
+            getMesh runMesh { x = pac.position.x - movement, y = pac.position.y }
+
+        Right ->
+            getMesh runMesh { x = pac.position.x + movement, y = pac.position.y }
+
+        Up ->
+            getMesh runMesh { x = pac.position.x, y = pac.position.y - movement }
+
+        Down ->
+            getMesh runMesh { x = pac.position.x, y = pac.position.y + movement }
+
+        _ ->
+            False
 
 
 getMesh : Dict Int Line -> Point -> Bool

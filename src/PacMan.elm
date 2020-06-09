@@ -235,6 +235,7 @@ type Msg
     = MoveDirection Direction
     | Nothing
     | NoMoving
+    | ChangeDirection Direction
 
 
 type State
@@ -257,57 +258,57 @@ update msg pac =
                     if outOfBounds pac then
                         ( { pac | position = changeXPosition fieldWidth pac, state = Running d, rotation = 180 }, Cmd.none )
 
-                    else if checkDir pac d then
-                        if checkDir pac pac.nextDir then
-                            ( { pac | state = Running pac.nextDir, nextDir = None, rotation = 180 }, Cmd.none )
+                    else if checkDir pac d || checkDir pac pac.nextDir then
+                        if checkDir pac pac.nextDir && pac.nextDir /= d then
+                            ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
 
                         else
                             ( { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
 
                     else
-                        ( { pac | nextDir = d }, Cmd.none )
+                        update NoMoving pac
 
                 Right ->
                     if outOfBounds pac then
                         ( { pac | position = changeXPosition 0 pac, state = Running d, rotation = 0 }, Cmd.none )
 
-                    else if checkDir pac d then
-                        if checkDir pac pac.nextDir then
-                            ( { pac | state = Running pac.nextDir, nextDir = None, rotation = 0 }, Cmd.none )
+                    else if checkDir pac d || checkDir pac pac.nextDir then
+                        if checkDir pac pac.nextDir && pac.nextDir /= d then
+                            ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
 
                         else
                             ( { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
 
                     else
-                        ( { pac | nextDir = d }, Cmd.none )
+                        update NoMoving pac
 
                 Up ->
                     if outOfBounds pac then
                         ( { pac | position = changeYPosition fieldHeight pac, state = Running d, rotation = -90 }, Cmd.none )
 
-                    else if checkDir pac d then
-                        if checkDir pac pac.nextDir then
-                            ( { pac | state = Running pac.nextDir, nextDir = None, rotation = -90 }, Cmd.none )
+                    else if checkDir pac d || checkDir pac pac.nextDir then
+                        if checkDir pac pac.nextDir && pac.nextDir /= d then
+                            ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
 
                         else
                             ( { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
 
                     else
-                        ( { pac | nextDir = d }, Cmd.none )
+                        update NoMoving pac
 
                 Down ->
                     if outOfBounds pac then
                         ( { pac | position = changeYPosition 0 pac, state = Running d, rotation = 90 }, Cmd.none )
 
-                    else if checkDir pac d then
-                        if checkDir pac pac.nextDir then
-                            ( { pac | state = Running pac.nextDir, nextDir = None, rotation = 90 }, Cmd.none )
+                    else if checkDir pac d || checkDir pac pac.nextDir then
+                        if checkDir pac pac.nextDir && pac.nextDir /= d then
+                            ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
 
                         else
                             ( { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
 
                     else
-                        ( { pac | nextDir = d }, Cmd.none )
+                        update NoMoving pac
 
                 _ ->
                     update NoMoving pac
@@ -322,6 +323,9 @@ update msg pac =
 
         NoMoving ->
             ( pac, Cmd.none )
+
+        ChangeDirection d ->
+            ( { pac | nextDir = d }, Cmd.none )
 
 
 
@@ -398,10 +402,10 @@ view pac =
 
 
 subscriptions : PacMan -> Sub Msg
-subscriptions model =
+subscriptions pac =
     Sub.batch
         [ Browser.Events.onKeyDown keyDecoder
-        , case model.state of
+        , case pac.state of
             Running d ->
                 Time.every 20 (\_ -> MoveDirection d)
 
@@ -442,16 +446,16 @@ toKey : String -> Msg
 toKey string =
     case string of
         "ArrowUp" ->
-            MoveDirection Up
+            ChangeDirection Up
 
         "ArrowDown" ->
-            MoveDirection Down
+            ChangeDirection Down
 
         "ArrowLeft" ->
-            MoveDirection Left
+            ChangeDirection Left
 
         "ArrowRight" ->
-            MoveDirection Right
+            ChangeDirection Right
 
         _ ->
             Nothing

@@ -47,12 +47,12 @@ movement =
 
 pointStep : Float
 pointStep =
-    10
+    9
 
 
 pointSize : Float
 pointSize =
-    6
+    4
 
 
 runMesh : Dict Int Line

@@ -6,12 +6,14 @@ import Dict exposing (Dict, get)
 import Html exposing (Html, div, img, node, text)
 import Html.Attributes exposing (class, id, src, style)
 import Json.Decode exposing (..)
-import Json.Encode exposing (bool, float, int)
+
 import List exposing (..)
-import Svg exposing (Svg, circle, path, polygon, rect, svg)
-import Svg.Attributes exposing (cx, cy, d, fill, points, r, transform, x, y)
-import Time exposing (every)
 import List.Unique exposing (filterDuplicates)
+import Svg exposing (Svg, path, polygon, rect, svg)
+import Svg.Attributes exposing (d, fill, points, x, y)
+import Time exposing (every)
+import Array exposing (length)
+import String exposing (length)
 
 
 
@@ -46,6 +48,12 @@ movement =
     1
 
 
+scoreSettings : { eatable : Float, fruit : Float }
+scoreSettings =
+    { eatable = 10
+    , fruit = 50
+    }
+
 pointStep : Float
 pointStep =
     15
@@ -54,6 +62,7 @@ pointStep =
 pointSize : Float
 pointSize =
     5
+
 
 pointMesh : Dict Int Point
 pointMesh =
@@ -352,7 +361,7 @@ update msg pac =
                             ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
 
                         else
-                            ( { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
+                            ( checkEatable { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
 
                     else
                         update NoMoving pac
@@ -366,7 +375,7 @@ update msg pac =
                             ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
 
                         else
-                            ( { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
+                            ( checkEatable { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
 
                     else
                         update NoMoving pac
@@ -380,7 +389,7 @@ update msg pac =
                             ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
 
                         else
-                            ( { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
+                            ( checkEatable { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
 
                     else
                         update NoMoving pac
@@ -394,7 +403,7 @@ update msg pac =
                             ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
 
                         else
-                            ( { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
+                            ( checkEatable { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
 
                     else
                         update NoMoving pac
@@ -603,6 +612,7 @@ checkPath pos line e =
     (pos.x >= min line.start.x line.end.x && pos.x <= max line.start.x line.end.x && pos.y >= min line.start.y line.end.y && pos.y <= max line.start.y line.end.y) || e
 
 
+
 -- getMeshForPoints : Dict Int Line -> List (Svg Msg)
 -- getMeshForPoints mesh =
 --     pointsToSvg (List.foldl createPoints [] (Dict.values mesh))
@@ -635,17 +645,27 @@ moveToWards from to lenght =
     { x = from.x + min lenght (to.x - from.x), y = from.y + min lenght (to.y - from.y) }
 
 
-checkEatable : PacMan -> List Point
-checkEatable  pac =
-    case pac.eatablePoints of
-        [] ->
-            []
-        x::xs ->
-            if x == pac.position then
-                checkEatable { pac | eatablePoints = xs, score= 10 }
-            else
-                x::checkEatable { pac | eatablePoints = xs}    
-
+checkEatable : PacMan -> PacMan
+checkEatable pac =
+    let
+        test : List Point -> List Point
+        test lp =
+            case lp of
+                [] ->
+                    []
+                x::xs ->
+                    if x == pac.position then
+                        test xs
+                    else
+                         x::test xs   
+        var : List Point
+        var = test pac.eatablePoints
+    in
+    
+    if List.length pac.eatablePoints == List.length var then
+        pac
+    else
+        { pac | eatablePoints = var, score = pac.score + scoreSettings.eatable }
 
 
 

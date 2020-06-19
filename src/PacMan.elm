@@ -1,14 +1,17 @@
 module PacMan exposing (main)
 
+import Array exposing (length)
 import Browser
 import Browser.Events exposing (onKeyDown)
-import Dict exposing (Dict, get)
+import Dict exposing (Dict, get, member)
 import Html exposing (Html, div, img, node, text)
 import Html.Attributes exposing (class, id, src, style)
 import Json.Decode exposing (..)
-import Json.Encode exposing (bool)
-import Svg exposing (Svg, circle, path, polygon, svg)
-import Svg.Attributes exposing (cx, cy, d, fill, points, r, transform, x, y)
+import List exposing (..)
+import List.Unique exposing (filterDuplicates)
+import String exposing (length)
+import Svg exposing (Svg, circle, path, polygon, rect, svg)
+import Svg.Attributes exposing (cx, cy, d, fill, points, r, x, y)
 import Time exposing (every)
 
 
@@ -18,24 +21,17 @@ import Time exposing (every)
 -----------------------
 
 
-fieldWidth : Float
-fieldWidth =
-    500
-
-
-fieldHeight : Float
-fieldHeight =
-    500
-
-
-gameColor : String
-gameColor =
-    "#3498DB"
+fieldSettings : { width : Float, height : Float, borderColor : String }
+fieldSettings =
+    { width = 500
+    , height = 500
+    , borderColor = "#3498DB"
+    }
 
 
 pacSettings : { ratio : Float }
 pacSettings =
-    { ratio = 30
+    { ratio = 25
     }
 
 
@@ -44,55 +40,163 @@ movement =
     1
 
 
+scoreSettings : { item : Float, pill : Float, fruit : Float }
+scoreSettings =
+    { item = 10
+    , pill = 50
+    , fruit = 50
+    }
+
+
+itemSettings : { fill : String, step : Float, size : Float }
+itemSettings =
+    { fill = "#FFAAA5"
+    , step = 15
+    , size = 5
+    }
+
+
+pillSettings : { fill : String, radius : Float }
+pillSettings =
+    { fill = "#FFAAA5"
+    , radius = 6
+    }
+
+
+pointMesh : Dict Int Point
+pointMesh =
+    Dict.fromList
+        [ ( 1, { x = 25, y = 25 } )
+        , ( 2, { x = 115, y = 25 } )
+        , ( 3, { x = 220, y = 25 } )
+        , ( 4, { x = 280, y = 25 } )
+        , ( 5, { x = 385, y = 25 } )
+        , ( 6, { x = 475, y = 25 } )
+        , ( 7, { x = 25, y = 85 } )
+        , ( 8, { x = 175, y = 85 } )
+        , ( 9, { x = 220, y = 85 } )
+        , ( 10, { x = 280, y = 85 } )
+        , ( 11, { x = 325, y = 85 } )
+        , ( 12, { x = 475, y = 85 } )
+        , ( 13, { x = 25, y = 145 } )
+        , ( 14, { x = 115, y = 145 } )
+        , ( 15, { x = 175, y = 145 } )
+        , ( 16, { x = 220, y = 145 } )
+        , ( 17, { x = 280, y = 145 } )
+        , ( 18, { x = 325, y = 145 } )
+        , ( 19, { x = 385, y = 145 } )
+        , ( 20, { x = 475, y = 145 } )
+        , ( 21, { x = 175, y = 190 } )
+        , ( 22, { x = 220, y = 190 } )
+        , ( 23, { x = 280, y = 190 } )
+        , ( 24, { x = 325, y = 190 } )
+        , ( 25, { x = -5, y = 235 } )
+        , ( 26, { x = 175, y = 235 } )
+        , ( 27, { x = 325, y = 235 } )
+        , ( 28, { x = 505, y = 235 } )
+        , ( 29, { x = 175, y = 280 } )
+        , ( 30, { x = 325, y = 280 } )
+        , ( 31, { x = 25, y = 325 } )
+        , ( 32, { x = 175, y = 325 } )
+        , ( 33, { x = 220, y = 325 } )
+        , ( 34, { x = 280, y = 325 } )
+        , ( 35, { x = 325, y = 325 } )
+        , ( 36, { x = 475, y = 325 } )
+        , ( 37, { x = 25, y = 370 } )
+        , ( 38, { x = 55, y = 370 } )
+        , ( 39, { x = 115, y = 370 } )
+        , ( 40, { x = 175, y = 370 } )
+        , ( 41, { x = 220, y = 370 } )
+        , ( 42, { x = 280, y = 370 } )
+        , ( 43, { x = 325, y = 370 } )
+        , ( 44, { x = 385, y = 370 } )
+        , ( 45, { x = 445, y = 370 } )
+        , ( 46, { x = 475, y = 370 } )
+        , ( 47, { x = 25, y = 430 } )
+        , ( 48, { x = 55, y = 430 } )
+        , ( 49, { x = 115, y = 430 } )
+        , ( 50, { x = 175, y = 430 } )
+        , ( 51, { x = 220, y = 430 } )
+        , ( 52, { x = 280, y = 430 } )
+        , ( 53, { x = 325, y = 430 } )
+        , ( 54, { x = 385, y = 430 } )
+        , ( 55, { x = 445, y = 430 } )
+        , ( 56, { x = 475, y = 430 } )
+        , ( 57, { x = 25, y = 475 } )
+        , ( 58, { x = 220, y = 475 } )
+        , ( 59, { x = 280, y = 475 } )
+        , ( 60, { x = 475, y = 475 } )
+        ]
+
+
+getPoint : Int -> Point
+getPoint i =
+    case get i pointMesh of
+        Just point ->
+            point
+
+        _ ->
+            { x = 0, y = 0 }
+
+
 runMesh : Dict Int Line
 runMesh =
     Dict.fromList
-        [ ( 1, Line { x = 168, y = 283 } { x = 332, y = 283 } )
-        , ( 2, Line { x = 168, y = 187 } { x = 168, y = 332 } )
-        , ( 3, Line { x = 332, y = 187 } { x = 168, y = 187 } )
-        , ( 4, Line { x = 332, y = 187 } { x = 332, y = 332 } )
-        , ( 5, Line { x = 24, y = 29 } { x = 222, y = 29 } )
-        , ( 6, Line { x = 24, y = 29 } { x = 24, y = 140 } )
-        , ( 7, Line { x = 24, y = 92 } { x = 477, y = 92 } )
-        , ( 8, Line { x = 114, y = 29 } { x = 114, y = 426 } )
-        , ( 9, Line { x = 222, y = 29 } { x = 222, y = 92 } )
-        , ( 10, Line { x = 278, y = 29 } { x = 278, y = 92 } )
-        , ( 11, Line { x = 278, y = 29 } { x = 477, y = 29 } )
-        , ( 12, Line { x = 386, y = 29 } { x = 386, y = 426 } )
-        , ( 13, Line { x = 477, y = 29 } { x = 477, y = 140 } )
-        , ( 14, Line { x = 477, y = 140 } { x = 386, y = 140 } )
-        , ( 15, Line { x = 331, y = 92 } { x = 331, y = 140 } )
-        , ( 16, Line { x = 331, y = 140 } { x = 278, y = 140 } )
-        , ( 17, Line { x = 278, y = 140 } { x = 278, y = 187 } )
-        , ( 18, Line { x = 169, y = 92 } { x = 169, y = 140 } )
-        , ( 19, Line { x = 169, y = 140 } { x = 222, y = 140 } )
-        , ( 20, Line { x = 222, y = 140 } { x = 222, y = 187 } )
-        , ( 21, Line { x = 168, y = 235 } { x = 0 - pacSettings.ratio / 2, y = 235 } )
-        , ( 22, Line { x = 332, y = 235 } { x = 500 + pacSettings.ratio / 2, y = 235 } )
-        , ( 23, Line { x = 24, y = 332 } { x = 222, y = 332 } )
-        , ( 24, Line { x = 278, y = 332 } { x = 477, y = 332 } )
-        , ( 25, Line { x = 386, y = 378 } { x = 115, y = 378 } )
-        , ( 26, Line { x = 222, y = 378 } { x = 222, y = 332 } )
-        , ( 27, Line { x = 278, y = 332 } { x = 278, y = 378 } )
-        , ( 28, Line { x = 24, y = 332 } { x = 24, y = 378 } )
-        , ( 29, Line { x = 24, y = 378 } { x = 59, y = 378 } )
-        , ( 30, Line { x = 59, y = 378 } { x = 59, y = 426 } )
-        , ( 31, Line { x = 24, y = 426 } { x = 114, y = 426 } )
-        , ( 32, Line { x = 477, y = 473 } { x = 24, y = 473 } )
-        , ( 33, Line { x = 169, y = 378 } { x = 169, y = 426 } )
-        , ( 34, Line { x = 169, y = 426 } { x = 222, y = 426 } )
-        , ( 35, Line { x = 222, y = 426 } { x = 222, y = 473 } )
-        , ( 36, Line { x = 24, y = 473 } { x = 24, y = 426 } )
-        , ( 37, Line { x = 331, y = 426 } { x = 331, y = 378 } )
-        , ( 38, Line { x = 279, y = 426 } { x = 331, y = 426 } )
-        , ( 39, Line { x = 279, y = 426 } { x = 279, y = 473 } )
-        , ( 40, Line { x = 477, y = 378 } { x = 477, y = 332 } )
-        , ( 41, Line { x = 442, y = 378 } { x = 477, y = 378 } )
-        , ( 42, Line { x = 442, y = 378 } { x = 442, y = 426 } )
-        , ( 43, Line { x = 386, y = 426 } { x = 477, y = 426 } )
-        , ( 44, Line { x = 477, y = 473 } { x = 477, y = 426 } )
-        , ( 45, Line { x = 24, y = 140 } { x = 114, y = 140 } )
+        [ ( 1, Line (getPoint 29) (getPoint 30) )
+        , ( 2, Line (getPoint 21) (getPoint 32) )
+        , ( 3, Line (getPoint 21) (getPoint 24) )
+        , ( 4, Line (getPoint 24) (getPoint 35) )
+        , ( 5, Line (getPoint 1) (getPoint 3) )
+        , ( 6, Line (getPoint 1) (getPoint 13) )
+        , ( 7, Line (getPoint 7) (getPoint 12) )
+        , ( 8, Line (getPoint 2) (getPoint 49) )
+        , ( 9, Line (getPoint 3) (getPoint 9) )
+        , ( 10, Line (getPoint 4) (getPoint 10) )
+        , ( 11, Line (getPoint 4) (getPoint 6) )
+        , ( 12, Line (getPoint 5) (getPoint 54) )
+        , ( 13, Line (getPoint 6) (getPoint 20) )
+        , ( 14, Line (getPoint 19) (getPoint 20) )
+        , ( 15, Line (getPoint 11) (getPoint 18) )
+        , ( 16, Line (getPoint 17) (getPoint 18) )
+        , ( 17, Line (getPoint 17) (getPoint 23) )
+        , ( 18, Line (getPoint 8) (getPoint 15) )
+        , ( 19, Line (getPoint 15) (getPoint 16) )
+        , ( 20, Line (getPoint 16) (getPoint 22) )
+        , ( 21, Line (getPoint 25) (getPoint 26) )
+        , ( 22, Line (getPoint 27) (getPoint 28) )
+        , ( 23, Line (getPoint 31) (getPoint 33) )
+        , ( 24, Line (getPoint 34) (getPoint 36) )
+        , ( 25, Line (getPoint 39) (getPoint 44) )
+        , ( 26, Line (getPoint 33) (getPoint 41) )
+        , ( 27, Line (getPoint 34) (getPoint 42) )
+        , ( 28, Line (getPoint 31) (getPoint 37) )
+        , ( 29, Line (getPoint 37) (getPoint 38) )
+        , ( 30, Line (getPoint 38) (getPoint 48) )
+        , ( 31, Line (getPoint 47) (getPoint 49) )
+        , ( 32, Line (getPoint 57) (getPoint 60) )
+        , ( 33, Line (getPoint 40) (getPoint 50) )
+        , ( 34, Line (getPoint 50) (getPoint 51) )
+        , ( 35, Line (getPoint 51) (getPoint 58) )
+        , ( 36, Line (getPoint 57) (getPoint 47) )
+        , ( 37, Line (getPoint 43) (getPoint 53) )
+        , ( 38, Line (getPoint 52) (getPoint 53) )
+        , ( 39, Line (getPoint 52) (getPoint 59) )
+        , ( 40, Line (getPoint 36) (getPoint 46) )
+        , ( 41, Line (getPoint 45) (getPoint 46) )
+        , ( 42, Line (getPoint 45) (getPoint 55) )
+        , ( 43, Line (getPoint 54) (getPoint 56) )
+        , ( 44, Line (getPoint 56) (getPoint 60) )
+        , ( 45, Line (getPoint 13) (getPoint 14) )
         ]
+
+
+pillsList : List Point
+pillsList =
+    [ { x = 25, y = 115 }
+    , { x = 55, y = 400 }
+    , { x = 385, y = 55 }
+    , { x = 325, y = 430 }
+    ]
 
 
 
@@ -113,12 +217,14 @@ type alias Line =
     }
 
 
-type alias PacMan =
-    { position : Point
-    , rotation : Int
+type alias Game =
+    { pPosition : Point
+    , pRotation : Int
     , state : State
     , nextDir : Direction
     , score : Float
+    , eatablePoints : List Point
+    , pills : List Point
     }
 
 
@@ -172,8 +278,8 @@ textCss =
 gameCss : List (Html.Attribute msg)
 gameCss =
     [ Html.Attributes.style "position" "relative"
-    , Html.Attributes.style "width" (String.fromFloat fieldWidth ++ "px")
-    , Html.Attributes.style "height" (String.fromFloat fieldHeight ++ "px")
+    , Html.Attributes.style "width" (String.fromFloat fieldSettings.width ++ "px")
+    , Html.Attributes.style "height" (String.fromFloat fieldSettings.height ++ "px")
     , Html.Attributes.style "margin" "0em auto"
     , Html.Attributes.style "border-left" "10px solid #000"
     , Html.Attributes.style "border-right" "10px solid #000"
@@ -187,8 +293,8 @@ gameChildCss =
     [ Html.Attributes.style "position" "absolute"
     , Html.Attributes.style "top" "0"
     , Html.Attributes.style "left" "0"
-    , Html.Attributes.style "width" (String.fromFloat fieldWidth ++ "px")
-    , Html.Attributes.style "height" (String.fromFloat fieldHeight ++ "px")
+    , Html.Attributes.style "width" (String.fromFloat fieldSettings.width ++ "px")
+    , Html.Attributes.style "height" (String.fromFloat fieldSettings.height ++ "px")
     , Html.Attributes.style "overflow" "hidden"
     ]
 
@@ -221,13 +327,15 @@ styleContents =
 ----------
 
 
-initialModel : PacMan
+initialModel : Game
 initialModel =
-    { position = { x = 250, y = 283 }
+    { pPosition = { x = 250, y = 280 }
     , state = Running Right
     , nextDir = Right
-    , rotation = 0
+    , pRotation = 0
     , score = 0
+    , eatablePoints = substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
+    , pills = pillsList
     }
 
 
@@ -249,83 +357,83 @@ type State
 ------------
 
 
-update : Msg -> PacMan -> ( PacMan, Cmd Msg )
-update msg pac =
+update : Msg -> Game -> ( Game, Cmd Msg )
+update msg game =
     case msg of
         MoveDirection d ->
             case d of
                 Left ->
-                    if outOfBounds pac then
-                        ( { pac | position = changeXPosition fieldWidth pac, state = Running d, rotation = 180 }, Cmd.none )
+                    if outOfBounds game then
+                        ( { game | pPosition = changeXPosition fieldSettings.width game, state = Running d, pRotation = 180 }, Cmd.none )
 
-                    else if checkDir pac d || checkDir pac pac.nextDir then
-                        if checkDir pac pac.nextDir && pac.nextDir /= d then
-                            ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
+                    else if checkDir game d || checkDir game game.nextDir then
+                        if checkDir game game.nextDir && game.nextDir /= d then
+                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
-                            ( { pac | position = changeXPosition (pac.position.x - movement) pac, state = Running d, rotation = 180 }, Cmd.none )
+                            ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x - movement) game, state = Running d, pRotation = 180 }, Cmd.none )
 
                     else
-                        update NoMoving pac
+                        update NoMoving game
 
                 Right ->
-                    if outOfBounds pac then
-                        ( { pac | position = changeXPosition 0 pac, state = Running d, rotation = 0 }, Cmd.none )
+                    if outOfBounds game then
+                        ( { game | pPosition = changeXPosition 0 game, state = Running d, pRotation = 0 }, Cmd.none )
 
-                    else if checkDir pac d || checkDir pac pac.nextDir then
-                        if checkDir pac pac.nextDir && pac.nextDir /= d then
-                            ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
+                    else if checkDir game d || checkDir game game.nextDir then
+                        if checkDir game game.nextDir && game.nextDir /= d then
+                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
-                            ( { pac | position = changeXPosition (pac.position.x + movement) pac, state = Running d, rotation = 0 }, Cmd.none )
+                            ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x + movement) game, state = Running d, pRotation = 0 }, Cmd.none )
 
                     else
-                        update NoMoving pac
+                        update NoMoving game
 
                 Up ->
-                    if outOfBounds pac then
-                        ( { pac | position = changeYPosition fieldHeight pac, state = Running d, rotation = -90 }, Cmd.none )
+                    if outOfBounds game then
+                        ( { game | pPosition = changeYPosition fieldSettings.height game, state = Running d, pRotation = -90 }, Cmd.none )
 
-                    else if checkDir pac d || checkDir pac pac.nextDir then
-                        if checkDir pac pac.nextDir && pac.nextDir /= d then
-                            ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
+                    else if checkDir game d || checkDir game game.nextDir then
+                        if checkDir game game.nextDir && game.nextDir /= d then
+                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
-                            ( { pac | position = changeYPosition (pac.position.y - movement) pac, state = Running d, rotation = -90 }, Cmd.none )
+                            ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y - movement) game, state = Running d, pRotation = -90 }, Cmd.none )
 
                     else
-                        update NoMoving pac
+                        update NoMoving game
 
                 Down ->
-                    if outOfBounds pac then
-                        ( { pac | position = changeYPosition 0 pac, state = Running d, rotation = 90 }, Cmd.none )
+                    if outOfBounds game then
+                        ( { game | pPosition = changeYPosition 0 game, state = Running d, pRotation = 90 }, Cmd.none )
 
-                    else if checkDir pac d || checkDir pac pac.nextDir then
-                        if checkDir pac pac.nextDir && pac.nextDir /= d then
-                            ( { pac | state = Running pac.nextDir, nextDir = None }, Cmd.none )
+                    else if checkDir game d || checkDir game game.nextDir then
+                        if checkDir game game.nextDir && game.nextDir /= d then
+                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
-                            ( { pac | position = changeYPosition (pac.position.y + movement) pac, state = Running d, rotation = 90 }, Cmd.none )
+                            ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y + movement) game, state = Running d, pRotation = 90 }, Cmd.none )
 
                     else
-                        update NoMoving pac
+                        update NoMoving game
 
                 _ ->
-                    update NoMoving pac
+                    update NoMoving game
 
         Nothing ->
-            case pac.state of
+            case game.state of
                 Running d ->
-                    ( { pac | state = Stopped d }, Cmd.none )
+                    ( { game | state = Stopped d }, Cmd.none )
 
                 Stopped d ->
-                    ( { pac | state = Running d }, Cmd.none )
+                    ( { game | state = Running d }, Cmd.none )
 
         NoMoving ->
-            ( pac, Cmd.none )
+            ( game, Cmd.none )
 
         ChangeDirection d ->
-            ( { pac | nextDir = d }, Cmd.none )
+            ( { game | nextDir = d }, Cmd.none )
 
 
 
@@ -334,15 +442,15 @@ update msg pac =
 ----------
 
 
-view : PacMan -> Html Msg
-view pac =
+view : Game -> Html Msg
+view game =
     node "main"
         []
         [ node "style" [] [ text styleContents ]
         , div (class "wrapper" :: wrapperCss)
             [ div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
-                , div textCss [ Html.text (String.fromFloat pac.score) ]
+                , div textCss [ Html.text (String.fromFloat game.score) ]
                 , div textCss [ Html.text "500x500" ]
                 ]
             , div
@@ -351,37 +459,39 @@ view pac =
                     (gameChildCss
                         ++ [ id "gameField" ]
                     )
-                    [ circle [ cx "330", cy "283", r "5", fill "red" ] []
-                    , path [ fill gameColor, d "M200.3,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.2-5,5-5h65c2.8,0,5,2.3,5,5v19.3  C205.3,72.4,203.1,74.7,200.3,74.7z" ] []
-                    , path [ fill gameColor, d "M364,74.7h-65c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5h65c2.8,0,5,2.3,5,5v19.3C369,72.4,366.8,74.7,364,74.7z" ] []
-                    , path [ fill gameColor, d "M92,74.7H44.7c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5H92c2.8,0,5,2.3,5,5v19.3C97,72.4,94.8,74.7,92,74.7z" ] []
-                    , path [ fill gameColor, d "M92,122.3H44.7c-2.8,0-5-2.3-5-5v-4.7c0-2.8,2.3-5,5-5H92c2.8,0,5,2.3,5,5v4.7C97,120.1,94.8,122.3,92,122.3z" ] []
-                    , path [ fill gameColor, d "M455.3,123.3H408c-2.8,0-5-2.3-5-5v-4.7c0-2.8,2.3-5,5-5h47.3c2.8,0,5,2.3,5,5v4.7  C460.3,121.1,458.1,123.3,455.3,123.3z" ] []
-                    , path [ fill gameColor, d "M455.3,74.7H408c-2.8,0-5-2.3-5-5V50.3c0-2.8,2.3-5,5-5h47.3c2.8,0,5,2.3,5,5v19.3  C460.3,72.4,458.1,74.7,455.3,74.7z" ] []
-                    , path [ fill gameColor, d "M309.3,108.7H189.7c-2.8,0-5,2.3-5,5v4.7c0,2.8,2.3,5,5,5H235c2.8,0,5,2.2,5,5v37.3c0,2.8,2.3,5,5,5h10.3  c2.8,0,5-2.3,5-5v-37.3c0-2.8,2.2-5,5-5h44c2.8,0,5-2.3,5-5v-4.7C314.3,110.9,312.1,108.7,309.3,108.7z" ] []
-                    , path [ fill gameColor, d "M200.3,155.3H157c-2.8,0-5-2.2-5-5v-36.7c0-2.8-2.3-5-5-5h-11.7c-2.8,0-5,2.3-5,5v99.7c0,2.8,2.3,5,5,5H147  c2.8,0,5-2.3,5-5v-38.7c0-2.8,2.2-5,5-5h43.3c2.8,0,5-2.3,5-5v-4.3C205.3,157.6,203.1,155.3,200.3,155.3z" ] []
-                    , path [ fill gameColor, d "M300,170.7l43.3,0c2.8,0,5,2.2,5,5l0,36.7c0,2.8,2.3,5,5,5l11.7,0c2.8,0,5-2.3,5-5l0-99.7c0-2.8-2.3-5-5-5  h-11.7c-2.8,0-5,2.3-5,5v38.7c0,2.8-2.2,5-5,5l-43.3,0c-2.8,0-5,2.3-5,5v4.3C295,168.4,297.3,170.7,300,170.7z" ] []
-                    , path [ fill gameColor, d "M309.3,300H189.7c-2.8,0-5,2.3-5,5v4.7c0,2.8,2.3,5,5,5H235c2.8,0,5,2.2,5,5V357c0,2.8,2.3,5,5,5h10.3  c2.8,0,5-2.3,5-5v-37.3c0-2.8,2.2-5,5-5h44c2.8,0,5-2.3,5-5V305C314.3,302.2,312.1,300,309.3,300z" ] []
-                    , path [ fill gameColor, d "M364,312.7h-10c-2.8,0-5-2.3-5-5V256c0-2.8,2.3-5,5-5h10c2.8,0,5,2.3,5,5v51.7C369,310.4,366.8,312.7,364,312.7  z" ] []
-                    , path [ fill gameColor, d "M146,312.7h-10c-2.8,0-5-2.3-5-5V256c0-2.8,2.3-5,5-5h10c2.8,0,5,2.3,5,5v51.7C151,310.4,148.8,312.7,146,312.7  z" ] []
-                    , path [ fill gameColor, d "M200.3,360.7h-65c-2.8,0-5-2.3-5-5v-3.3c0-2.8,2.2-5,5-5h65c2.8,0,5,2.3,5,5v3.3  C205.3,358.4,203.1,360.7,200.3,360.7z" ] []
-                    , path [ fill gameColor, d "M365,360.7h-65c-2.8,0-5-2.3-5-5v-3.3c0-2.8,2.2-5,5-5h65c2.8,0,5,2.3,5,5v3.3C370,358.4,367.8,360.7,365,360.7  z" ] []
-                    , path [ fill gameColor, d "M309.3,395.3H189.7c-2.8,0-5,2.3-5,5v4.7c0,2.8,2.3,5,5,5H235c2.8,0,5,2.2,5,5v37.3c0,2.8,2.3,5,5,5h10.3  c2.8,0,5-2.3,5-5V415c0-2.8,2.2-5,5-5h44c2.8,0,5-2.3,5-5v-4.7C314.3,397.6,312.1,395.3,309.3,395.3z" ] []
-                    , path [ fill gameColor, d "M200.3,442.7H156c-2.8,0-5-2.2-5-5v-38.3c0-2.8-2.3-5-5-5h-10c-2.8,0-5,2.3-5,5v38.3c0,2.8-2.2,5-5,5H44  c-2.8,0-5,2.2-5,5v3.3c0,2.8,2.3,5,5,5h156.3c2.8,0,5-2.3,5-5v-3.3C205.3,444.9,203.1,442.7,200.3,442.7z" ] []
-                    , path [ fill gameColor, d "M300,442.7h44.3c2.8,0,5-2.2,5-5v-38.3c0-2.8,2.3-5,5-5h10c2.8,0,5,2.3,5,5v38.3c0,2.8,2.2,5,5,5h82  c2.8,0,5,2.2,5,5v3.3c0,2.8-2.3,5-5,5H300c-2.8,0-5-2.3-5-5v-3.3C295,444.9,297.3,442.7,300,442.7z" ] []
-                    , path [ fill gameColor, d "M92,347.3h-7.7h-4H44c-2.8,0-5,2.2-5,5v3.3c0,2.8,2.3,5,5,5h26.3c2.8,0,5,2.2,5,5V404c0,2.8,2.3,5,5,5H92  c2.8,0,5-2.3,5-5v-51.7C97,349.6,94.8,347.3,92,347.3z" ] []
-                    , path [ fill gameColor, d "M408.3,347.3h7.7h4h36.3c2.8,0,5,2.2,5,5v3.3c0,2.8-2.3,5-5,5H430c-2.8,0-5,2.2-5,5V404c0,2.8-2.3,5-5,5h-11.7  c-2.8,0-5-2.3-5-5v-51.7C403.3,349.6,405.6,347.3,408.3,347.3z" ] []
+                    (pointsToSvg game.eatablePoints 1
+                        ++ pointsToSvg game.pills 2
+                        ++ [ path [ fill fieldSettings.borderColor, d "M94,70.7H43.7c-2.8,0-5-2.3-5-5V42.3c0-2.8,2.3-5,5-5H94c2.8,0,5,2.3,5,5v23.3C99,68.4,96.8,70.7,94,70.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M200.3,70.7h-66c-2.8,0-5-2.3-5-5V42.3c0-2.8,2.2-5,5-5h66c2.8,0,5,2.3,5,5v23.3 C205.3,68.4,203.1,70.7,200.3,70.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M366.1,71.6h-67.5c-3,0-5.3-2.3-5.3-5V43.2c0-2.8,2.5-5,5.3-5h67.5c3,0,5.3,2.3,5.3,5v23.3 C371.5,69.3,369.1,71.6,366.1,71.6z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M94.6,131.6H42.4c-2.8,0-5-2.6-5-5.6v-21.3c0-3.2,2.3-5.6,5-5.6h52.3c2.8,0,5,2.6,5,5.6v21.3 C99.6,129.1,97.5,131.6,94.6,131.6z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M457,70.1h-52.5c-3,0-5.3-2.3-5.3-5V42.7c0-2.8,2.5-5,5.3-5H457c3,0,5.3,2.3,5.3,5V65 C462.3,67.8,460,70.1,457,70.1z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M199.7,158.3h-35.4c-2.4,0-4.3-2.2-4.3-5v-49.8c0-2.8-2-5-4.3-5h-22.1c-2.4,0-4.3,2.3-4.3,5v112.8 c0,2.8,2,5,4.3,5h22.1c2.4,0,4.3-2.3,4.3-5v-34.7c0-2.8,1.9-5,4.3-5h35.4c2.4,0,4.3-2.3,4.3-5v-8.3 C204,160.6,202.1,158.3,199.7,158.3z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M305.8,98.6H193.2c-2.8,0-5,2.3-5,5v22.7c0,2.8,2.3,5,5,5h36.3c2.8,0,5,2.2,5,5v35.3c0,2.8,2.3,5,5,5h18.3 c2.8,0,5-2.3,5-5v-35.3c0-2.8,2.2-5,5-5h38c2.8,0,5-2.3,5-5v-22.7C310.8,100.8,308.6,98.6,305.8,98.6z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M298.2,175.7h36.4c2.4,0,4.2,2.2,4.2,5v33.7c0,2.8,1.9,5,4.2,5h24.8c2.4,0,4.2-2.3,4.2-5l-0.9-111.9 c0-2.8-1.9-5-4.2-5h-23.8c-2.4,0-4.2,2.3-4.2,5l-0.1,49.9c0,2.8-1.8,5-4.2,5h-36.4c-2.4,0-4.2,2.3-4.2,5v8.3 C294,173.4,295.9,175.7,298.2,175.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M457,131.7h-50.5c-3,0-5.3-2.3-5.3-5v-22.4c0-2.8,2.5-5,5.3-5H457c3,0,5.3,2.3,5.3,5v22.3 C462.3,129.4,460,131.7,457,131.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M155,311.7h-21c-2.8,0-5-2.3-5-5V255c0-2.8,2.3-5,5-5h21c2.8,0,5,2.3,5,5v51.7 C160,309.4,157.8,311.7,155,311.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M307.3,294H193.7c-2.8,0-5,2.3-5,5v7.7c0,2.8,2.3,5,5,5H228c2.8,0,5,2.2,5,5V351c0,2.8,2.3,5,5,5h22.3 c2.8,0,5-2.3,5-5v-34.3c0-2.8,2.2-5,5-5h37c2.8,0,5-2.3,5-5V299C312.3,296.2,310.1,294,307.3,294z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M366,312.7h-22c-2.8,0-5-2.3-5-5V255c0-2.8,2.3-5,5-5h22c2.8,0,5,2.3,6,5v52.7   C371,310.4,368.8,312.7,366,312.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M94,340.3H81.3h-1H43c-2.8,0-5,2.2-5,5v7.3c0,2.8,2.3,5,5,5h21.3c2.8,0,5,2.2,5,5V411c0,2.8,2.3,5,5,5H94 c2.8,0,5-2.3,5-5v-65.7C99,342.6,96.8,340.3,94,340.3z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M202.3,356.7h-69c-2.8,0-5-2.3-5-5v-8.3c0-2.8,2.2-5,5-5h69c2.8,0,5,2.3,5,5v8.3   C207.3,354.4,205.1,356.7,202.3,356.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M368,355.7h-69c-2.8,0-5-2.3-5-5v-7.3c0-2.8,2.2-5,5-5h69c2.8,0,5,2.3,5,5v7.3   C373,353.4,370.8,355.7,368,355.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M404.3,338.3h4.7h5h42.3c2.8,0,5,2.2,5,5v7.3c0,2.8-2.3,5-5,5H435c-2.8,0-5,2.2-5,5V412c0,2.8-2.3,5-5,5h-20.7 c-2.8,0-5-2.3-5-5v-68.7C399.3,340.6,401.6,338.3,404.3,338.3z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M202,442.7h-37c-2.8,0-5-2.2-5-5v-50.3c0-2.8-2.3-5-5-5h-20.9c-2.8,0-5,2.3-5,5v50.3c0,2.8-2.2,5-5,5H44 c-2.8,0-5,2.2-5,5v9.3c0,2.8,2.3,5,5,5H202c2.8,0,5-2.3,5-5v-9.3C207,444.9,204.8,442.7,202,442.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M298.9,443.7h35.5c2.7,0,4.9-2.2,4.9-5v-52.3c0-2.8,2.3-5,4.9-5H366c2.7,0,4.9,2.3,4.9,5v52.3 c0,2.8,2.2,5,4.9,5h81.5c2.7,0,4.9,2.2,4.9,5v8.3c0,2.8-2.3,5-4.9,5H298.9c-2.7,0-4.9-2.3-4.9-5v-8.3 C294,445.9,296.3,443.7,298.9,443.7z" ] []
+                           , path [ fill fieldSettings.borderColor, d "M304.3,383.3H195.7c-2.8,0-5,2.3-5,5V411c0,2.8,2.3,5,5,5H229c2.8,0,5,3.2,5,6v35.3c0,2.8,2.3,5,5,5h21.3 c2.8,0,5-2.3,5-5V422c0-2.8,2.2-6,5-6h34c2.8,0,5-2.3,5-5v-22.7C309.3,385.6,307.1,383.3,304.3,383.3z" ] []
 
-                    -- Outer lines and inner cave
-                    , path [ fill gameColor, d "M407.7,208.5v-42c0-2.8,2.2-5,5-5h83.9c1.5,0,2.7-1.2,2.7-2.7V8.9c0-1.5-1.2-2.7-2.7-2.7H4.8  c-1.5,0-2.7,1.2-2.7,2.7v150.4c0,1.5,1.2,2.7,2.7,2.7h81.8c2.8,0,5,2.2,5,5V208c0,2.8-2.2,5-5,5H0v5.4h94.3c1.5,0,2.7-1.2,2.7-2.7  v-56.3c0-1.5-1.2-2.7-2.7-2.7H12.5c-2.8,0-5-2.2-5-5v-135c0-2.8,2.2-5,5-5h221c2.8,0,5,2.2,5,5v53c0,2.8,2.2,5,5,5H255  c2.8,0,5-2.2,5-5v-53c0-2.8,2.2-5,5-5h223.9c2.8,0,5,2.2,5,5v134.5c0,2.8-2.2,5-5,5H405c-1.5,0-2.7,1.2-2.7,2.7v57.1  c0,0.1,0,0.1,0,0.2c0,0.1,0,0.1,0,0.2c0,1.5,1.2,2.7,2.7,2.7h95v-5.4h-87.3C409.9,213.5,407.7,211.3,407.7,208.5z" ] []
-                    , path [ fill gameColor, d "M411.4,256.7H500v-5.3h-94.5c-1.2,0-2.2,1.2-2.2,2.7c0,0,0,0,0,0c0,0,0,0,0,0v57.3c0,1.5,1.2,2.7,2.7,2.7h85.4  c1.5,0,2.7,1.2,2.7,2.7v72.6c0,2.8-2.2,5-5,5h-24.9c-2.8,0-5,2.2-5,5v4.7c0,2.8,2.2,5,5,5h24.9c2.8,0,5,2.2,5,5v73.1  c0,1.5-1.2,2.7-2.7,2.7H10.1c-1.5,0-2.7-1.2-2.7-2.7V414c0-2.8,2.2-5,5-5h25.1c2.8,0,5-2.2,5-5v-4.7c0-2.8-2.2-5-5-5H12.4  c-2.8,0-5-2.2-5-5v-72.1c0-1.5,1.2-2.7,2.7-2.7h84.2c0.1,0,0.2,0,0.3,0c0.1,0,0.2,0,0.3,0c1.5,0,2.7-1.2,2.7-2.7v-57  c0-1.5-1.2-2.7-2.7-2.7H0v5.4h89.6c1.5,0,2.7,1.2,2.7,2.7v46.2c0,1.5-1.2,2.7-2.7,2.7H4.7c-1.5,0-2.7,1.2-2.7,2.7v180.6  c0,1.5,1.2,2.7,2.7,2.7h492.1c1.5,0,2.7-1.2,2.7-2.7V311.3c0-1.5-1.2-2.7-2.7-2.7h-85.4c-1.5,0-2.7-1.2-2.7-2.7v-46.6  C408.7,257.9,409.9,256.7,411.4,256.7z" ] []
-                    , polygon [ fill gameColor, points "309.9,204.5 266.6,204.5 266.6,209.3 309.9,209.3 309.9,260.9 190.1,260.9 190.1,209.3 233,209.3   233,204.5 190.1,204.5 185.4,204.5 185.4,209.3 185.4,260.9 185.4,265.7 190.1,265.7 309.9,265.7 314.6,265.7 314.6,260.9   314.6,209.3 314.6,204.5 " ] []
-                    ]
+                           -- Outer lines and inner cave
+                           , path [ fill fieldSettings.borderColor, d "M403.7,211.2v-43.8c0-2.9,2.2-5.1,5-5.1h84.9c1.5,0,2.7-1.2,2.7-2.7V7.9c0-1.5-1.2-2.7-2.7-2.7H6.8 c-1.5,0-2.7,1.2-2.7,2.7v152.2c0,1.5,1.2,2.7,2.7,2.7h82.8c2.8,0,5,2.2,5,5.1v41.8c0,2.9-2.2,6.1-5,6.1H0v5.5h97.3 c1.5,0,2.7-1.2,2.7-2.7v-58.3c0-1.5-1.2-2.7-2.7-2.7H16.5c-2.8,0-5-2.2-5-5.1V15.9c0-2.9,2.2-5.1,5-5.1h211c2.8,0,5,2.2,5,5.1v51 c0,2.9,2.2,5.1,5,5.1H261c2.8,0,5-2.2,5-5.1v-51c0-2.9,2.2-5.1,5-5.1h212.9c2.8,0,5,2.2,5,5.1v136c0,2.9-2.2,5.1-5,5.1H401 c-1.5,0-2.7,1.2-2.7,2.7v59.1c0,0.1,0,0.1,0,0.2c0,0.1,0,0.1,0,0.2c0,1.5,1.2,2.7,2.7,2.7h99v-5.5h-91.3 C405.9,216.3,403.7,214.1,403.7,211.2z" ] []
+                           , polygon [ fill fieldSettings.borderColor, points "306.9,203.5 263.5,203.5 263.5,208.3 306.9,208.3 306.9,261.9 192.4,261.9 192.4,208.3 234.5,208.3 234.5,203.5 192.4,203.5 188.4,203.5 188.4,208.3 188.4,261.9 188.4,266.7 192.4,266.7 306.9,266.7 311,266.7 311,261.9 311,208.3 311,203.5" ] []
+                           , path [ fill fieldSettings.borderColor, d "M406.4,254.4H500V249h-99.5c-1.2,0-2.2,1.2-2.2,2.7l0,0l0,0v56.3c0,1.5,1.2,2.7,2.7,2.7h85.4 c1.5,0,2.7,1.2,2.7,2.7v65.9c0,2.9-2.2,5.1-5,5.1h-19.9c-2.8,0-5,2.2-5,5.1v20.8c0,2.9,2.2,5.1,5,5.1h19.9c2.8,0,5,2.2,5,5.1v66.4 c0,1.5-1.2,2.7-2.7,2.7H14.1c-1.5,0-2.7-1.2-2.7-2.7v-66.5c0-2.9,2.2-4.1,5-4.1h20.1c2.8,0,5-2.2,5-5.1v-21.8c0-2.9-2.2-5.1-5-5.1 H16.4c-2.8,0-5-2.2-5-5.1V314c0-1.5,1.2-2.7,2.7-2.7h83.2c0.1,0,0.2,0,0.3,0c0.1,0,0.2,0,0.3,0c1.5,0,2.7-1.2,2.7-2.7v-57 c0-1.5-1.2-2.7-2.7-2.7H0v5.5h92.6c1.5,0,2.7,1.2,2.7,2.7v46c0,1.5-1.2,2.7-2.7,2.7H6.7c-1.5,0-2.7,1.2-2.7,2.7v183.9 c0,1.5,1.2,2.7,2.7,2.7h487.1c1.5,0,2.7-1.2,2.7-2.7V308c0-1.5-1.2-2.7-2.7-2.7h-87.4c-1.5,0-2.7-1.2-2.7-2.7V257 C403.7,255.6,404.9,254.4,406.4,254.4z" ] []
+                           ]
+                    )
                 , div
                     (gameChildCss
                         ++ [ id "pacmanArea" ]
                     )
-                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromFloat (pac.position.y - pacSettings.ratio / 2) ++ "px"), Html.Attributes.style "left" (String.fromFloat (pac.position.x - pacSettings.ratio / 2) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt pac.rotation ++ "deg)") ])
+                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromFloat (game.pPosition.y - pacSettings.ratio / 2) ++ "px"), Html.Attributes.style "left" (String.fromFloat (game.pPosition.x - pacSettings.ratio / 2) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
                         []
                     ]
                 ]
@@ -401,11 +511,11 @@ view pac =
 -------------------
 
 
-subscriptions : PacMan -> Sub Msg
-subscriptions pac =
+subscriptions : Game -> Sub Msg
+subscriptions game =
     Sub.batch
         [ Browser.Events.onKeyDown keyDecoder
-        , case pac.state of
+        , case game.state of
             Running d ->
                 Time.every 20 (\_ -> MoveDirection d)
 
@@ -420,7 +530,7 @@ subscriptions pac =
 -------------------
 
 
-main : Program () PacMan Msg
+main : Program () Game Msg
 main =
     Browser.element
         { init = \_ -> ( initialModel, Cmd.none )
@@ -461,43 +571,43 @@ toKey string =
             Nothing
 
 
-changeXPosition : Float -> PacMan -> Point
-changeXPosition value pac =
+changeXPosition : Float -> Game -> Point
+changeXPosition value game =
     let
         oldPosition =
-            pac.position
+            game.pPosition
     in
     { oldPosition | x = value }
 
 
-changeYPosition : Float -> PacMan -> Point
-changeYPosition value pac =
+changeYPosition : Float -> Game -> Point
+changeYPosition value game =
     let
         oldPosition =
-            pac.position
+            game.pPosition
     in
     { oldPosition | y = value }
 
 
-outOfBounds : PacMan -> Bool
-outOfBounds pac =
-    pac.position.x < 0 || pac.position.x > fieldWidth || pac.position.y < 0 || pac.position.y > fieldHeight
+outOfBounds : Game -> Bool
+outOfBounds game =
+    game.pPosition.x < 0 || game.pPosition.x > fieldSettings.width || game.pPosition.y < 0 || game.pPosition.y > fieldSettings.height
 
 
-checkDir : PacMan -> Direction -> Bool
-checkDir pac d =
+checkDir : Game -> Direction -> Bool
+checkDir game d =
     case d of
         Left ->
-            getMesh runMesh { x = pac.position.x - movement, y = pac.position.y }
+            getMesh runMesh { x = game.pPosition.x - movement, y = game.pPosition.y }
 
         Right ->
-            getMesh runMesh { x = pac.position.x + movement, y = pac.position.y }
+            getMesh runMesh { x = game.pPosition.x + movement, y = game.pPosition.y }
 
         Up ->
-            getMesh runMesh { x = pac.position.x, y = pac.position.y - movement }
+            getMesh runMesh { x = game.pPosition.x, y = game.pPosition.y - movement }
 
         Down ->
-            getMesh runMesh { x = pac.position.x, y = pac.position.y + movement }
+            getMesh runMesh { x = game.pPosition.x, y = game.pPosition.y + movement }
 
         _ ->
             False
@@ -505,9 +615,118 @@ checkDir pac d =
 
 getMesh : Dict Int Line -> Point -> Bool
 getMesh mesh pos =
-    Dict.foldl ((\x -> checkPath x) pos) False mesh
+    List.foldl ((\x -> checkPath x) pos) False (Dict.values mesh)
 
 
-checkPath : Point -> Int -> Line -> Bool -> Bool
-checkPath pos _ line e =
+checkPath : Point -> Line -> Bool -> Bool
+checkPath pos line e =
     (pos.x >= min line.start.x line.end.x && pos.x <= max line.start.x line.end.x && pos.y >= min line.start.y line.end.y && pos.y <= max line.start.y line.end.y) || e
+
+
+createPoints : Line -> List Point -> List Point
+createPoints line pointList =
+    let
+        startPoint : Point
+        startPoint =
+            { x = min line.start.x line.end.x, y = min line.start.y line.end.y }
+
+        endPoint : Point
+        endPoint =
+            { x = max line.start.x line.end.x, y = max line.start.y line.end.y }
+
+        currentPoint : Point
+        currentPoint =
+            moveToWards startPoint endPoint itemSettings.step
+    in
+    if startPoint /= endPoint then
+        startPoint :: createPoints (Line currentPoint endPoint) pointList
+
+    else
+        currentPoint :: pointList
+
+
+moveToWards : Point -> Point -> Float -> Point
+moveToWards from to lenght =
+    { x = from.x + min lenght (to.x - from.x), y = from.y + min lenght (to.y - from.y) }
+
+
+checkEatable : Game -> Game
+checkEatable game =
+    let
+        checkCurrentPoint : List Point -> List Point
+        checkCurrentPoint lp =
+            case lp of
+                [] ->
+                    []
+
+                x :: xs ->
+                    if x == game.pPosition then
+                        checkCurrentPoint xs
+
+                    else
+                        x :: checkCurrentPoint xs
+
+        localListItems : List Point
+        localListItems =
+            checkCurrentPoint game.eatablePoints
+
+        localListPills : List Point
+        localListPills =
+            checkCurrentPoint game.pills
+    in
+    if List.length game.pills == List.length localListPills && List.length game.eatablePoints == List.length localListItems then
+        game
+
+    else if List.length game.pills /= List.length localListPills then
+        { game | pills = localListPills, score = game.score + scoreSettings.pill }
+
+    else
+        { game | eatablePoints = localListItems, score = game.score + scoreSettings.item }
+
+
+pointsToSvg : List Point -> Int -> List (Svg Msg)
+pointsToSvg points mode =
+    -- mode : 1 -> eatable, 2-> pills
+    case mode of
+        1 ->
+            indexedMap createItemSvg points
+
+        2 ->
+            indexedMap createPillSvg points
+
+        _ ->
+            []
+
+
+createItemSvg : Int -> Point -> Svg Msg
+createItemSvg _ point =
+    rect
+        [ x (String.fromFloat (point.x - itemSettings.size / 2))
+        , y (String.fromFloat (point.y - itemSettings.size / 2))
+        , Svg.Attributes.width (String.fromFloat itemSettings.size)
+        , Svg.Attributes.height (String.fromFloat itemSettings.size)
+        , fill itemSettings.fill
+        ]
+        []
+
+
+createPillSvg : Int -> Point -> Svg Msg
+createPillSvg _ point =
+    circle
+        [ cx (String.fromFloat point.x)
+        , cy (String.fromFloat point.y)
+        , r (String.fromFloat pillSettings.radius)
+        , fill pillSettings.fill
+        ]
+        []
+
+
+indexedMap : (Int -> a -> b) -> List a -> List b
+indexedMap func list =
+    (\( v, _ ) -> v) (List.foldl (\x ( ys, l ) -> ( func l x :: ys, l + 1 )) ( [], 0 ) list)
+
+
+
+substractList : List Point -> List Point -> List Point
+substractList a b =
+    List.filter (\x -> not (List.member x a)) b

@@ -623,12 +623,6 @@ checkPath pos line e =
     (pos.x >= min line.start.x line.end.x && pos.x <= max line.start.x line.end.x && pos.y >= min line.start.y line.end.y && pos.y <= max line.start.y line.end.y) || e
 
 
-
--- getMeshForPoints : Dict Int Line -> List (Svg Msg)
--- getMeshForPoints mesh =
---     pointsToSvg (List.foldl createPoints [] (Dict.values mesh))
-
-
 createPoints : Line -> List Point -> List Point
 createPoints line pointList =
     let
@@ -731,15 +725,6 @@ indexedMap : (Int -> a -> b) -> List a -> List b
 indexedMap func list =
     (\( v, _ ) -> v) (List.foldl (\x ( ys, l ) -> ( func l x :: ys, l + 1 )) ( [], 0 ) list)
 
-
-
--- substractList : List Point -> List Point -> List Point
--- substractList a b =
---     case b of
---         [] ->
---             []
---         x::xs ->
---             substractList (List.filter (member x) a) xs
 
 
 substractList : List Point -> List Point -> List Point

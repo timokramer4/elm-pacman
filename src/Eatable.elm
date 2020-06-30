@@ -68,7 +68,10 @@ checkEatable game =
         { game | pills = localListPills, score = game.score + pillSettings.xp }
 
     else
-        { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1 }
+        if game.itemCounter == fruitSettings.itemNumber1 || game.itemCounter == fruitSettings.itemNumber2 then
+            { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, fruitAvailable = True }
+        else
+            { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1 }     
 
 
 pointsToSvg : List Point -> Int -> List (Svg Msg)
@@ -110,15 +113,12 @@ createPillSvg _ point =
         []
 
 
-createFruit : Int -> List (Html Msg)
-createFruit counter =
-    -- if counter == 70 || counter == 170 then
-    [ image [ xlinkHref "Assets/img/cherry.svg", width (String.fromFloat fruitSettings.ratio), height (String.fromFloat fruitSettings.ratio), x (String.fromFloat (fruitSettings.position.x - fruitSettings.ratio / 2)), y (String.fromFloat (fruitSettings.position.y - fruitSettings.ratio / 2)) ] [] ]
-
-
-
--- else
---     []
+createFruit : Bool -> List (Html Msg)
+createFruit available =
+     if available then
+        [ image [ xlinkHref "Assets/img/cherry.svg", width (String.fromFloat fruitSettings.ratio), height (String.fromFloat fruitSettings.ratio), x (String.fromFloat (fruitSettings.position.x - fruitSettings.ratio / 2)), y (String.fromFloat (fruitSettings.position.y - fruitSettings.ratio / 2)) ] [] ]
+    else
+        []
 
 
 indexedMap : (Int -> a -> b) -> List a -> List b

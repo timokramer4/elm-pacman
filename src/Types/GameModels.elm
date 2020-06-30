@@ -12,6 +12,8 @@ type alias Game =
     , items : List Point
     , pills : List Point
     , itemCounter : Int
+    , secondCounter : Int
+    , fruitAvailable : Bool
     }
 
 
@@ -20,6 +22,7 @@ type Msg
     | Nothing
     | NoMoving
     | ChangeDirection Direction
+    | Fruit
 
 
 type State

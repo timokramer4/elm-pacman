@@ -32,7 +32,7 @@ createPoints line pointList =
         currentPoint :: pointList
 
 
-moveToWards : Point -> Point -> Float -> Point
+moveToWards : Point -> Point -> Int -> Point
 moveToWards from to lenght =
     { x = from.x + min lenght (to.x - from.x), y = from.y + min lenght (to.y - from.y) }
 
@@ -104,10 +104,10 @@ pointsToSvg points mode =
 createItemSvg : Int -> Point -> Svg Msg
 createItemSvg _ point =
     rect
-        [ x (String.fromFloat (point.x - itemSettings.size / 2))
-        , y (String.fromFloat (point.y - itemSettings.size / 2))
-        , Svg.Attributes.width (String.fromFloat itemSettings.size)
-        , Svg.Attributes.height (String.fromFloat itemSettings.size)
+        [ x (String.fromInt (point.x - round (toFloat itemSettings.size / 2)))
+        , y (String.fromInt (point.y - round (toFloat itemSettings.size / 2)))
+        , Svg.Attributes.width (String.fromInt itemSettings.size)
+        , Svg.Attributes.height (String.fromInt itemSettings.size)
         , fill itemSettings.fill
         ]
         []
@@ -116,9 +116,9 @@ createItemSvg _ point =
 createPillSvg : Int -> Point -> Svg Msg
 createPillSvg _ point =
     circle
-        [ cx (String.fromFloat point.x)
-        , cy (String.fromFloat point.y)
-        , r (String.fromFloat pillSettings.radius)
+        [ cx (String.fromInt point.x)
+        , cy (String.fromInt point.y)
+        , r (String.fromInt pillSettings.radius)
         , fill pillSettings.fill
         ]
         []

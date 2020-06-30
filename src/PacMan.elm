@@ -5,11 +5,12 @@ import Browser.Events exposing (onKeyDown)
 import Dict exposing (Dict, member)
 import Eatable exposing (..)
 import Html exposing (Html, div, img, node, text)
-import Html.Attributes exposing (class, id, src, style)
+import Html.Attributes exposing (class, height, id, src, style, width)
 import Json.Decode exposing (..)
 import List exposing (..)
 import List.Unique exposing (filterDuplicates)
 import Settings exposing (..)
+import String exposing (toInt)
 import Style exposing (..)
 import Svg exposing (path, polygon, svg)
 import Svg.Attributes exposing (d, fill, points)
@@ -146,9 +147,7 @@ view game =
         , div (class "wrapper" :: wrapperCss)
             [ div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
-                , div textCss [ Html.text (String.fromInt game.secondCounter) ]
-                , div textCss [ Html.text (String.fromFloat game.score) ]
-                , div textCss [ Html.text (String.fromInt game.itemCounter) ]
+                , div textCss [ Html.text (String.fromInt game.score) ]
                 , div textCss [ Html.text "500x500" ]
                 ]
             , div
@@ -190,7 +189,7 @@ view game =
                     (gameChildCss
                         ++ [ id "pacmanArea" ]
                     )
-                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromFloat (game.pPosition.y - pacSettings.ratio / 2) ++ "px"), Html.Attributes.style "left" (String.fromFloat (game.pPosition.x - pacSettings.ratio / 2) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
+                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
                         []
                     ]
                 ]
@@ -198,7 +197,16 @@ view game =
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Leben:" ]
                 , div (textCss ++ [ Html.Attributes.style "text-align" "left" ]) [ Html.text "3" ]
                 , div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Früchte:" ]
-                , div textCss [ Html.text "Kirsche" ]
+                , div textCss
+                    [ img [ src "Assets/img/apple.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                        []
+                    , img [ src "Assets/img/orange.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                        []
+                    , img [ src "Assets/img/strawberry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                        []
+                    , img [ src "Assets/img/cherry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                        []
+                    ]
                 ]
             ]
         ]
@@ -275,7 +283,7 @@ toKey string =
             Types.GameModels.Nothing
 
 
-changeXPosition : Float -> Game -> Point
+changeXPosition : Int -> Game -> Point
 changeXPosition value game =
     let
         oldPosition =
@@ -284,7 +292,7 @@ changeXPosition value game =
     { oldPosition | x = value }
 
 
-changeYPosition : Float -> Game -> Point
+changeYPosition : Int -> Game -> Point
 changeYPosition value game =
     let
         oldPosition =

@@ -47,8 +47,8 @@ textCss =
 gameCss : List (Html.Attribute msg)
 gameCss =
     [ Html.Attributes.style "position" "relative"
-    , Html.Attributes.style "width" (String.fromFloat fieldSettings.width ++ "px")
-    , Html.Attributes.style "height" (String.fromFloat fieldSettings.height ++ "px")
+    , Html.Attributes.style "width" (String.fromInt fieldSettings.width ++ "px")
+    , Html.Attributes.style "height" (String.fromInt fieldSettings.height ++ "px")
     , Html.Attributes.style "margin" "0em auto"
     , Html.Attributes.style "border-left" "10px solid #000"
     , Html.Attributes.style "border-right" "10px solid #000"
@@ -62,8 +62,8 @@ gameChildCss =
     [ Html.Attributes.style "position" "absolute"
     , Html.Attributes.style "top" "0"
     , Html.Attributes.style "left" "0"
-    , Html.Attributes.style "width" (String.fromFloat fieldSettings.width ++ "px")
-    , Html.Attributes.style "height" (String.fromFloat fieldSettings.height ++ "px")
+    , Html.Attributes.style "width" (String.fromInt fieldSettings.width ++ "px")
+    , Html.Attributes.style "height" (String.fromInt fieldSettings.height ++ "px")
     , Html.Attributes.style "overflow" "hidden"
     ]
 
@@ -72,8 +72,8 @@ pacmanSvgCss : List (Html.Attribute msg)
 pacmanSvgCss =
     [ id "pacman"
     , Html.Attributes.style "position" "absolute"
-    , Html.Attributes.style "width" (String.fromFloat pacSettings.ratio ++ "px")
-    , Html.Attributes.style "height" (String.fromFloat pacSettings.ratio ++ "px")
+    , Html.Attributes.style "width" (String.fromInt pacSettings.ratio ++ "px")
+    , Html.Attributes.style "height" (String.fromInt pacSettings.ratio ++ "px")
     ]
 
 

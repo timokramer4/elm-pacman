@@ -127,7 +127,7 @@ createPillSvg _ point =
 createFruit : Bool -> List (Html Msg)
 createFruit available =
     if available then
-        [ image [ xlinkHref "Assets/img/cherry.svg", width (String.fromFloat fruitSettings.ratio), height (String.fromFloat fruitSettings.ratio), x (String.fromFloat (fruitSettings.position.x - fruitSettings.ratio / 2)), y (String.fromFloat (fruitSettings.position.y - fruitSettings.ratio / 2)) ] [] ]
+         [ image [ xlinkHref "Assets/img/cherry.svg", width (String.fromInt fruitSettings.ratio), height (String.fromInt fruitSettings.ratio), x (String.fromInt (fruitSettings.position.x - round (toFloat fruitSettings.ratio / 2))), y (String.fromInt (fruitSettings.position.y - round (toFloat fruitSettings.ratio / 2))) ] [] ]
 
     else
         []

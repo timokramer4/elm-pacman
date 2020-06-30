@@ -52,7 +52,7 @@ fruitSettings =
     { position = { x = 250, y = 280 }
     , ratio = 20
     , xp = 100
-    , itemNumber1 = 70
+    , itemNumber1 = 10
     , itemNumber2 = 170
     }
 

@@ -125,9 +125,10 @@ update msg game =
             ( { game | nextDir = d }, Cmd.none )
 
         Fruit ->
-            if  game.secondCounter == 10 then
+            if game.secondCounter == 10 then
                 ( { game | fruitAvailable = False }, Cmd.none )
-            else      
+
+            else
                 ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
 
 
@@ -147,7 +148,7 @@ view game =
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
                 , div textCss [ Html.text (String.fromInt game.secondCounter) ]
                 , div textCss [ Html.text (String.fromFloat game.score) ]
-                  , div textCss [ Html.text (String.fromInt game.itemCounter) ]
+                , div textCss [ Html.text (String.fromInt game.itemCounter) ]
                 , div textCss [ Html.text "500x500" ]
                 ]
             , div
@@ -221,10 +222,10 @@ subscriptions game =
                 Sub.none
         , if game.fruitAvailable then
             Time.every 1000 (\_ -> Fruit)
+
           else
             Sub.none
-        ]        
-        
+        ]
 
 
 

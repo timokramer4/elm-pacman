@@ -8,7 +8,7 @@ type alias Game =
     , pRotation : Int
     , state : State
     , nextDir : Direction
-    , score : Float
+    , score : Int
     , items : List Point
     , pills : List Point
     , itemCounter : Int

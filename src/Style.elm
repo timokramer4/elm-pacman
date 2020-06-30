@@ -1,0 +1,90 @@
+module Style exposing (gameChildCss, gameCss, headlineCss, pacmanSvgCss, styleContents, textCss, wrapperCss)
+
+import Html exposing (Attribute)
+import Html.Attributes exposing (id, style)
+import Settings exposing (fieldSettings, pacSettings)
+
+
+
+-----------------------
+-- STYLESHEETS (CSS) --
+-----------------------
+
+
+wrapperCss : List (Html.Attribute msg)
+wrapperCss =
+    [ Html.Attributes.style "width" "100%"
+    , Html.Attributes.style "height" "auto"
+    , Html.Attributes.style "position" "absolute"
+    , Html.Attributes.style "top" "50%"
+    , Html.Attributes.style "transform" "translateY(-50%)"
+    ]
+
+
+headlineCss : List (Html.Attribute msg)
+headlineCss =
+    [ Html.Attributes.style "width" "500px"
+    , Html.Attributes.style "height" "auto"
+    , Html.Attributes.style "background-color" "#000"
+    , Html.Attributes.style "border" "10px solid #000"
+    , Html.Attributes.style "color" "#fff"
+    , Html.Attributes.style "margin" "0em auto"
+    , Html.Attributes.style "padding" "0em"
+    , Html.Attributes.style "display" "flex"
+    , Html.Attributes.style "justify-content" "space-between"
+    ]
+
+
+textCss : List (Html.Attribute msg)
+textCss =
+    [ Html.Attributes.style "text-align" "center"
+    , Html.Attributes.style "font-family" "VT323, monospace"
+    , Html.Attributes.style "font-weight" "bold"
+    , Html.Attributes.style "font-size" "1.5em"
+    ]
+
+
+gameCss : List (Html.Attribute msg)
+gameCss =
+    [ Html.Attributes.style "position" "relative"
+    , Html.Attributes.style "width" (String.fromFloat fieldSettings.width ++ "px")
+    , Html.Attributes.style "height" (String.fromFloat fieldSettings.height ++ "px")
+    , Html.Attributes.style "margin" "0em auto"
+    , Html.Attributes.style "border-left" "10px solid #000"
+    , Html.Attributes.style "border-right" "10px solid #000"
+    , Html.Attributes.style "background-color" "#000"
+    , Html.Attributes.style "display" "block"
+    ]
+
+
+gameChildCss : List (Html.Attribute msg)
+gameChildCss =
+    [ Html.Attributes.style "position" "absolute"
+    , Html.Attributes.style "top" "0"
+    , Html.Attributes.style "left" "0"
+    , Html.Attributes.style "width" (String.fromFloat fieldSettings.width ++ "px")
+    , Html.Attributes.style "height" (String.fromFloat fieldSettings.height ++ "px")
+    , Html.Attributes.style "overflow" "hidden"
+    ]
+
+
+pacmanSvgCss : List (Html.Attribute msg)
+pacmanSvgCss =
+    [ id "pacman"
+    , Html.Attributes.style "position" "absolute"
+    , Html.Attributes.style "width" (String.fromFloat pacSettings.ratio ++ "px")
+    , Html.Attributes.style "height" (String.fromFloat pacSettings.ratio ++ "px")
+    ]
+
+
+styleContents : String
+styleContents =
+    """
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+    body {
+        background-color: black;
+    }
+    .headline {
+        font-family: 'VT323', monospace;
+    }
+    """

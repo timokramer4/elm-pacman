@@ -4,321 +4,21 @@ import Array exposing (length)
 import Browser
 import Browser.Events exposing (onKeyDown)
 import Dict exposing (Dict, get, member)
+import Eatable exposing (..)
 import Html exposing (Html, div, img, node, text)
 import Html.Attributes exposing (class, id, src, style)
 import Json.Decode exposing (..)
 import List exposing (..)
 import List.Unique exposing (filterDuplicates)
+import Settings exposing (..)
 import String exposing (length)
+import Style exposing (..)
 import Svg exposing (Svg, circle, path, polygon, rect, svg)
 import Svg.Attributes exposing (cx, cy, d, fill, points, r, x, y)
 import Time exposing (every)
-
-
-
------------------------
--- GLOBAL VARIABLES --
------------------------
-
-
-fieldSettings : { width : Float, height : Float, borderColor : String }
-fieldSettings =
-    { width = 500
-    , height = 500
-    , borderColor = "#3498DB"
-    }
-
-
-pacSettings : { ratio : Float }
-pacSettings =
-    { ratio = 25
-    }
-
-
-movement : Float
-movement =
-    1
-
-
-scoreSettings : { item : Float, pill : Float, fruit : Float }
-scoreSettings =
-    { item = 10
-    , pill = 50
-    , fruit = 50
-    }
-
-
-itemSettings : { fill : String, step : Float, size : Float }
-itemSettings =
-    { fill = "#FFAAA5"
-    , step = 15
-    , size = 5
-    }
-
-
-pillSettings : { fill : String, radius : Float }
-pillSettings =
-    { fill = "#FFAAA5"
-    , radius = 6
-    }
-
-
-pointMesh : Dict Int Point
-pointMesh =
-    Dict.fromList
-        [ ( 1, { x = 25, y = 25 } )
-        , ( 2, { x = 115, y = 25 } )
-        , ( 3, { x = 220, y = 25 } )
-        , ( 4, { x = 280, y = 25 } )
-        , ( 5, { x = 385, y = 25 } )
-        , ( 6, { x = 475, y = 25 } )
-        , ( 7, { x = 25, y = 85 } )
-        , ( 8, { x = 175, y = 85 } )
-        , ( 9, { x = 220, y = 85 } )
-        , ( 10, { x = 280, y = 85 } )
-        , ( 11, { x = 325, y = 85 } )
-        , ( 12, { x = 475, y = 85 } )
-        , ( 13, { x = 25, y = 145 } )
-        , ( 14, { x = 115, y = 145 } )
-        , ( 15, { x = 175, y = 145 } )
-        , ( 16, { x = 220, y = 145 } )
-        , ( 17, { x = 280, y = 145 } )
-        , ( 18, { x = 325, y = 145 } )
-        , ( 19, { x = 385, y = 145 } )
-        , ( 20, { x = 475, y = 145 } )
-        , ( 21, { x = 175, y = 190 } )
-        , ( 22, { x = 220, y = 190 } )
-        , ( 23, { x = 280, y = 190 } )
-        , ( 24, { x = 325, y = 190 } )
-        , ( 25, { x = -5, y = 235 } )
-        , ( 26, { x = 175, y = 235 } )
-        , ( 27, { x = 325, y = 235 } )
-        , ( 28, { x = 505, y = 235 } )
-        , ( 29, { x = 175, y = 280 } )
-        , ( 30, { x = 325, y = 280 } )
-        , ( 31, { x = 25, y = 325 } )
-        , ( 32, { x = 175, y = 325 } )
-        , ( 33, { x = 220, y = 325 } )
-        , ( 34, { x = 280, y = 325 } )
-        , ( 35, { x = 325, y = 325 } )
-        , ( 36, { x = 475, y = 325 } )
-        , ( 37, { x = 25, y = 370 } )
-        , ( 38, { x = 55, y = 370 } )
-        , ( 39, { x = 115, y = 370 } )
-        , ( 40, { x = 175, y = 370 } )
-        , ( 41, { x = 220, y = 370 } )
-        , ( 42, { x = 280, y = 370 } )
-        , ( 43, { x = 325, y = 370 } )
-        , ( 44, { x = 385, y = 370 } )
-        , ( 45, { x = 445, y = 370 } )
-        , ( 46, { x = 475, y = 370 } )
-        , ( 47, { x = 25, y = 430 } )
-        , ( 48, { x = 55, y = 430 } )
-        , ( 49, { x = 115, y = 430 } )
-        , ( 50, { x = 175, y = 430 } )
-        , ( 51, { x = 220, y = 430 } )
-        , ( 52, { x = 280, y = 430 } )
-        , ( 53, { x = 325, y = 430 } )
-        , ( 54, { x = 385, y = 430 } )
-        , ( 55, { x = 445, y = 430 } )
-        , ( 56, { x = 475, y = 430 } )
-        , ( 57, { x = 25, y = 475 } )
-        , ( 58, { x = 220, y = 475 } )
-        , ( 59, { x = 280, y = 475 } )
-        , ( 60, { x = 475, y = 475 } )
-        ]
-
-
-getPoint : Int -> Point
-getPoint i =
-    case get i pointMesh of
-        Just point ->
-            point
-
-        _ ->
-            { x = 0, y = 0 }
-
-
-runMesh : Dict Int Line
-runMesh =
-    Dict.fromList
-        [ ( 1, Line (getPoint 29) (getPoint 30) )
-        , ( 2, Line (getPoint 21) (getPoint 32) )
-        , ( 3, Line (getPoint 21) (getPoint 24) )
-        , ( 4, Line (getPoint 24) (getPoint 35) )
-        , ( 5, Line (getPoint 1) (getPoint 3) )
-        , ( 6, Line (getPoint 1) (getPoint 13) )
-        , ( 7, Line (getPoint 7) (getPoint 12) )
-        , ( 8, Line (getPoint 2) (getPoint 49) )
-        , ( 9, Line (getPoint 3) (getPoint 9) )
-        , ( 10, Line (getPoint 4) (getPoint 10) )
-        , ( 11, Line (getPoint 4) (getPoint 6) )
-        , ( 12, Line (getPoint 5) (getPoint 54) )
-        , ( 13, Line (getPoint 6) (getPoint 20) )
-        , ( 14, Line (getPoint 19) (getPoint 20) )
-        , ( 15, Line (getPoint 11) (getPoint 18) )
-        , ( 16, Line (getPoint 17) (getPoint 18) )
-        , ( 17, Line (getPoint 17) (getPoint 23) )
-        , ( 18, Line (getPoint 8) (getPoint 15) )
-        , ( 19, Line (getPoint 15) (getPoint 16) )
-        , ( 20, Line (getPoint 16) (getPoint 22) )
-        , ( 21, Line (getPoint 25) (getPoint 26) )
-        , ( 22, Line (getPoint 27) (getPoint 28) )
-        , ( 23, Line (getPoint 31) (getPoint 33) )
-        , ( 24, Line (getPoint 34) (getPoint 36) )
-        , ( 25, Line (getPoint 39) (getPoint 44) )
-        , ( 26, Line (getPoint 33) (getPoint 41) )
-        , ( 27, Line (getPoint 34) (getPoint 42) )
-        , ( 28, Line (getPoint 31) (getPoint 37) )
-        , ( 29, Line (getPoint 37) (getPoint 38) )
-        , ( 30, Line (getPoint 38) (getPoint 48) )
-        , ( 31, Line (getPoint 47) (getPoint 49) )
-        , ( 32, Line (getPoint 57) (getPoint 60) )
-        , ( 33, Line (getPoint 40) (getPoint 50) )
-        , ( 34, Line (getPoint 50) (getPoint 51) )
-        , ( 35, Line (getPoint 51) (getPoint 58) )
-        , ( 36, Line (getPoint 57) (getPoint 47) )
-        , ( 37, Line (getPoint 43) (getPoint 53) )
-        , ( 38, Line (getPoint 52) (getPoint 53) )
-        , ( 39, Line (getPoint 52) (getPoint 59) )
-        , ( 40, Line (getPoint 36) (getPoint 46) )
-        , ( 41, Line (getPoint 45) (getPoint 46) )
-        , ( 42, Line (getPoint 45) (getPoint 55) )
-        , ( 43, Line (getPoint 54) (getPoint 56) )
-        , ( 44, Line (getPoint 56) (getPoint 60) )
-        , ( 45, Line (getPoint 13) (getPoint 14) )
-        ]
-
-
-pillsList : List Point
-pillsList =
-    [ { x = 25, y = 115 }
-    , { x = 55, y = 400 }
-    , { x = 385, y = 55 }
-    , { x = 325, y = 430 }
-    ]
-
-
-
-------------
--- MODELS --
-------------
-
-
-type alias Point =
-    { x : Float
-    , y : Float
-    }
-
-
-type alias Line =
-    { start : Point
-    , end : Point
-    }
-
-
-type alias Game =
-    { pPosition : Point
-    , pRotation : Int
-    , state : State
-    , nextDir : Direction
-    , score : Float
-    , eatablePoints : List Point
-    , pills : List Point
-    }
-
-
-type Direction
-    = Up
-    | Down
-    | Left
-    | Right
-    | None
-
-
-
------------------------
--- STYLESHEETS (CSS) --
------------------------
-
-
-wrapperCss : List (Html.Attribute msg)
-wrapperCss =
-    [ Html.Attributes.style "width" "100%"
-    , Html.Attributes.style "height" "auto"
-    , Html.Attributes.style "position" "absolute"
-    , Html.Attributes.style "top" "50%"
-    , Html.Attributes.style "transform" "translateY(-50%)"
-    ]
-
-
-headlineCss : List (Html.Attribute msg)
-headlineCss =
-    [ Html.Attributes.style "width" "500px"
-    , Html.Attributes.style "height" "auto"
-    , Html.Attributes.style "background-color" "#000"
-    , Html.Attributes.style "border" "10px solid #000"
-    , Html.Attributes.style "color" "#fff"
-    , Html.Attributes.style "margin" "0em auto"
-    , Html.Attributes.style "padding" "0em"
-    , Html.Attributes.style "display" "flex"
-    , Html.Attributes.style "justify-content" "space-between"
-    ]
-
-
-textCss : List (Html.Attribute msg)
-textCss =
-    [ Html.Attributes.style "text-align" "center"
-    , Html.Attributes.style "font-family" "VT323, monospace"
-    , Html.Attributes.style "font-weight" "bold"
-    , Html.Attributes.style "font-size" "1.5em"
-    ]
-
-
-gameCss : List (Html.Attribute msg)
-gameCss =
-    [ Html.Attributes.style "position" "relative"
-    , Html.Attributes.style "width" (String.fromFloat fieldSettings.width ++ "px")
-    , Html.Attributes.style "height" (String.fromFloat fieldSettings.height ++ "px")
-    , Html.Attributes.style "margin" "0em auto"
-    , Html.Attributes.style "border-left" "10px solid #000"
-    , Html.Attributes.style "border-right" "10px solid #000"
-    , Html.Attributes.style "background-color" "#000"
-    , Html.Attributes.style "display" "block"
-    ]
-
-
-gameChildCss : List (Html.Attribute msg)
-gameChildCss =
-    [ Html.Attributes.style "position" "absolute"
-    , Html.Attributes.style "top" "0"
-    , Html.Attributes.style "left" "0"
-    , Html.Attributes.style "width" (String.fromFloat fieldSettings.width ++ "px")
-    , Html.Attributes.style "height" (String.fromFloat fieldSettings.height ++ "px")
-    , Html.Attributes.style "overflow" "hidden"
-    ]
-
-
-pacmanSvgCss : List (Html.Attribute msg)
-pacmanSvgCss =
-    [ id "pacman"
-    , Html.Attributes.style "position" "absolute"
-    , Html.Attributes.style "width" (String.fromFloat pacSettings.ratio ++ "px")
-    , Html.Attributes.style "height" (String.fromFloat pacSettings.ratio ++ "px")
-    ]
-
-
-styleContents : String
-styleContents =
-    """
-    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-    body {
-        background-color: black;
-    }
-    .headline {
-        font-family: 'VT323', monospace;
-    }
-    """
+import Types.GameModels exposing (..)
+import Types.Line exposing (Line)
+import Types.Point exposing (Point)
 
 
 
@@ -337,18 +37,6 @@ initialModel =
     , eatablePoints = substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
     , pills = pillsList
     }
-
-
-type Msg
-    = MoveDirection Direction
-    | Nothing
-    | NoMoving
-    | ChangeDirection Direction
-
-
-type State
-    = Running Direction
-    | Stopped Direction
 
 
 
@@ -421,7 +109,7 @@ update msg game =
                 _ ->
                     update NoMoving game
 
-        Nothing ->
+        Types.GameModels.Nothing ->
             case game.state of
                 Running d ->
                     ( { game | state = Stopped d }, Cmd.none )
@@ -568,7 +256,7 @@ toKey string =
             ChangeDirection Right
 
         _ ->
-            Nothing
+            Types.GameModels.Nothing
 
 
 changeXPosition : Float -> Game -> Point
@@ -621,110 +309,6 @@ getMesh mesh pos =
 checkPath : Point -> Line -> Bool -> Bool
 checkPath pos line e =
     (pos.x >= min line.start.x line.end.x && pos.x <= max line.start.x line.end.x && pos.y >= min line.start.y line.end.y && pos.y <= max line.start.y line.end.y) || e
-
-
-createPoints : Line -> List Point -> List Point
-createPoints line pointList =
-    let
-        startPoint : Point
-        startPoint =
-            { x = min line.start.x line.end.x, y = min line.start.y line.end.y }
-
-        endPoint : Point
-        endPoint =
-            { x = max line.start.x line.end.x, y = max line.start.y line.end.y }
-
-        currentPoint : Point
-        currentPoint =
-            moveToWards startPoint endPoint itemSettings.step
-    in
-    if startPoint /= endPoint then
-        startPoint :: createPoints (Line currentPoint endPoint) pointList
-
-    else
-        currentPoint :: pointList
-
-
-moveToWards : Point -> Point -> Float -> Point
-moveToWards from to lenght =
-    { x = from.x + min lenght (to.x - from.x), y = from.y + min lenght (to.y - from.y) }
-
-
-checkEatable : Game -> Game
-checkEatable game =
-    let
-        checkCurrentPoint : List Point -> List Point
-        checkCurrentPoint lp =
-            case lp of
-                [] ->
-                    []
-
-                x :: xs ->
-                    if x == game.pPosition then
-                        checkCurrentPoint xs
-
-                    else
-                        x :: checkCurrentPoint xs
-
-        localListItems : List Point
-        localListItems =
-            checkCurrentPoint game.eatablePoints
-
-        localListPills : List Point
-        localListPills =
-            checkCurrentPoint game.pills
-    in
-    if List.length game.pills == List.length localListPills && List.length game.eatablePoints == List.length localListItems then
-        game
-
-    else if List.length game.pills /= List.length localListPills then
-        { game | pills = localListPills, score = game.score + scoreSettings.pill }
-
-    else
-        { game | eatablePoints = localListItems, score = game.score + scoreSettings.item }
-
-
-pointsToSvg : List Point -> Int -> List (Svg Msg)
-pointsToSvg points mode =
-    -- mode : 1 -> eatable, 2-> pills
-    case mode of
-        1 ->
-            indexedMap createItemSvg points
-
-        2 ->
-            indexedMap createPillSvg points
-
-        _ ->
-            []
-
-
-createItemSvg : Int -> Point -> Svg Msg
-createItemSvg _ point =
-    rect
-        [ x (String.fromFloat (point.x - itemSettings.size / 2))
-        , y (String.fromFloat (point.y - itemSettings.size / 2))
-        , Svg.Attributes.width (String.fromFloat itemSettings.size)
-        , Svg.Attributes.height (String.fromFloat itemSettings.size)
-        , fill itemSettings.fill
-        ]
-        []
-
-
-createPillSvg : Int -> Point -> Svg Msg
-createPillSvg _ point =
-    circle
-        [ cx (String.fromFloat point.x)
-        , cy (String.fromFloat point.y)
-        , r (String.fromFloat pillSettings.radius)
-        , fill pillSettings.fill
-        ]
-        []
-
-
-indexedMap : (Int -> a -> b) -> List a -> List b
-indexedMap func list =
-    (\( v, _ ) -> v) (List.foldl (\x ( ys, l ) -> ( func l x :: ys, l + 1 )) ( [], 0 ) list)
-
 
 
 substractList : List Point -> List Point -> List Point

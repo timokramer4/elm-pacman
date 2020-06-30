@@ -1,8 +1,10 @@
 module Eatable exposing (..)
 
-import Settings exposing (itemSettings, pillSettings, scoreSettings)
-import Svg exposing (Svg, circle, rect)
-import Svg.Attributes exposing (cx, cy, fill, r, x, y)
+import Html exposing (..)
+import Html.Attributes exposing (src)
+import Settings exposing (fruitSettings, itemSettings, pillSettings)
+import Svg exposing (Svg, circle, image, rect)
+import Svg.Attributes exposing (cx, cy, fill, height, r, width, x, xlinkHref, y)
 import Types.GameModels exposing (Game, Msg)
 import Types.Line exposing (Line)
 import Types.Point exposing (Point)
@@ -53,25 +55,27 @@ checkEatable game =
 
         localListItems : List Point
         localListItems =
-            checkCurrentPoint game.eatablePoints
+            checkCurrentPoint game.items
 
         localListPills : List Point
         localListPills =
             checkCurrentPoint game.pills
     in
-    if List.length game.pills == List.length localListPills && List.length game.eatablePoints == List.length localListItems then
+    if List.length game.pills == List.length localListPills && List.length game.items == List.length localListItems then
         game
 
     else if List.length game.pills /= List.length localListPills then
-        { game | pills = localListPills, score = game.score + scoreSettings.pill }
+        { game | pills = localListPills, score = game.score + pillSettings.xp }
 
     else
-        { game | eatablePoints = localListItems, score = game.score + scoreSettings.item }
+        { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1 }
 
 
 pointsToSvg : List Point -> Int -> List (Svg Msg)
 pointsToSvg points mode =
-    -- mode : 1 -> eatable, 2-> pills
+    -- Modes
+    -- 1 -> items
+    -- 2 -> pills
     case mode of
         1 ->
             indexedMap createItemSvg points
@@ -104,6 +108,17 @@ createPillSvg _ point =
         , fill pillSettings.fill
         ]
         []
+
+
+createFruit : Int -> List (Html Msg)
+createFruit counter =
+    -- if counter == 70 || counter == 170 then
+    [ image [ xlinkHref "Assets/img/cherry.svg", width (String.fromFloat fruitSettings.ratio), height (String.fromFloat fruitSettings.ratio), x (String.fromFloat (fruitSettings.position.x - fruitSettings.ratio / 2)), y (String.fromFloat (fruitSettings.position.y - fruitSettings.ratio / 2)) ] [] ]
+
+
+
+-- else
+--     []
 
 
 indexedMap : (Int -> a -> b) -> List a -> List b

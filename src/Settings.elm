@@ -1,4 +1,4 @@
-module Settings exposing (fieldSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh, scoreSettings)
+module Settings exposing (fieldSettings, fruitSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh)
 
 import Dict exposing (Dict, get)
 import Types.Line exposing (Line)
@@ -30,26 +30,28 @@ movement =
     1
 
 
-scoreSettings : { item : Float, pill : Float, fruit : Float }
-scoreSettings =
-    { item = 10
-    , pill = 50
-    , fruit = 50
-    }
-
-
-itemSettings : { fill : String, step : Float, size : Float }
+itemSettings : { fill : String, step : Float, size : Float, xp : Float }
 itemSettings =
     { fill = "#FFAAA5"
     , step = 15
     , size = 5
+    , xp = 10
     }
 
 
-pillSettings : { fill : String, radius : Float }
+pillSettings : { fill : String, radius : Float, xp : Float }
 pillSettings =
     { fill = "#FFAAA5"
     , radius = 6
+    , xp = 50
+    }
+
+
+fruitSettings : { position : Point, ratio : Float, xp : Float }
+fruitSettings =
+    { position = { x = 250, y = 280 }
+    , ratio = 20
+    , xp = 100
     }
 
 

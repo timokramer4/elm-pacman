@@ -9,8 +9,9 @@ type alias Game =
     , state : State
     , nextDir : Direction
     , score : Float
-    , eatablePoints : List Point
+    , items : List Point
     , pills : List Point
+    , itemCounter : Int
     }
 
 

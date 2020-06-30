@@ -32,8 +32,9 @@ initialModel =
     , nextDir = Right
     , pRotation = 0
     , score = 0
-    , eatablePoints = substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
+    , items = substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
     , pills = pillsList
+    , itemCounter = 0
     }
 
 
@@ -145,8 +146,9 @@ view game =
                     (gameChildCss
                         ++ [ id "gameField" ]
                     )
-                    (pointsToSvg game.eatablePoints 1
+                    (pointsToSvg game.items 1
                         ++ pointsToSvg game.pills 2
+                        ++ createFruit game.itemCounter
                         ++ [ path [ fill fieldSettings.borderColor, d "M94,70.7H43.7c-2.8,0-5-2.3-5-5V42.3c0-2.8,2.3-5,5-5H94c2.8,0,5,2.3,5,5v23.3C99,68.4,96.8,70.7,94,70.7z" ] []
                            , path [ fill fieldSettings.borderColor, d "M200.3,70.7h-66c-2.8,0-5-2.3-5-5V42.3c0-2.8,2.2-5,5-5h66c2.8,0,5,2.3,5,5v23.3 C205.3,68.4,203.1,70.7,200.3,70.7z" ] []
                            , path [ fill fieldSettings.borderColor, d "M366.1,71.6h-67.5c-3,0-5.3-2.3-5.3-5V43.2c0-2.8,2.5-5,5.3-5h67.5c3,0,5.3,2.3,5.3,5v23.3 C371.5,69.3,369.1,71.6,366.1,71.6z" ] []

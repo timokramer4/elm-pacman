@@ -1,6 +1,6 @@
 module Style exposing (gameChildCss, gameCss, headlineCss, pacmanSvgCss, styleContents, textCss, wrapperCss)
 
-import Html exposing (Attribute)
+import Html
 import Html.Attributes exposing (id, style)
 import Settings exposing (fieldSettings, pacSettings)
 

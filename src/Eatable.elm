@@ -1,8 +1,8 @@
 module Eatable exposing (..)
 
 import Settings exposing (itemSettings, pillSettings, scoreSettings)
-import Svg exposing (Svg, circle, path, polygon, rect, svg)
-import Svg.Attributes exposing (cx, cy, d, fill, points, r, x, y)
+import Svg exposing (Svg, circle, rect)
+import Svg.Attributes exposing (cx, cy, fill, r, x, y)
 import Types.GameModels exposing (Game, Msg)
 import Types.Line exposing (Line)
 import Types.Point exposing (Point)

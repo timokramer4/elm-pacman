@@ -9,6 +9,7 @@ import Html.Attributes exposing (class, height, id, src, style, width)
 import Json.Decode exposing (..)
 import List exposing (..)
 import List.Unique exposing (filterDuplicates)
+import Movement exposing (..)
 import Settings exposing (..)
 import String exposing (toInt)
 import Style exposing (..)
@@ -16,6 +17,7 @@ import Svg exposing (path, polygon, svg)
 import Svg.Attributes exposing (d, fill, points)
 import Time exposing (every)
 import Types.GameModels exposing (..)
+import Types.Ghoast exposing (..)
 import Types.Line exposing (Line)
 import Types.Point exposing (Point)
 
@@ -38,6 +40,10 @@ initialModel =
     , itemCounter = 0
     , secondCounter = 0
     , fruitAvailable = False
+    , redGhoastPosition = { x = 250, y = 190 }
+    , pinkGhoastPosition = { x = 250, y = 280 }
+    , blueGhoastPosition = { x = 250, y = 280 }
+    , yellowGhoastPosition = { x = 250, y = 280 }
     }
 
 
@@ -56,8 +62,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeXPosition fieldSettings.width game, state = Running d, pRotation = 180 }, Cmd.none )
 
-                    else if checkDir game d || checkDir game game.nextDir then
-                        if checkDir game game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d || checkDir game.pPosition game.nextDir then
+                        if checkDir game.pPosition game.nextDir && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -70,8 +76,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeXPosition 0 game, state = Running d, pRotation = 0 }, Cmd.none )
 
-                    else if checkDir game d || checkDir game game.nextDir then
-                        if checkDir game game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d || checkDir game.pPosition game.nextDir then
+                        if checkDir game.pPosition game.nextDir && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -84,8 +90,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeYPosition fieldSettings.height game, state = Running d, pRotation = -90 }, Cmd.none )
 
-                    else if checkDir game d || checkDir game game.nextDir then
-                        if checkDir game game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d || checkDir game.pPosition game.nextDir then
+                        if checkDir game.pPosition game.nextDir && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -98,8 +104,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeYPosition 0 game, state = Running d, pRotation = 90 }, Cmd.none )
 
-                    else if checkDir game d || checkDir game game.nextDir then
-                        if checkDir game game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d || checkDir game.pPosition game.nextDir then
+                        if checkDir game.pPosition game.nextDir && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -132,8 +138,12 @@ update msg game =
             else
                 ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
 
+        Ghoast ->
+            ( { game | redGhoastPosition = moveGhoast game.redGhoastPosition (getGhoastNextDir game game.redGhoastPosition 0) }, Cmd.none )
 
 
+
+--  ( { game | redGhoastPosition = moveGhoast game.redGhoastPosition (getGhoastNextDir game game.redGhoastPosition 0),  blueGhoastPosition = moveGhoast game.blueGhoastPosition (getGhoastNextDir game game.blueGhoastPosition 0), pinkGhoastPosition = moveGhoast game.pinkGhoastPosition (getGhoastNextDir game game.pinkGhoastPosition 0), yellowGhoastPosition = moveGhoast game.yellowGhoastPosition (getGhoastNextDir game game.yellowGhoastPosition 0) }, Cmd.none )
 ----------
 -- VIEW --
 ----------
@@ -196,7 +206,7 @@ view game =
                     (gameChildCss
                         ++ [ id "ghostArea" ]
                     )
-                    [ img (ghostSvgCss ++ [ src "Assets/img/ghosts/blinky.svg", Html.Attributes.style "top" (String.fromInt (190 - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (250 - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    [ img (ghostSvgCss ++ [ src "Assets/img/ghosts/blinky.svg", Html.Attributes.style "top" (String.fromInt (game.redGhoastPosition.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.redGhoastPosition.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
                     , img (ghostSvgCss ++ [ src "Assets/img/ghosts/pinky.svg", Html.Attributes.style "top" (String.fromInt (235 - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (250 - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
@@ -246,6 +256,7 @@ subscriptions game =
 
           else
             Sub.none
+        , Time.every 20 (\_ -> Ghoast)
         ]
 
 
@@ -312,40 +323,6 @@ changeYPosition value game =
             game.pPosition
     in
     { oldPosition | y = value }
-
-
-outOfBounds : Game -> Bool
-outOfBounds game =
-    game.pPosition.x < 0 || game.pPosition.x > fieldSettings.width || game.pPosition.y < 0 || game.pPosition.y > fieldSettings.height
-
-
-checkDir : Game -> Direction -> Bool
-checkDir game d =
-    case d of
-        Left ->
-            getMesh runMesh { x = game.pPosition.x - movement, y = game.pPosition.y }
-
-        Right ->
-            getMesh runMesh { x = game.pPosition.x + movement, y = game.pPosition.y }
-
-        Up ->
-            getMesh runMesh { x = game.pPosition.x, y = game.pPosition.y - movement }
-
-        Down ->
-            getMesh runMesh { x = game.pPosition.x, y = game.pPosition.y + movement }
-
-        _ ->
-            False
-
-
-getMesh : Dict Int Line -> Point -> Bool
-getMesh mesh pos =
-    List.foldl ((\x -> checkPath x) pos) False (Dict.values mesh)
-
-
-checkPath : Point -> Line -> Bool -> Bool
-checkPath pos line e =
-    (pos.x >= min line.start.x line.end.x && pos.x <= max line.start.x line.end.x && pos.y >= min line.start.y line.end.y && pos.y <= max line.start.y line.end.y) || e
 
 
 substractList : List Point -> List Point -> List Point

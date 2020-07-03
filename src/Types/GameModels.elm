@@ -14,6 +14,10 @@ type alias Game =
     , itemCounter : Int
     , secondCounter : Int
     , fruitAvailable : Bool
+    , redGhoastPosition : Point
+    , pinkGhoastPosition : Point
+    , blueGhoastPosition : Point
+    , yellowGhoastPosition : Point
     }
 
 
@@ -23,6 +27,7 @@ type Msg
     | NoMoving
     | ChangeDirection Direction
     | Fruit
+    | Ghoast
 
 
 type State

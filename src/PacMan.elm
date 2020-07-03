@@ -41,9 +41,9 @@ initialModel =
     , secondCounter = 0
     , fruitAvailable = False
     , redGhoastPosition = { x = 250, y = 190 }
-    , pinkGhoastPosition = { x = 250, y = 280 }
-    , blueGhoastPosition = { x = 250, y = 280 }
-    , yellowGhoastPosition = { x = 250, y = 280 }
+    , pinkGhoastPosition = { x = 250, y = 235 }
+    , blueGhoastPosition = { x = 220, y = 235 }
+    , yellowGhoastPosition = { x = 280, y = 235 }
     }
 
 
@@ -139,7 +139,7 @@ update msg game =
                 ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
 
         Ghoast ->
-            ( { game | redGhoastPosition = moveGhoast game.redGhoastPosition (getGhoastNextDir game game.redGhoastPosition 0) }, Cmd.none )
+            ( { game | redGhoastPosition = moveGhoast game.redGhoastPosition (getGhoastNextDir game.pPosition game.redGhoastPosition 0 game.nextDir) }, Cmd.none )
 
 
 
@@ -208,11 +208,11 @@ view game =
                     )
                     [ img (ghostSvgCss ++ [ src "Assets/img/ghosts/blinky.svg", Html.Attributes.style "top" (String.fromInt (game.redGhoastPosition.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.redGhoastPosition.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/pinky.svg", Html.Attributes.style "top" (String.fromInt (235 - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (250 - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/pinky.svg", Html.Attributes.style "top" (String.fromInt (game.pinkGhoastPosition.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pinkGhoastPosition.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/inky.svg", Html.Attributes.style "top" (String.fromInt (235 - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (220 - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/inky.svg", Html.Attributes.style "top" (String.fromInt (game.blueGhoastPosition.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.blueGhoastPosition.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/clyde.svg", Html.Attributes.style "top" (String.fromInt (235 - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (280 - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/clyde.svg", Html.Attributes.style "top" (String.fromInt (game.yellowGhoastPosition.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.yellowGhoastPosition.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
                     ]
                 ]

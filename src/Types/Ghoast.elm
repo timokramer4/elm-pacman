@@ -25,43 +25,43 @@ moveGhoast point dir =
             point
 
 
-getGhoastNextDir : Game -> Point -> Int -> Direction
-getGhoastNextDir game ghoast multiplicator =
+getGhoastNextDir : Point -> Point -> Int -> Direction -> Direction
+getGhoastNextDir pacMan ghoast multiplicator pacDir =
     let
         xDif =
-            max game.pPosition.x ghoast.x - min game.pPosition.x ghoast.x
+            max pacMan.x ghoast.x - min pacMan.x ghoast.x
 
         yDif =
-            max game.pPosition.y ghoast.y - min game.pPosition.y ghoast.y
+            max pacMan.y ghoast.y - min pacMan.y ghoast.y
 
         moveOptions : { vertical : Direction, horizontal : Direction }
         moveOptions =
             -- pacMan right down
-            if game.pPosition.x > ghoast.x && game.pPosition.y > ghoast.y then
+            if pacMan.x > ghoast.x && pacMan.y > ghoast.y then
                 { vertical = Down
                 , horizontal = Right
                 }
                 -- pacMan right up
 
-            else if game.pPosition.x > ghoast.x && game.pPosition.y < ghoast.y then
+            else if pacMan.x > ghoast.x && pacMan.y < ghoast.y then
                 { vertical = Up
                 , horizontal = Right
                 }
                 -- pacMan left up
 
-            else if game.pPosition.x < ghoast.x && game.pPosition.y < ghoast.y then
+            else if pacMan.x < ghoast.x && pacMan.y < ghoast.y then
                 { vertical = Left
                 , horizontal = Up
                 }
                 -- pacMan left down
 
-            else if game.pPosition.x < ghoast.x && game.pPosition.y > ghoast.y then
+            else if pacMan.x < ghoast.x && pacMan.y > ghoast.y then
                 { vertical = Down
                 , horizontal = Left
                 }
 
-            else if game.pPosition.x == ghoast.x then
-                if game.pPosition.y > ghoast.y then
+            else if pacMan.x == ghoast.x then
+                if pacMan.y > ghoast.y then
                     { vertical = Down
                     , horizontal = None
                     }
@@ -71,8 +71,8 @@ getGhoastNextDir game ghoast multiplicator =
                     , horizontal = None
                     }
 
-            else if game.pPosition.y == ghoast.y then
-                if game.pPosition.x > ghoast.x then
+            else if pacMan.y == ghoast.y then
+                if pacMan.x > ghoast.x then
                     { vertical = None
                     , horizontal = Right
                     }

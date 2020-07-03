@@ -5,11 +5,12 @@ import Browser.Events exposing (onKeyDown)
 import Dict exposing (Dict, member)
 import Eatable exposing (..)
 import Html exposing (Html, div, img, node, text)
-import Html.Attributes exposing (class, id, src, style)
+import Html.Attributes exposing (class, height, id, src, style, width)
 import Json.Decode exposing (..)
 import List exposing (..)
 import List.Unique exposing (filterDuplicates)
 import Settings exposing (..)
+import String exposing (toInt)
 import Style exposing (..)
 import Svg exposing (path, polygon, svg)
 import Svg.Attributes exposing (d, fill, points)
@@ -32,8 +33,11 @@ initialModel =
     , nextDir = Right
     , pRotation = 0
     , score = 0
-    , eatablePoints = substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
+    , items = substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
     , pills = pillsList
+    , itemCounter = 0
+    , secondCounter = 0
+    , fruitAvailable = False
     }
 
 
@@ -121,6 +125,13 @@ update msg game =
         ChangeDirection d ->
             ( { game | nextDir = d }, Cmd.none )
 
+        Fruit ->
+            if game.secondCounter == 10 then
+                ( { game | fruitAvailable = False }, Cmd.none )
+
+            else
+                ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
+
 
 
 ----------
@@ -136,7 +147,7 @@ view game =
         , div (class "wrapper" :: wrapperCss)
             [ div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
-                , div textCss [ Html.text (String.fromFloat game.score) ]
+                , div textCss [ Html.text (String.fromInt game.score) ]
                 , div textCss [ Html.text "500x500" ]
                 ]
             , div
@@ -145,8 +156,9 @@ view game =
                     (gameChildCss
                         ++ [ id "gameField" ]
                     )
-                    (pointsToSvg game.eatablePoints 1
+                    (pointsToSvg game.items 1
                         ++ pointsToSvg game.pills 2
+                        ++ createFruit game.fruitAvailable
                         ++ [ path [ fill fieldSettings.borderColor, d "M94,70.7H43.7c-2.8,0-5-2.3-5-5V42.3c0-2.8,2.3-5,5-5H94c2.8,0,5,2.3,5,5v23.3C99,68.4,96.8,70.7,94,70.7z" ] []
                            , path [ fill fieldSettings.borderColor, d "M200.3,70.7h-66c-2.8,0-5-2.3-5-5V42.3c0-2.8,2.2-5,5-5h66c2.8,0,5,2.3,5,5v23.3 C205.3,68.4,203.1,70.7,200.3,70.7z" ] []
                            , path [ fill fieldSettings.borderColor, d "M366.1,71.6h-67.5c-3,0-5.3-2.3-5.3-5V43.2c0-2.8,2.5-5,5.3-5h67.5c3,0,5.3,2.3,5.3,5v23.3 C371.5,69.3,369.1,71.6,366.1,71.6z" ] []
@@ -177,7 +189,7 @@ view game =
                     (gameChildCss
                         ++ [ id "pacmanArea" ]
                     )
-                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromFloat (game.pPosition.y - pacSettings.ratio / 2) ++ "px"), Html.Attributes.style "left" (String.fromFloat (game.pPosition.x - pacSettings.ratio / 2) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
+                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
                         []
                     ]
                 ]
@@ -185,7 +197,16 @@ view game =
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Leben:" ]
                 , div (textCss ++ [ Html.Attributes.style "text-align" "left" ]) [ Html.text "3" ]
                 , div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Früchte:" ]
-                , div textCss [ Html.text "Kirsche" ]
+                , div textCss
+                    [ img [ src "Assets/img/apple.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                        []
+                    , img [ src "Assets/img/orange.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                        []
+                    , img [ src "Assets/img/strawberry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                        []
+                    , img [ src "Assets/img/cherry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                        []
+                    ]
                 ]
             ]
         ]
@@ -207,6 +228,11 @@ subscriptions game =
 
             _ ->
                 Sub.none
+        , if game.fruitAvailable then
+            Time.every 1000 (\_ -> Fruit)
+
+          else
+            Sub.none
         ]
 
 
@@ -257,7 +283,7 @@ toKey string =
             Types.GameModels.Nothing
 
 
-changeXPosition : Float -> Game -> Point
+changeXPosition : Int -> Game -> Point
 changeXPosition value game =
     let
         oldPosition =
@@ -266,7 +292,7 @@ changeXPosition value game =
     { oldPosition | x = value }
 
 
-changeYPosition : Float -> Game -> Point
+changeYPosition : Int -> Game -> Point
 changeYPosition value game =
     let
         oldPosition =

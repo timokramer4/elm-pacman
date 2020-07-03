@@ -1,4 +1,4 @@
-module Settings exposing (fieldSettings, fruitSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh)
+module Settings exposing (fieldSettings, fruitSettings, ghostSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh)
 
 import Dict exposing (Dict, get)
 import Types.Line exposing (Line)
@@ -21,7 +21,13 @@ fieldSettings =
 
 pacSettings : { ratio : Int }
 pacSettings =
-    { ratio = 25
+    { ratio = 22
+    }
+
+
+ghostSettings : { ratio : Int }
+ghostSettings =
+    { ratio = pacSettings.ratio
     }
 
 

@@ -192,19 +192,32 @@ view game =
                     [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
                         []
                     ]
+                , div
+                    (gameChildCss
+                        ++ [ id "ghostArea" ]
+                    )
+                    [ img (ghostSvgCss ++ [ src "Assets/img/ghosts/blinky.svg", Html.Attributes.style "top" (String.fromInt (190 - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (250 - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                        []
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/pinky.svg", Html.Attributes.style "top" (String.fromInt (235 - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (250 - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                        []
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/inky.svg", Html.Attributes.style "top" (String.fromInt (235 - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (220 - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                        []
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/clyde.svg", Html.Attributes.style "top" (String.fromInt (235 - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (280 - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                        []
+                    ]
                 ]
             , div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Leben:" ]
                 , div (textCss ++ [ Html.Attributes.style "text-align" "left" ]) [ Html.text "3" ]
                 , div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Früchte:" ]
                 , div textCss
-                    [ img [ src "Assets/img/apple.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                    [ img [ src "Assets/img/fruits/apple.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
                         []
-                    , img [ src "Assets/img/orange.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                    , img [ src "Assets/img/fruits/orange.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
                         []
-                    , img [ src "Assets/img/strawberry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                    , img [ src "Assets/img/fruits/strawberry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
                         []
-                    , img [ src "Assets/img/cherry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                    , img [ src "Assets/img/fruits/cherry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
                         []
                     ]
                 ]

@@ -40,13 +40,10 @@ initialModel =
     , itemCounter = 0
     , secondCounter = 0
     , fruitAvailable = False
-    , redGhost = { position = { x = 250, y = 190 }, dir = None, lastDir = None }
-    , pinkGhost = { position = { x = 250, y = 190 }, dir = None, lastDir = None }
-    , blueGhost = { position = { x = 250, y = 190 }, dir = None, lastDir = None }
-    , yellowGhost = { position = { x = 250, y = 190 }, dir = None, lastDir = None }
-    -- , pinkGhost = { position = { x = 250, y = 235 }, dir = None, lastDir = None }
-    -- , blueGhost = { position = { x = 220, y = 235 }, dir = None, lastDir = None }
-    -- , yellowGhost = { position = { x = 280, y = 235 }, dir = None, lastDir = None }
+    , redGhost = { position = { x = 250, y = 190 }, dir = None, active = True }
+    , pinkGhost = { position = { x = 250, y = 235 }, dir = Up, active = False }
+    , blueGhost = { position = { x = 220, y = 235 }, dir = None, active = False }
+    , yellowGhost = { position = { x = 280, y = 235 }, dir = None, active = False }
     }
 
 
@@ -143,17 +140,19 @@ update msg game =
 
         GhostMove ->
             -- all
-            if game.itemCounter > 91 then 
-                 ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), blueGhost = moveGhost game.blueGhost (getGhostNextDir game.pPosition game.blueGhost 0 game.nextDir), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game.pPosition game.yellowGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
-            -- blue
-            else if game.itemCounter > 31 then
-                 ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), blueGhost = moveGhost game.blueGhost (getGhostNextDir game.pPosition game.blueGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
-            -- pink
-            else if  game.itemCounter > 1 then 
-                 ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
-            else 
-                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir) }, Cmd.none )
+            if game.itemCounter > 91 then
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), blueGhost = moveGhost game.blueGhost (getGhostNextDir game.pPosition game.blueGhost 0 game.nextDir), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game.pPosition game.yellowGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
+                -- blue
 
+            else if game.itemCounter > 31 then
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), blueGhost = moveGhost game.blueGhost (getGhostNextDir game.pPosition game.blueGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
+                -- pink
+
+            else if game.itemCounter > 1 then
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
+
+            else
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir) }, Cmd.none )
 
 
 

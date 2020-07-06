@@ -25,9 +25,10 @@ pacSettings =
     }
 
 
-ghostSettings : { ratio : Int }
+ghostSettings : { ratio : Int, startPosition : Point }
 ghostSettings =
     { ratio = pacSettings.ratio
+    , startPosition = { x = 250, y = 190 }
     }
 
 

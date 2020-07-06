@@ -24,7 +24,7 @@ type alias Game =
 type alias Ghost =
     { position : Point
     , dir : Direction
-    , lastDir : Direction
+    , active : Bool
     }
 
 

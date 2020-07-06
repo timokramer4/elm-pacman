@@ -1,4 +1,4 @@
-module Types.Line exposing (Line)
+module Types.Line exposing (Line, LineType(..))
 
 import Types.Point exposing (Point)
 
@@ -6,5 +6,12 @@ import Types.Point exposing (Point)
 type alias Line =
     { start : Point
     , end : Point
-    , noGoGhost : Bool
+    , linetype : LineType
     }
+
+
+type LineType
+    = Pacman
+    | Ghost
+    | GhostStartLine
+    | Both

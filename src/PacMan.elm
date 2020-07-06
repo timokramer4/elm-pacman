@@ -18,6 +18,7 @@ import Svg.Attributes exposing (d, fill, points, stroke, strokeWidth, x1, x2, y1
 import Time exposing (every)
 import Types.GameModels exposing (..)
 import Types.Ghost exposing (..)
+import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
 
 
@@ -61,8 +62,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeXPosition fieldSettings.width game, state = Running d, pRotation = 180 }, Cmd.none )
 
-                    else if checkDir game.pPosition d False || checkDir game.pPosition game.nextDir False then
-                        if checkDir game.pPosition game.nextDir False && game.nextDir /= d then
+                    else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
+                        if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -75,8 +76,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeXPosition 0 game, state = Running d, pRotation = 0 }, Cmd.none )
 
-                    else if checkDir game.pPosition d False || checkDir game.pPosition game.nextDir False then
-                        if checkDir game.pPosition game.nextDir False && game.nextDir /= d then
+                    else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
+                        if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -89,8 +90,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeYPosition fieldSettings.height game, state = Running d, pRotation = -90 }, Cmd.none )
 
-                    else if checkDir game.pPosition d False || checkDir game.pPosition game.nextDir False then
-                        if checkDir game.pPosition game.nextDir False && game.nextDir /= d then
+                    else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
+                        if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -103,8 +104,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeYPosition 0 game, state = Running d, pRotation = 90 }, Cmd.none )
 
-                    else if checkDir game.pPosition d False || checkDir game.pPosition game.nextDir False then
-                        if checkDir game.pPosition game.nextDir False && game.nextDir /= d then
+                    else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
+                        if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else

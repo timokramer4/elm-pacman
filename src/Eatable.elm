@@ -25,11 +25,15 @@ createPoints line pointList =
         currentPoint =
             moveToWards startPoint endPoint itemSettings.step
     in
-    if startPoint /= endPoint then
-        startPoint :: createPoints (Line currentPoint endPoint False) pointList
+    if not line.noGoGhost then
+        if startPoint /= endPoint then
+            startPoint :: createPoints (Line currentPoint endPoint line.noGoGhost) pointList
+
+        else
+            currentPoint :: pointList
 
     else
-        currentPoint :: pointList
+        pointList
 
 
 moveToWards : Point -> Point -> Int -> Point

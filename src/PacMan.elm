@@ -17,8 +17,7 @@ import Svg exposing (line, path, polygon, svg)
 import Svg.Attributes exposing (d, fill, points, stroke, strokeWidth, x1, x2, y1, y2)
 import Time exposing (every)
 import Types.GameModels exposing (..)
-import Types.Ghoast exposing (..)
-import Types.Line exposing (Line)
+import Types.Ghost exposing (..)
 import Types.Point exposing (Point)
 
 
@@ -40,10 +39,10 @@ initialModel =
     , itemCounter = 0
     , secondCounter = 0
     , fruitAvailable = False
-    , redGhoastPosition = { x = 250, y = 190 }
-    , pinkGhoastPosition = { x = 250, y = 235 }
-    , blueGhoastPosition = { x = 220, y = 235 }
-    , yellowGhoastPosition = { x = 280, y = 235 }
+    , redGhost = { position = { x = 250, y = 190 }, dir = None, lastDir = None }
+    , pinkGhost = { position = { x = 250, y = 235 }, dir = None, lastDir = None }
+    , blueGhost = { position = { x = 220, y = 235 }, dir = None, lastDir = None }
+    , yellowGhost = { position = { x = 280, y = 235 }, dir = None, lastDir = None }
     }
 
 
@@ -62,8 +61,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeXPosition fieldSettings.width game, state = Running d, pRotation = 180 }, Cmd.none )
 
-                    else if checkDir game.pPosition d || checkDir game.pPosition game.nextDir then
-                        if checkDir game.pPosition game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d False || checkDir game.pPosition game.nextDir False then
+                        if checkDir game.pPosition game.nextDir False && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -76,8 +75,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeXPosition 0 game, state = Running d, pRotation = 0 }, Cmd.none )
 
-                    else if checkDir game.pPosition d || checkDir game.pPosition game.nextDir then
-                        if checkDir game.pPosition game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d False || checkDir game.pPosition game.nextDir False then
+                        if checkDir game.pPosition game.nextDir False && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -90,8 +89,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeYPosition fieldSettings.height game, state = Running d, pRotation = -90 }, Cmd.none )
 
-                    else if checkDir game.pPosition d || checkDir game.pPosition game.nextDir then
-                        if checkDir game.pPosition game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d False || checkDir game.pPosition game.nextDir False then
+                        if checkDir game.pPosition game.nextDir False && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -104,8 +103,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeYPosition 0 game, state = Running d, pRotation = 90 }, Cmd.none )
 
-                    else if checkDir game.pPosition d || checkDir game.pPosition game.nextDir then
-                        if checkDir game.pPosition game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d False || checkDir game.pPosition game.nextDir False then
+                        if checkDir game.pPosition game.nextDir False && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -138,12 +137,11 @@ update msg game =
             else
                 ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
 
-        Ghoast ->
-            ( { game | redGhoastPosition = moveGhoast game.redGhoastPosition (getGhoastNextDir game.pPosition game.redGhoastPosition 0 game.nextDir) }, Cmd.none )
+        GhostMove ->
+            ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir) }, Cmd.none )
 
 
 
---  ( { game | redGhoastPosition = moveGhoast game.redGhoastPosition (getGhoastNextDir game game.redGhoastPosition 0),  blueGhoastPosition = moveGhoast game.blueGhoastPosition (getGhoastNextDir game game.blueGhoastPosition 0), pinkGhoastPosition = moveGhoast game.pinkGhoastPosition (getGhoastNextDir game game.pinkGhoastPosition 0), yellowGhoastPosition = moveGhoast game.yellowGhoastPosition (getGhoastNextDir game game.yellowGhoastPosition 0) }, Cmd.none )
 ----------
 -- VIEW --
 ----------
@@ -209,13 +207,13 @@ view game =
                     (gameChildCss
                         ++ [ id "ghostArea" ]
                     )
-                    [ img (ghostSvgCss ++ [ src "Assets/img/ghosts/blinky.svg", Html.Attributes.style "top" (String.fromInt (game.redGhoastPosition.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.redGhoastPosition.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    [ img (ghostSvgCss ++ [ src "Assets/img/ghosts/blinky.svg", Html.Attributes.style "top" (String.fromInt (game.redGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.redGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/pinky.svg", Html.Attributes.style "top" (String.fromInt (game.pinkGhoastPosition.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pinkGhoastPosition.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/pinky.svg", Html.Attributes.style "top" (String.fromInt (game.pinkGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pinkGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/inky.svg", Html.Attributes.style "top" (String.fromInt (game.blueGhoastPosition.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.blueGhoastPosition.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/inky.svg", Html.Attributes.style "top" (String.fromInt (game.blueGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.blueGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/clyde.svg", Html.Attributes.style "top" (String.fromInt (game.yellowGhoastPosition.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.yellowGhoastPosition.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/clyde.svg", Html.Attributes.style "top" (String.fromInt (game.yellowGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.yellowGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
                     ]
                 ]
@@ -259,7 +257,7 @@ subscriptions game =
 
           else
             Sub.none
-        , Time.every 20 (\_ -> Ghoast)
+        , Time.every 20 (\_ -> GhostMove)
         ]
 
 

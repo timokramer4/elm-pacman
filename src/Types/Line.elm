@@ -6,4 +6,5 @@ import Types.Point exposing (Point)
 type alias Line =
     { start : Point
     , end : Point
+    , noGoGhost : Bool
     }

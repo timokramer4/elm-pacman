@@ -26,7 +26,7 @@ createPoints line pointList =
             moveToWards startPoint endPoint itemSettings.step
     in
     if startPoint /= endPoint then
-        startPoint :: createPoints (Line currentPoint endPoint) pointList
+        startPoint :: createPoints (Line currentPoint endPoint False) pointList
 
     else
         currentPoint :: pointList

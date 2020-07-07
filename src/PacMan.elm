@@ -9,14 +9,16 @@ import Html.Attributes exposing (class, height, id, src, style, width)
 import Json.Decode exposing (..)
 import List exposing (..)
 import List.Unique exposing (filterDuplicates)
+import Movement exposing (..)
 import Settings exposing (..)
 import String exposing (toInt)
 import Style exposing (..)
-import Svg exposing (path, polygon, svg)
-import Svg.Attributes exposing (d, fill, points)
+import Svg exposing (line, path, polygon, svg)
+import Svg.Attributes exposing (d, fill, points, stroke, strokeWidth, x1, x2, y1, y2)
 import Time exposing (every)
 import Types.GameModels exposing (..)
-import Types.Line exposing (Line)
+import Types.Ghost exposing (..)
+import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
 
 
@@ -38,6 +40,10 @@ initialModel =
     , itemCounter = 0
     , secondCounter = 0
     , fruitAvailable = False
+    , redGhost = { position = { x = 250, y = 190 }, dir = None, active = True }
+    , pinkGhost = { position = { x = 250, y = 235 }, dir = Up, active = False }
+    , blueGhost = { position = { x = 220, y = 235 }, dir = None, active = False }
+    , yellowGhost = { position = { x = 280, y = 235 }, dir = None, active = False }
     }
 
 
@@ -56,8 +62,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeXPosition fieldSettings.width game, state = Running d, pRotation = 180 }, Cmd.none )
 
-                    else if checkDir game d || checkDir game game.nextDir then
-                        if checkDir game game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
+                        if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -70,8 +76,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeXPosition 0 game, state = Running d, pRotation = 0 }, Cmd.none )
 
-                    else if checkDir game d || checkDir game game.nextDir then
-                        if checkDir game game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
+                        if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -84,8 +90,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeYPosition fieldSettings.height game, state = Running d, pRotation = -90 }, Cmd.none )
 
-                    else if checkDir game d || checkDir game game.nextDir then
-                        if checkDir game game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
+                        if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -98,8 +104,8 @@ update msg game =
                     if outOfBounds game then
                         ( { game | pPosition = changeYPosition 0 game, state = Running d, pRotation = 90 }, Cmd.none )
 
-                    else if checkDir game d || checkDir game game.nextDir then
-                        if checkDir game game.nextDir && game.nextDir /= d then
+                    else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
+                        if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
                             ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
 
                         else
@@ -131,6 +137,22 @@ update msg game =
 
             else
                 ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
+
+        GhostMove ->
+            -- all
+            if game.itemCounter > 91 then
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), blueGhost = moveGhost game.blueGhost (getGhostNextDir game.pPosition game.blueGhost 0 game.nextDir), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game.pPosition game.yellowGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
+                -- blue
+
+            else if game.itemCounter > 31 then
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), blueGhost = moveGhost game.blueGhost (getGhostNextDir game.pPosition game.blueGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
+                -- pink
+
+            else if game.itemCounter > 1 then
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
+
+            else
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir) }, Cmd.none )
 
 
 
@@ -179,6 +201,9 @@ view game =
                            , path [ fill fieldSettings.borderColor, d "M298.9,443.7h35.5c2.7,0,4.9-2.2,4.9-5v-52.3c0-2.8,2.3-5,4.9-5H366c2.7,0,4.9,2.3,4.9,5v52.3 c0,2.8,2.2,5,4.9,5h81.5c2.7,0,4.9,2.2,4.9,5v8.3c0,2.8-2.3,5-4.9,5H298.9c-2.7,0-4.9-2.3-4.9-5v-8.3 C294,445.9,296.3,443.7,298.9,443.7z" ] []
                            , path [ fill fieldSettings.borderColor, d "M304.3,383.3H195.7c-2.8,0-5,2.3-5,5V411c0,2.8,2.3,5,5,5H229c2.8,0,5,3.2,5,6v35.3c0,2.8,2.3,5,5,5h21.3 c2.8,0,5-2.3,5-5V422c0-2.8,2.2-6,5-6h34c2.8,0,5-2.3,5-5v-22.7C309.3,385.6,307.1,383.3,304.3,383.3z" ] []
 
+                           -- Prison barrier
+                           , line [ x1 "234.5", y1 "205.5", x2 "263.5", y2 "205.5", stroke "#FFBA00", strokeWidth "2px" ] []
+
                            -- Outer lines and inner cave
                            , path [ fill fieldSettings.borderColor, d "M403.7,211.2v-43.8c0-2.9,2.2-5.1,5-5.1h84.9c1.5,0,2.7-1.2,2.7-2.7V7.9c0-1.5-1.2-2.7-2.7-2.7H6.8 c-1.5,0-2.7,1.2-2.7,2.7v152.2c0,1.5,1.2,2.7,2.7,2.7h82.8c2.8,0,5,2.2,5,5.1v41.8c0,2.9-2.2,6.1-5,6.1H0v5.5h97.3 c1.5,0,2.7-1.2,2.7-2.7v-58.3c0-1.5-1.2-2.7-2.7-2.7H16.5c-2.8,0-5-2.2-5-5.1V15.9c0-2.9,2.2-5.1,5-5.1h211c2.8,0,5,2.2,5,5.1v51 c0,2.9,2.2,5.1,5,5.1H261c2.8,0,5-2.2,5-5.1v-51c0-2.9,2.2-5.1,5-5.1h212.9c2.8,0,5,2.2,5,5.1v136c0,2.9-2.2,5.1-5,5.1H401 c-1.5,0-2.7,1.2-2.7,2.7v59.1c0,0.1,0,0.1,0,0.2c0,0.1,0,0.1,0,0.2c0,1.5,1.2,2.7,2.7,2.7h99v-5.5h-91.3 C405.9,216.3,403.7,214.1,403.7,211.2z" ] []
                            , polygon [ fill fieldSettings.borderColor, points "306.9,203.5 263.5,203.5 263.5,208.3 306.9,208.3 306.9,261.9 192.4,261.9 192.4,208.3 234.5,208.3 234.5,203.5 192.4,203.5 188.4,203.5 188.4,208.3 188.4,261.9 188.4,266.7 192.4,266.7 306.9,266.7 311,266.7 311,261.9 311,208.3 311,203.5" ] []
@@ -192,19 +217,32 @@ view game =
                     [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
                         []
                     ]
+                , div
+                    (gameChildCss
+                        ++ [ id "ghostArea" ]
+                    )
+                    [ img (ghostSvgCss ++ [ src "Assets/img/ghosts/blinky.svg", Html.Attributes.style "top" (String.fromInt (game.redGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.redGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                        []
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/pinky.svg", Html.Attributes.style "top" (String.fromInt (game.pinkGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pinkGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                        []
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/inky.svg", Html.Attributes.style "top" (String.fromInt (game.blueGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.blueGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                        []
+                    , img (ghostSvgCss ++ [ src "Assets/img/ghosts/clyde.svg", Html.Attributes.style "top" (String.fromInt (game.yellowGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.yellowGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                        []
+                    ]
                 ]
             , div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Leben:" ]
                 , div (textCss ++ [ Html.Attributes.style "text-align" "left" ]) [ Html.text "3" ]
                 , div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Früchte:" ]
                 , div textCss
-                    [ img [ src "Assets/img/apple.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                    [ img [ src "Assets/img/fruits/apple.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
                         []
-                    , img [ src "Assets/img/orange.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                    , img [ src "Assets/img/fruits/orange.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
                         []
-                    , img [ src "Assets/img/strawberry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                    , img [ src "Assets/img/fruits/strawberry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
                         []
-                    , img [ src "Assets/img/cherry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
+                    , img [ src "Assets/img/fruits/cherry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
                         []
                     ]
                 ]
@@ -233,6 +271,7 @@ subscriptions game =
 
           else
             Sub.none
+        , Time.every 20 (\_ -> GhostMove)
         ]
 
 
@@ -299,40 +338,6 @@ changeYPosition value game =
             game.pPosition
     in
     { oldPosition | y = value }
-
-
-outOfBounds : Game -> Bool
-outOfBounds game =
-    game.pPosition.x < 0 || game.pPosition.x > fieldSettings.width || game.pPosition.y < 0 || game.pPosition.y > fieldSettings.height
-
-
-checkDir : Game -> Direction -> Bool
-checkDir game d =
-    case d of
-        Left ->
-            getMesh runMesh { x = game.pPosition.x - movement, y = game.pPosition.y }
-
-        Right ->
-            getMesh runMesh { x = game.pPosition.x + movement, y = game.pPosition.y }
-
-        Up ->
-            getMesh runMesh { x = game.pPosition.x, y = game.pPosition.y - movement }
-
-        Down ->
-            getMesh runMesh { x = game.pPosition.x, y = game.pPosition.y + movement }
-
-        _ ->
-            False
-
-
-getMesh : Dict Int Line -> Point -> Bool
-getMesh mesh pos =
-    List.foldl ((\x -> checkPath x) pos) False (Dict.values mesh)
-
-
-checkPath : Point -> Line -> Bool -> Bool
-checkPath pos line e =
-    (pos.x >= min line.start.x line.end.x && pos.x <= max line.start.x line.end.x && pos.y >= min line.start.y line.end.y && pos.y <= max line.start.y line.end.y) || e
 
 
 substractList : List Point -> List Point -> List Point

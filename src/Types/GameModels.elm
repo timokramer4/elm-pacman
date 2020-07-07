@@ -1,4 +1,4 @@
-module Types.GameModels exposing (Direction(..), Game, Msg(..), State(..))
+module Types.GameModels exposing (Direction(..), Game, Ghost, Msg(..), State(..))
 
 import Types.Point exposing (Point)
 
@@ -14,6 +14,17 @@ type alias Game =
     , itemCounter : Int
     , secondCounter : Int
     , fruitAvailable : Bool
+    , redGhost : Ghost
+    , pinkGhost : Ghost
+    , blueGhost : Ghost
+    , yellowGhost : Ghost
+    }
+
+
+type alias Ghost =
+    { position : Point
+    , dir : Direction
+    , active : Bool
     }
 
 
@@ -23,6 +34,7 @@ type Msg
     | NoMoving
     | ChangeDirection Direction
     | Fruit
+    | GhostMove
 
 
 type State

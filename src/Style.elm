@@ -1,8 +1,8 @@
-module Style exposing (gameChildCss, gameCss, headlineCss, pacmanSvgCss, styleContents, textCss, wrapperCss)
+module Style exposing (gameChildCss, gameCss, ghostSvgCss, headlineCss, pacmanSvgCss, styleContents, textCss, wrapperCss)
 
 import Html
 import Html.Attributes exposing (id, style)
-import Settings exposing (fieldSettings, pacSettings)
+import Settings exposing (fieldSettings, ghostSettings, pacSettings)
 
 
 
@@ -74,6 +74,15 @@ pacmanSvgCss =
     , Html.Attributes.style "position" "absolute"
     , Html.Attributes.style "width" (String.fromInt pacSettings.ratio ++ "px")
     , Html.Attributes.style "height" (String.fromInt pacSettings.ratio ++ "px")
+    ]
+
+
+ghostSvgCss : List (Html.Attribute msg)
+ghostSvgCss =
+    [ id "ghost"
+    , Html.Attributes.style "position" "absolute"
+    , Html.Attributes.style "width" (String.fromInt ghostSettings.ratio ++ "px")
+    , Html.Attributes.style "height" (String.fromInt ghostSettings.ratio ++ "px")
     ]
 
 

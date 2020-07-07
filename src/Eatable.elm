@@ -6,7 +6,7 @@ import Settings exposing (fruitSettings, itemSettings, pillSettings)
 import Svg exposing (Svg, circle, image, rect)
 import Svg.Attributes exposing (cx, cy, fill, height, r, width, x, xlinkHref, y)
 import Types.GameModels exposing (Game, Msg)
-import Types.Line exposing (Line)
+import Types.Line exposing (Line, LineType(..))
 import Types.Point exposing (Point)
 
 
@@ -25,11 +25,15 @@ createPoints line pointList =
         currentPoint =
             moveToWards startPoint endPoint itemSettings.step
     in
-    if startPoint /= endPoint then
-        startPoint :: createPoints (Line currentPoint endPoint) pointList
+    if line.linetype == Both then
+        if startPoint /= endPoint then
+            startPoint :: createPoints (Line currentPoint endPoint line.linetype) pointList
+
+        else
+            currentPoint :: pointList
 
     else
-        currentPoint :: pointList
+        pointList
 
 
 moveToWards : Point -> Point -> Int -> Point
@@ -127,7 +131,7 @@ createPillSvg _ point =
 createFruit : Bool -> List (Html Msg)
 createFruit available =
     if available then
-         [ image [ xlinkHref "Assets/img/cherry.svg", width (String.fromInt fruitSettings.ratio), height (String.fromInt fruitSettings.ratio), x (String.fromInt (fruitSettings.position.x - round (toFloat fruitSettings.ratio / 2))), y (String.fromInt (fruitSettings.position.y - round (toFloat fruitSettings.ratio / 2))) ] [] ]
+        [ image [ xlinkHref "Assets/img/fruits/cherry.svg", width (String.fromInt fruitSettings.ratio), height (String.fromInt fruitSettings.ratio), x (String.fromInt (fruitSettings.position.x - round (toFloat fruitSettings.ratio / 2))), y (String.fromInt (fruitSettings.position.y - round (toFloat fruitSettings.ratio / 2))) ] [] ]
 
     else
         []

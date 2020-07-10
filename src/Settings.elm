@@ -1,4 +1,4 @@
-module Settings exposing (fieldSettings, fruitSettings, ghostSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh)
+module Settings exposing (fieldSettings, fruitSettings, getPoint, ghostSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh)
 
 import Dict exposing (Dict, get)
 import Types.Line exposing (Line, LineType(..))

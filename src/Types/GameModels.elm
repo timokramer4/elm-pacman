@@ -1,4 +1,4 @@
-module Types.GameModels exposing (Direction(..), Game, Ghost, Msg(..), State(..))
+module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), Msg(..), State(..))
 
 import Types.Point exposing (Point)
 
@@ -6,6 +6,7 @@ import Types.Point exposing (Point)
 type alias Game =
     { pPosition : Point
     , pRotation : Int
+    , lifes : Int
     , state : State
     , nextDir : Direction
     , score : Int
@@ -22,7 +23,8 @@ type alias Game =
 
 
 type alias Ghost =
-    { position : Point
+    { ghostColor : GhostColors
+    , position : Point
     , dir : Direction
     , active : Bool
     , offset : Int
@@ -50,3 +52,9 @@ type Direction
     | Right
     | None
 
+
+type GhostColors
+    = Red
+    | Pink
+    | Blue
+    | Yellow

@@ -13,8 +13,8 @@ import Movement exposing (..)
 import Settings exposing (..)
 import String exposing (toInt)
 import Style exposing (..)
-import Svg exposing (line, path, polygon, svg)
-import Svg.Attributes exposing (d, fill, points, stroke, strokeWidth, x1, x2, y1, y2)
+import Svg exposing (line, path, polygon, svg, circle)
+import Svg.Attributes exposing (d, fill, points, stroke, strokeWidth, x1, x2, y1, y2, cx, cy, r)
 import Time exposing (every)
 import Types.GameModels exposing (..)
 import Types.Ghost exposing (..)
@@ -40,10 +40,10 @@ initialModel =
     , itemCounter = 0
     , secondCounter = 0
     , fruitAvailable = False
-    , redGhost = { position = { x = 250, y = 190 }, dir = None, active = True }
-    , pinkGhost = { position = { x = 250, y = 235 }, dir = Up, active = False }
-    , blueGhost = { position = { x = 220, y = 235 }, dir = None, active = False }
-    , yellowGhost = { position = { x = 280, y = 235 }, dir = None, active = False }
+    , redGhost = { position = { x = 250, y = 190 }, dir = None, active = True, offset = 0 }
+    , pinkGhost = { position = { x = 250, y = 235 }, dir = Up, active = False, offset = 4 }
+    , blueGhost = { position = { x = 220, y = 235 }, dir = Right, active = False, offset = 0 }
+    , yellowGhost = { position = { x = 280, y = 235 }, dir = Left, active = False, offset = 0 }
     }
 
 
@@ -141,18 +141,18 @@ update msg game =
         GhostMove ->
             -- all
             if game.itemCounter > 91 then
-                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), blueGhost = moveGhost game.blueGhost (getGhostNextDir game.pPosition game.blueGhost 0 game.nextDir), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game.pPosition game.yellowGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost ), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost ), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost ), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost ) }, Cmd.none )
                 -- blue
 
             else if game.itemCounter > 31 then
-                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), blueGhost = moveGhost game.blueGhost (getGhostNextDir game.pPosition game.blueGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost ), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost ), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost ) }, Cmd.none )
                 -- pink
 
             else if game.itemCounter > 1 then
-                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game.pPosition game.pinkGhost 0 game.nextDir) }, Cmd.none )
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost ), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost ) }, Cmd.none )
 
             else
-                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game.pPosition game.redGhost 0 game.nextDir) }, Cmd.none )
+                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost ) }, Cmd.none )
 
 
 
@@ -208,7 +208,7 @@ view game =
                            , path [ fill fieldSettings.borderColor, d "M403.7,211.2v-43.8c0-2.9,2.2-5.1,5-5.1h84.9c1.5,0,2.7-1.2,2.7-2.7V7.9c0-1.5-1.2-2.7-2.7-2.7H6.8 c-1.5,0-2.7,1.2-2.7,2.7v152.2c0,1.5,1.2,2.7,2.7,2.7h82.8c2.8,0,5,2.2,5,5.1v41.8c0,2.9-2.2,6.1-5,6.1H0v5.5h97.3 c1.5,0,2.7-1.2,2.7-2.7v-58.3c0-1.5-1.2-2.7-2.7-2.7H16.5c-2.8,0-5-2.2-5-5.1V15.9c0-2.9,2.2-5.1,5-5.1h211c2.8,0,5,2.2,5,5.1v51 c0,2.9,2.2,5.1,5,5.1H261c2.8,0,5-2.2,5-5.1v-51c0-2.9,2.2-5.1,5-5.1h212.9c2.8,0,5,2.2,5,5.1v136c0,2.9-2.2,5.1-5,5.1H401 c-1.5,0-2.7,1.2-2.7,2.7v59.1c0,0.1,0,0.1,0,0.2c0,0.1,0,0.1,0,0.2c0,1.5,1.2,2.7,2.7,2.7h99v-5.5h-91.3 C405.9,216.3,403.7,214.1,403.7,211.2z" ] []
                            , polygon [ fill fieldSettings.borderColor, points "306.9,203.5 263.5,203.5 263.5,208.3 306.9,208.3 306.9,261.9 192.4,261.9 192.4,208.3 234.5,208.3 234.5,203.5 192.4,203.5 188.4,203.5 188.4,208.3 188.4,261.9 188.4,266.7 192.4,266.7 306.9,266.7 311,266.7 311,261.9 311,208.3 311,203.5" ] []
                            , path [ fill fieldSettings.borderColor, d "M406.4,254.4H500V249h-99.5c-1.2,0-2.2,1.2-2.2,2.7l0,0l0,0v56.3c0,1.5,1.2,2.7,2.7,2.7h85.4 c1.5,0,2.7,1.2,2.7,2.7v65.9c0,2.9-2.2,5.1-5,5.1h-19.9c-2.8,0-5,2.2-5,5.1v20.8c0,2.9,2.2,5.1,5,5.1h19.9c2.8,0,5,2.2,5,5.1v66.4 c0,1.5-1.2,2.7-2.7,2.7H14.1c-1.5,0-2.7-1.2-2.7-2.7v-66.5c0-2.9,2.2-4.1,5-4.1h20.1c2.8,0,5-2.2,5-5.1v-21.8c0-2.9-2.2-5.1-5-5.1 H16.4c-2.8,0-5-2.2-5-5.1V314c0-1.5,1.2-2.7,2.7-2.7h83.2c0.1,0,0.2,0,0.3,0c0.1,0,0.2,0,0.3,0c1.5,0,2.7-1.2,2.7-2.7v-57 c0-1.5-1.2-2.7-2.7-2.7H0v5.5h92.6c1.5,0,2.7,1.2,2.7,2.7v46c0,1.5-1.2,2.7-2.7,2.7H6.7c-1.5,0-2.7,1.2-2.7,2.7v183.9 c0,1.5,1.2,2.7,2.7,2.7h487.1c1.5,0,2.7-1.2,2.7-2.7V308c0-1.5-1.2-2.7-2.7-2.7h-87.4c-1.5,0-2.7-1.2-2.7-2.7V257 C403.7,255.6,404.9,254.4,406.4,254.4z" ] []
-                           ]
+                        ] 
                     )
                 , div
                     (gameChildCss

@@ -1,8 +1,10 @@
 module Types.Ghost exposing (..)
 
+import Arithmetic exposing (..)
+import Html.Attributes exposing (target)
 import Movement exposing (checkDir)
-import Settings exposing (ghostSettings, movement)
-import Types.GameModels exposing (Direction(..), Ghost)
+import Settings exposing (ghostSettings, movement, pacSettings)
+import Types.GameModels exposing (Direction(..), Game, Ghost, State(..))
 import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
 
@@ -10,125 +12,174 @@ import Types.Point exposing (Point)
 moveGhost : Ghost -> Direction -> Ghost
 moveGhost ghost dir =
     let
+        ghostNextPos =
+            case dir of
+                Left ->
+                    { x = ghost.position.x - movement, y = ghost.position.y }
+
+                Right ->
+                    { x = ghost.position.x + movement, y = ghost.position.y }
+
+                Up ->
+                    { x = ghost.position.x, y = ghost.position.y - movement }
+
+                Down ->
+                    { x = ghost.position.x, y = ghost.position.y + movement }
+
+                _ ->
+                    ghost.position
+
         activeState =
             if not ghost.active then
-                not ghost.active && ghost.position == ghostSettings.startPosition
+                not ghost.active && ghostNextPos == ghostSettings.startPosition
 
             else
                 ghost.active
     in
-    case dir of
-        Left ->
-            { position = { x = ghost.position.x - movement, y = ghost.position.y }, dir = Left, active = activeState }
-
-        Right ->
-            { position = { x = ghost.position.x + movement, y = ghost.position.y }, dir = Right, active = activeState }
-
-        Up ->
-            { position = { x = ghost.position.x, y = ghost.position.y - movement }, dir = Up, active = activeState }
-
-        Down ->
-            { position = { x = ghost.position.x, y = ghost.position.y + movement }, dir = Down, active = activeState }
-
-        _ ->
-            ghost
+    { position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset }
 
 
-getGhostNextDir : Point -> Ghost -> Int -> Direction -> Direction
-getGhostNextDir pacMan ghost multiplicator pacDir =
+getGhostNextDir : Game -> Ghost -> Direction
+getGhostNextDir game ghost =
     let
-        xDif =
-            max pacMan.x ghost.position.x - min pacMan.x ghost.position.x
-
-        yDif =
-            max pacMan.y ghost.position.y - min pacMan.y ghost.position.y
-
         currentType =
             if not ghost.active then
                 GhostStartLine
 
             else
                 Types.Line.Ghost
-
-        targetPos =
-            if not ghost.active then
-                ghostSettings.startPosition
-
-            else
-                pacMan
-
-        moveOptions : { vertical : Direction, horizontal : Direction, cVertical : Direction, cHorizontal : Direction }
-        moveOptions =
-            -- targetPos right down
-            if targetPos.x > ghost.position.x && targetPos.y > ghost.position.y then
-                { vertical = Down
-                , horizontal = Right
-                , cVertical = Up
-                , cHorizontal = Left
-                }
-                -- targetPos right up
-
-            else if targetPos.x > ghost.position.x && targetPos.y < ghost.position.y then
-                { vertical = Up
-                , horizontal = Right
-                , cVertical = Down
-                , cHorizontal = Left
-                }
-                -- targetPos left up
-
-            else if targetPos.x < ghost.position.x && targetPos.y < ghost.position.y then
-                { vertical = Up
-                , horizontal = Left
-                , cVertical = Down
-                , cHorizontal = Right
-                }
-                -- targetPos left down
-
-            else if targetPos.x < ghost.position.x && targetPos.y > ghost.position.y then
-                { vertical = Down
-                , horizontal = Left
-                , cVertical = Up
-                , cHorizontal = Right
-                }
-
-            else if targetPos.x == ghost.position.x then
-                if targetPos.y > ghost.position.y then
-                    { vertical = Down
-                    , horizontal = None
-                    , cVertical = Up
-                    , cHorizontal = None
-                    }
+    in
+    -- check if cross availeble
+    if ghost.dir == None || ((ghost.dir == Left || ghost.dir == Right) && (checkDir ghost.position Up currentType || checkDir ghost.position Down currentType)) || ((ghost.dir == Up || ghost.dir == Down) && (checkDir ghost.position Left currentType || checkDir ghost.position Right currentType)) then
+        let
+            targetPos =
+                if not ghost.active then
+                    ghostSettings.startPosition
 
                 else
-                    { vertical = Up
-                    , horizontal = None
-                    , cVertical = Down
-                    , cHorizontal = None
-                    }
+                    case game.state of
+                        Running dir ->
+                            case dir of
+                                Left ->
+                                    { x = game.pPosition.x - ghost.offset * pacSettings.ratio, y = game.pPosition.y }
 
-            else if targetPos.y == ghost.position.y then
-                if targetPos.x > ghost.position.x then
-                    { vertical = None
+                                Right ->
+                                    { x = game.pPosition.x + ghost.offset * pacSettings.ratio, y = game.pPosition.y }
+
+                                Down ->
+                                    { x = game.pPosition.x, y = game.pPosition.y + ghost.offset * pacSettings.ratio }
+
+                                Up ->
+                                    { x = game.pPosition.x, y = game.pPosition.y - ghost.offset * pacSettings.ratio }
+
+                                _ ->
+                                    game.pPosition
+
+                        _ ->
+                            game.pPosition
+
+            xDif =
+                max targetPos.x ghost.position.x - min targetPos.x ghost.position.x
+
+            yDif =
+                max targetPos.y ghost.position.y - min targetPos.y ghost.position.y
+
+            -- save neares crosses
+            nextHorizontalCross =
+                if getVectorLength (checkNextCross ghost.position Left) targetPos > getVectorLength (checkNextCross ghost.position Right) targetPos then
+                    Left
+
+                else
+                    Right
+
+            nextVerticalCross =
+                if getVectorLength (checkNextCross ghost.position Up) targetPos > getVectorLength (checkNextCross ghost.position Down) targetPos then
+                    Up
+
+                else
+                    Down
+
+            moveOptions : { vertical : Direction, horizontal : Direction, cVertical : Direction, cHorizontal : Direction }
+            moveOptions =
+                -- targetPos right down
+                if targetPos.x > ghost.position.x && targetPos.y > ghost.position.y then
+                    { vertical = Down
                     , horizontal = Right
-                    , cVertical = None
+                    , cVertical = Up
                     , cHorizontal = Left
                     }
+                    -- targetPos right up
 
-                else
-                    { vertical = None
+                else if targetPos.x > ghost.position.x && targetPos.y < ghost.position.y then
+                    { vertical = Up
+                    , horizontal = Right
+                    , cVertical = Down
+                    , cHorizontal = Left
+                    }
+                    -- targetPos left up
+
+                else if targetPos.x < ghost.position.x && targetPos.y < ghost.position.y then
+                    { vertical = Up
                     , horizontal = Left
-                    , cVertical = None
+                    , cVertical = Down
+                    , cHorizontal = Right
+                    }
+                    -- targetPos left down
+
+                else if targetPos.x < ghost.position.x && targetPos.y > ghost.position.y then
+                    { vertical = Down
+                    , horizontal = Left
+                    , cVertical = Up
                     , cHorizontal = Right
                     }
 
-            else
-                { vertical = None
-                , horizontal = None
-                , cVertical = None
-                , cHorizontal = None
-                }
-    in
-    if ghost.dir == None || ((ghost.dir == Left || ghost.dir == Right) && (checkDir ghost.position Up currentType || checkDir ghost.position Down currentType)) || ((ghost.dir == Up || ghost.dir == Down) && (checkDir ghost.position Left currentType || checkDir ghost.position Right currentType)) then
+                else if targetPos == ghost.position then
+                    { vertical = None
+                    , horizontal = None
+                    , cVertical = None
+                    , cHorizontal = None
+                    }
+
+                else if targetPos.x == ghost.position.x then
+                    if targetPos.y > ghost.position.y then
+                        { vertical = Down
+                        , horizontal = nextHorizontalCross
+                        , cVertical = Up
+                        , cHorizontal = None
+                        }
+
+                    else
+                        { vertical = Up
+                        , horizontal = nextHorizontalCross
+                        , cVertical = Down
+                        , cHorizontal = None
+                        }
+
+                else if targetPos.y == ghost.position.y then
+                    if targetPos.x > ghost.position.x then
+                        { vertical = nextVerticalCross
+                        , horizontal = Right
+                        , cVertical = None
+                        , cHorizontal = Left
+                        }
+
+                    else
+                        { vertical = nextVerticalCross
+                        , horizontal = Left
+                        , cVertical = None
+                        , cHorizontal = Right
+                        }
+
+                else
+                    { vertical = None
+                    , horizontal = None
+                    , cVertical = None
+                    , cHorizontal = None
+                    }
+        in
+        -- if ghost.position == targetPos && ghost.active then
+        --     None
+        -- else
         if (checkDir ghost.position moveOptions.horizontal currentType && ghost.dir /= moveOptions.cHorizontal) && (checkDir ghost.position moveOptions.vertical currentType && ghost.dir /= moveOptions.cVertical) then
             if xDif > yDif then
                 moveOptions.horizontal
@@ -142,20 +193,60 @@ getGhostNextDir pacMan ghost multiplicator pacDir =
         else if checkDir ghost.position moveOptions.vertical currentType && ghost.dir /= moveOptions.cVertical then
             moveOptions.vertical
 
-        else if moveOptions.horizontal /= Left && ghost.dir /= Right && checkDir ghost.position Left currentType then
-            Left
+        else if (checkDir ghost.position moveOptions.cHorizontal currentType && ghost.dir /= moveOptions.horizontal) && (checkDir ghost.position moveOptions.cVertical currentType && ghost.dir /= moveOptions.vertical) then
+            let
+                horizontalNextCross =
+                    checkNextCross ghost.position moveOptions.cHorizontal
 
-        else if moveOptions.horizontal /= Right && ghost.dir /= Left && checkDir ghost.position Right currentType then
-            Right
+                verticalNextCross =
+                    checkNextCross ghost.position moveOptions.cVertical
+            in
+            if getVectorLength verticalNextCross targetPos < getVectorLength horizontalNextCross targetPos then
+                moveOptions.cVertical
 
-        else if moveOptions.vertical /= Up && ghost.dir /= Down && checkDir ghost.position Up currentType then
-            Up
+            else
+                moveOptions.cHorizontal
 
-        else if moveOptions.vertical /= Down && ghost.dir /= Up && checkDir ghost.position Down currentType then
-            Down
+        else if checkDir ghost.position moveOptions.cHorizontal currentType && ghost.dir /= moveOptions.horizontal then
+            moveOptions.cHorizontal
+
+        else if checkDir ghost.position moveOptions.cVertical currentType && ghost.dir /= moveOptions.vertical then
+            moveOptions.cVertical
 
         else
             None
 
     else
         ghost.dir
+
+
+checkNextCross : Point -> Direction -> Point
+checkNextCross pos dir =
+    if checkDir pos dir Types.Line.Ghost && (not (checkDir pos Right Types.Line.Ghost) && not (checkDir pos Up Types.Line.Ghost) && not (checkDir pos Down Types.Line.Ghost)) || (not (checkDir pos Left Types.Line.Ghost) && not (checkDir pos Right Types.Line.Ghost) && not (checkDir pos Down Types.Line.Ghost)) || (not (checkDir pos Left Types.Line.Ghost) && not (checkDir pos Up Types.Line.Ghost) && not (checkDir pos Down Types.Line.Ghost)) || (not (checkDir pos Left Types.Line.Ghost) && not (checkDir pos Right Types.Line.Ghost) && not (checkDir pos Up Types.Line.Ghost)) then
+        case dir of
+            Left ->
+                checkNextCross { x = pos.x + movement, y = pos.y } dir
+
+            Right ->
+                checkNextCross { x = pos.x - movement, y = pos.y } dir
+
+            Down ->
+                checkNextCross { x = pos.x, y = pos.y + movement } dir
+
+            Up ->
+                checkNextCross { x = pos.x, y = pos.y - movement } dir
+
+            _ ->
+                pos
+
+    else
+        pos
+
+
+getVectorLength : Point -> Point -> Int
+getVectorLength p1 p2 =
+    let
+        dv =
+            { x = p1.x - p2.x, y = p1.y - p2.y }
+    in
+    intSquareRoot (dv.x * dv.x + dv.y * dv.y)

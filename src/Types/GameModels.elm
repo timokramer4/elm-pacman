@@ -25,6 +25,7 @@ type alias Ghost =
     { position : Point
     , dir : Direction
     , active : Bool
+    , offset : Int
     }
 
 
@@ -48,3 +49,4 @@ type Direction
     | Left
     | Right
     | None
+

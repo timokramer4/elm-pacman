@@ -6815,10 +6815,8 @@ var $author$project$Types$GameModels$None = {$: 'None'};
 var $author$project$Types$GameModels$Pink = {$: 'Pink'};
 var $author$project$Types$GameModels$Red = {$: 'Red'};
 var $author$project$Types$GameModels$Right = {$: 'Right'};
-var $author$project$Types$GameModels$Running = function (a) {
-	return {$: 'Running', a: a};
-};
 var $author$project$Types$GameModels$Up = {$: 'Up'};
+var $author$project$Types$GameModels$Waiting = {$: 'Waiting'};
 var $author$project$Types$GameModels$Yellow = {$: 'Yellow'};
 var $author$project$Types$Line$Both = {$: 'Both'};
 var $author$project$Types$Line$Line = F3(
@@ -6903,6 +6901,18 @@ var $Chadtech$unique_list$List$Unique$toList = function (_v0) {
 	return list;
 };
 var $Chadtech$unique_list$List$Unique$filterDuplicates = A2($elm$core$Basics$composeR, $Chadtech$unique_list$List$Unique$fromList, $Chadtech$unique_list$List$Unique$toList);
+var $author$project$Settings$gameMessages = {gameOver: 'GAME OVER!', noText: '', ready: 'READY!'};
+var $author$project$Settings$pacSettings = {
+	ratio: 22,
+	startPosition: {x: 247, y: 370}
+};
+var $author$project$Settings$ghostSettings = {
+	blueStartPos: {x: 220, y: 235},
+	pinkStartPos: {x: 250, y: 235},
+	ratio: $author$project$Settings$pacSettings.ratio,
+	startPosition: {x: 250, y: 190},
+	yellowStartPos: {x: 280, y: 235}
+};
 var $author$project$Settings$pillsList = _List_fromArray(
 	[
 		{x: 25, y: 115},
@@ -7494,14 +7504,9 @@ var $elm$core$Dict$values = function (dict) {
 		dict);
 };
 var $author$project$PacMan$initialModel = {
-	blueGhost: {
-		active: false,
-		dir: $author$project$Types$GameModels$None,
-		ghostColor: $author$project$Types$GameModels$Blue,
-		offset: 2,
-		position: {x: 220, y: 235}
-	},
+	blueGhost: {active: false, dir: $author$project$Types$GameModels$None, ghostColor: $author$project$Types$GameModels$Blue, offset: 2, position: $author$project$Settings$ghostSettings.blueStartPos},
 	fruitAvailable: false,
+	fruitSecondCounter: 0,
 	itemCounter: 0,
 	items: A2(
 		$author$project$PacMan$substractList,
@@ -7513,35 +7518,19 @@ var $author$project$PacMan$initialModel = {
 				_List_Nil,
 				$elm$core$Dict$values($author$project$Settings$runMesh)))),
 	lifes: 3,
+	message: $author$project$Settings$gameMessages.ready,
 	nextDir: $author$project$Types$GameModels$Right,
 	pPosition: {x: 250, y: 280},
 	pRotation: 0,
+	pillActive: false,
+	pillSecondCounter: 0,
 	pills: $author$project$Settings$pillsList,
-	pinkGhost: {
-		active: false,
-		dir: $author$project$Types$GameModels$Up,
-		ghostColor: $author$project$Types$GameModels$Pink,
-		offset: 4,
-		position: {x: 250, y: 235}
-	},
-	redGhost: {
-		active: true,
-		dir: $author$project$Types$GameModels$None,
-		ghostColor: $author$project$Types$GameModels$Red,
-		offset: 0,
-		position: {x: 250, y: 190}
-	},
+	pinkGhost: {active: false, dir: $author$project$Types$GameModels$Up, ghostColor: $author$project$Types$GameModels$Pink, offset: 4, position: $author$project$Settings$ghostSettings.pinkStartPos},
+	redGhost: {active: true, dir: $author$project$Types$GameModels$None, ghostColor: $author$project$Types$GameModels$Red, offset: 0, position: $author$project$Settings$ghostSettings.startPosition},
 	score: 0,
-	secondCounter: 0,
 	sound: $author$project$Types$GameModels$LoadingModel,
-	state: $author$project$Types$GameModels$Running($author$project$Types$GameModels$Right),
-	yellowGhost: {
-		active: false,
-		dir: $author$project$Types$GameModels$None,
-		ghostColor: $author$project$Types$GameModels$Yellow,
-		offset: 0,
-		position: {x: 280, y: 235}
-	}
+	state: $author$project$Types$GameModels$Waiting,
+	yellowGhost: {active: false, dir: $author$project$Types$GameModels$None, ghostColor: $author$project$Types$GameModels$Yellow, offset: 0, position: $author$project$Settings$ghostSettings.yellowStartPos}
 };
 var $MartinSStewart$elm_audio$Audio$AudioLoadRequest = function (a) {
 	return {$: 'AudioLoadRequest', a: a};
@@ -7605,6 +7594,8 @@ var $author$project$Types$GameModels$GhostMove = {$: 'GhostMove'};
 var $author$project$Types$GameModels$MoveDirection = function (a) {
 	return {$: 'MoveDirection', a: a};
 };
+var $author$project$Types$GameModels$Pill = {$: 'Pill'};
+var $author$project$Types$GameModels$ResetGame = {$: 'ResetGame'};
 var $elm$time$Time$Every = F2(
 	function (a, b) {
 		return {$: 'Every', a: a, b: b};
@@ -8053,28 +8044,42 @@ var $author$project$PacMan$subscriptions = function (game) {
 				$elm$browser$Browser$Events$onKeyDown($author$project$PacMan$keyDecoder),
 				function () {
 				var _v0 = game.state;
-				if (_v0.$ === 'Running') {
-					var d = _v0.a;
-					return A2(
-						$elm$time$Time$every,
-						20,
-						function (_v1) {
-							return $author$project$Types$GameModels$MoveDirection(d);
-						});
-				} else {
-					return $elm$core$Platform$Sub$none;
+				switch (_v0.$) {
+					case 'Running':
+						var d = _v0.a;
+						return A2(
+							$elm$time$Time$every,
+							20,
+							function (_v1) {
+								return $author$project$Types$GameModels$MoveDirection(d);
+							});
+					case 'Waiting':
+						return A2(
+							$elm$time$Time$every,
+							20,
+							function (_v2) {
+								return $author$project$Types$GameModels$ResetGame;
+							});
+					default:
+						return $elm$core$Platform$Sub$none;
 				}
 			}(),
 				game.fruitAvailable ? A2(
 				$elm$time$Time$every,
 				1000,
-				function (_v2) {
+				function (_v3) {
 					return $author$project$Types$GameModels$Fruit;
+				}) : $elm$core$Platform$Sub$none,
+				game.pillActive ? A2(
+				$elm$time$Time$every,
+				1000,
+				function (_v4) {
+					return $author$project$Types$GameModels$Pill;
 				}) : $elm$core$Platform$Sub$none,
 				A2(
 				$elm$time$Time$every,
 				20,
-				function (_v3) {
+				function (_v5) {
 					return $author$project$Types$GameModels$GhostMove;
 				})
 			]));
@@ -8087,13 +8092,60 @@ var $author$project$Types$GameModels$LoadFailedModel = {$: 'LoadFailedModel'};
 var $author$project$Types$GameModels$LoadedModel = function (a) {
 	return {$: 'LoadedModel', a: a};
 };
+var $andrewMacmurray$elm_delay$Delay$Millisecond = {$: 'Millisecond'};
 var $author$project$Types$GameModels$NoMoving = {$: 'NoMoving'};
 var $author$project$Types$GameModels$Playing = function (a) {
 	return {$: 'Playing', a: a};
 };
+var $author$project$Types$GameModels$Running = function (a) {
+	return {$: 'Running', a: a};
+};
+var $author$project$Types$GameModels$StartGame = {$: 'StartGame'};
 var $author$project$Types$GameModels$Stopped = function (a) {
 	return {$: 'Stopped', a: a};
 };
+var $andrewMacmurray$elm_delay$Delay$Duration = F2(
+	function (a, b) {
+		return {$: 'Duration', a: a, b: b};
+	});
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $elm$core$Process$sleep = _Process_sleep;
+var $andrewMacmurray$elm_delay$Delay$after_ = F2(
+	function (time, msg) {
+		return A2(
+			$elm$core$Task$perform,
+			$elm$core$Basics$always(msg),
+			$elm$core$Process$sleep(time));
+	});
+var $andrewMacmurray$elm_delay$Delay$Minute = {$: 'Minute'};
+var $andrewMacmurray$elm_delay$Delay$Second = {$: 'Second'};
+var $andrewMacmurray$elm_delay$Delay$toMillis = function (_v0) {
+	var t = _v0.a;
+	var u = _v0.b;
+	switch (u.$) {
+		case 'Millisecond':
+			return t;
+		case 'Second':
+			return 1000 * t;
+		case 'Minute':
+			return $andrewMacmurray$elm_delay$Delay$toMillis(
+				A2($andrewMacmurray$elm_delay$Delay$Duration, 60 * t, $andrewMacmurray$elm_delay$Delay$Second));
+		default:
+			return $andrewMacmurray$elm_delay$Delay$toMillis(
+				A2($andrewMacmurray$elm_delay$Delay$Duration, 60 * t, $andrewMacmurray$elm_delay$Delay$Minute));
+	}
+};
+var $andrewMacmurray$elm_delay$Delay$after = F3(
+	function (time, unit, msg) {
+		return A2(
+			$andrewMacmurray$elm_delay$Delay$after_,
+			$andrewMacmurray$elm_delay$Delay$toMillis(
+				A2($andrewMacmurray$elm_delay$Delay$Duration, time, unit)),
+			msg);
+	});
 var $author$project$PacMan$changeXPosition = F2(
 	function (value, game) {
 		var oldPosition = game.pPosition;
@@ -8209,9 +8261,9 @@ var $author$project$Eatable$checkEatable = function (game) {
 		$elm$core$List$length(game.pills),
 		$elm$core$List$length(localListPills))) ? ((_Utils_eq(game.pPosition, $author$project$Settings$fruitSettings.position) && game.fruitAvailable) ? _Utils_update(
 		game,
-		{fruitAvailable: false, pills: localListPills, score: (game.score + $author$project$Settings$fruitSettings.xp) + $author$project$Settings$pillSettings.xp}) : _Utils_update(
+		{fruitAvailable: false, pillActive: true, pills: localListPills, score: (game.score + $author$project$Settings$fruitSettings.xp) + $author$project$Settings$pillSettings.xp}) : _Utils_update(
 		game,
-		{pills: localListPills, score: game.score + $author$project$Settings$pillSettings.xp})) : ((_Utils_eq(game.pPosition, $author$project$Settings$fruitSettings.position) && game.fruitAvailable) ? _Utils_update(
+		{pillActive: true, pills: localListPills, score: game.score + $author$project$Settings$pillSettings.xp})) : ((_Utils_eq(game.pPosition, $author$project$Settings$fruitSettings.position) && game.fruitAvailable) ? _Utils_update(
 		game,
 		{fruitAvailable: false, items: localListItems, score: (game.score + $author$project$Settings$fruitSettings.xp) + $author$project$Settings$itemSettings.xp}) : ((_Utils_eq(game.itemCounter, $author$project$Settings$fruitSettings.itemNumber1) || _Utils_eq(game.itemCounter, $author$project$Settings$fruitSettings.itemNumber2)) ? _Utils_update(
 		game,
@@ -8219,6 +8271,18 @@ var $author$project$Eatable$checkEatable = function (game) {
 		game,
 		{itemCounter: game.itemCounter + 1, items: localListItems, score: game.score + $author$project$Settings$itemSettings.xp}))));
 };
+var $author$project$Types$Ghost$checkGhoastEatingPacMan = F2(
+	function (pacPos, ghostPos) {
+		return (!_Utils_eq(pacPos, ghostPos)) && ((!_Utils_eq(
+			{x: pacPos.x + 1, y: pacPos.y},
+			ghostPos)) && ((!_Utils_eq(
+			{x: pacPos.x - 1, y: pacPos.y},
+			ghostPos)) && ((!_Utils_eq(
+			{x: pacPos.x, y: pacPos.y + 1},
+			ghostPos)) && (!_Utils_eq(
+			{x: pacPos.x, y: pacPos.y - 1},
+			ghostPos)))));
+	});
 var $MartinSStewart$elm_audio$Audio$AudioCmdGroup = function (a) {
 	return {$: 'AudioCmdGroup', a: a};
 };
@@ -8278,11 +8342,6 @@ var $author$project$Types$Ghost$getNextCross = F2(
 			}
 		}
 	});
-var $author$project$Settings$pacSettings = {ratio: 22};
-var $author$project$Settings$ghostSettings = {
-	ratio: $author$project$Settings$pacSettings.ratio,
-	startPosition: {x: 250, y: 190}
-};
 var $author$project$Types$Ghost$getGhostNextDir = F2(
 	function (game, ghost) {
 		var currentType = (!ghost.active) ? $author$project$Types$Line$GhostStartLine : $author$project$Types$Line$Ghost;
@@ -8387,6 +8446,10 @@ var $author$project$Types$Ghost$getGhostNextDir = F2(
 			return ghost.dir;
 		}
 	});
+var $author$project$Types$Ghost$moveGhoastToPosition = F2(
+	function (ghost, target) {
+		return {active: false, dir: $author$project$Types$GameModels$Up, ghostColor: ghost.ghostColor, offset: ghost.offset, position: target};
+	});
 var $author$project$Types$Ghost$moveGhost = F2(
 	function (ghost, dir) {
 		var ghostNextPos = function () {
@@ -8408,6 +8471,29 @@ var $author$project$Types$Ghost$moveGhost = F2(
 	});
 var $author$project$Movement$outOfBounds = function (game) {
 	return (game.pPosition.x < 0) || ((_Utils_cmp(game.pPosition.x, $author$project$Settings$fieldSettings.width) > 0) || ((game.pPosition.y < 0) || (_Utils_cmp(game.pPosition.y, $author$project$Settings$fieldSettings.height) > 0)));
+};
+var $author$project$PacMan$resetGame = function (game) {
+	return {
+		blueGhost: {active: false, dir: $author$project$Types$GameModels$None, ghostColor: $author$project$Types$GameModels$Blue, offset: 2, position: $author$project$Settings$ghostSettings.blueStartPos},
+		fruitAvailable: false,
+		fruitSecondCounter: 0,
+		itemCounter: game.itemCounter,
+		items: game.items,
+		lifes: game.lifes,
+		message: $author$project$Settings$gameMessages.ready,
+		nextDir: $author$project$Types$GameModels$Right,
+		pPosition: $author$project$Settings$pacSettings.startPosition,
+		pRotation: 0,
+		pillActive: false,
+		pillSecondCounter: 0,
+		pills: game.pills,
+		pinkGhost: {active: false, dir: $author$project$Types$GameModels$Up, ghostColor: $author$project$Types$GameModels$Pink, offset: 4, position: $author$project$Settings$ghostSettings.pinkStartPos},
+		redGhost: {active: true, dir: $author$project$Types$GameModels$None, ghostColor: $author$project$Types$GameModels$Red, offset: 0, position: $author$project$Settings$ghostSettings.startPosition},
+		score: game.score,
+		sound: $author$project$Types$GameModels$LoadingModel,
+		state: $author$project$Types$GameModels$Stopped($author$project$Types$GameModels$None),
+		yellowGhost: {active: false, dir: $author$project$Types$GameModels$None, ghostColor: $author$project$Types$GameModels$Yellow, offset: 0, position: $author$project$Settings$ghostSettings.yellowStartPos}
+	};
 };
 var $author$project$PacMan$update = F2(
 	function (msg, game) {
@@ -8590,26 +8676,29 @@ var $author$project$PacMan$update = F2(
 					}
 				case 'Nothing':
 					var _v2 = game.state;
-					if (_v2.$ === 'Running') {
-						var d = _v2.a;
-						return _Utils_Tuple3(
-							_Utils_update(
-								game,
-								{
-									state: $author$project$Types$GameModels$Stopped(d)
-								}),
-							$elm$core$Platform$Cmd$none,
-							$MartinSStewart$elm_audio$Audio$cmdNone);
-					} else {
-						var d = _v2.a;
-						return _Utils_Tuple3(
-							_Utils_update(
-								game,
-								{
-									state: $author$project$Types$GameModels$Running(d)
-								}),
-							$elm$core$Platform$Cmd$none,
-							$MartinSStewart$elm_audio$Audio$cmdNone);
+					switch (_v2.$) {
+						case 'Running':
+							var d = _v2.a;
+							return _Utils_Tuple3(
+								_Utils_update(
+									game,
+									{
+										state: $author$project$Types$GameModels$Stopped(d)
+									}),
+								$elm$core$Platform$Cmd$none,
+								$MartinSStewart$elm_audio$Audio$cmdNone);
+						case 'Stopped':
+							var d = _v2.a;
+							return _Utils_Tuple3(
+								_Utils_update(
+									game,
+									{
+										state: $author$project$Types$GameModels$Running(d)
+									}),
+								$elm$core$Platform$Cmd$none,
+								$MartinSStewart$elm_audio$Audio$cmdNone);
+						default:
+							return _Utils_Tuple3(game, $elm$core$Platform$Cmd$none, $MartinSStewart$elm_audio$Audio$cmdNone);
 					}
 				case 'NoMoving':
 					return _Utils_Tuple3(game, $elm$core$Platform$Cmd$none, $MartinSStewart$elm_audio$Audio$cmdNone);
@@ -8622,7 +8711,7 @@ var $author$project$PacMan$update = F2(
 						$elm$core$Platform$Cmd$none,
 						$MartinSStewart$elm_audio$Audio$cmdNone);
 				case 'Fruit':
-					return (game.secondCounter === 10) ? _Utils_Tuple3(
+					return (game.fruitSecondCounter === 10) ? _Utils_Tuple3(
 						_Utils_update(
 							game,
 							{fruitAvailable: false}),
@@ -8630,11 +8719,25 @@ var $author$project$PacMan$update = F2(
 						$MartinSStewart$elm_audio$Audio$cmdNone) : _Utils_Tuple3(
 						_Utils_update(
 							game,
-							{secondCounter: game.secondCounter + 1}),
+							{fruitSecondCounter: game.fruitSecondCounter + 1}),
+						$elm$core$Platform$Cmd$none,
+						$MartinSStewart$elm_audio$Audio$cmdNone);
+				case 'Pill':
+					return (game.pillSecondCounter === 10) ? _Utils_Tuple3(
+						_Utils_update(
+							game,
+							{pillActive: false}),
+						$elm$core$Platform$Cmd$none,
+						$MartinSStewart$elm_audio$Audio$cmdNone) : _Utils_Tuple3(
+						_Utils_update(
+							game,
+							{message: 'Pille aktiv', pillSecondCounter: game.pillSecondCounter + 1}),
 						$elm$core$Platform$Cmd$none,
 						$MartinSStewart$elm_audio$Audio$cmdNone);
 				case 'GhostMove':
-					if ((!_Utils_eq(game.pPosition, game.redGhost.position)) && ((!_Utils_eq(game.pPosition, game.pinkGhost.position)) && ((!_Utils_eq(game.pPosition, game.blueGhost.position)) && (!_Utils_eq(game.pPosition, game.yellowGhost.position))))) {
+					if (A2($author$project$Types$Ghost$checkGhoastEatingPacMan, game.pPosition, game.redGhost.position) && (A2($author$project$Types$Ghost$checkGhoastEatingPacMan, game.pPosition, game.blueGhost.position) && (A2($author$project$Types$Ghost$checkGhoastEatingPacMan, game.pPosition, game.yellowGhost.position) && (A2($author$project$Types$Ghost$checkGhoastEatingPacMan, game.pPosition, game.pinkGhost.position) && (!_Utils_eq(
+						game.state,
+						$author$project$Types$GameModels$Stopped($author$project$Types$GameModels$None))))))) {
 						return (game.itemCounter > 91) ? _Utils_Tuple3(
 							_Utils_update(
 								game,
@@ -8701,30 +8804,103 @@ var $author$project$PacMan$update = F2(
 							$elm$core$Platform$Cmd$none,
 							$MartinSStewart$elm_audio$Audio$cmdNone)));
 					} else {
-						var _v3 = game.state;
-						if (_v3.$ === 'Running') {
-							var d = _v3.a;
-							return _Utils_Tuple3(
-								_Utils_update(
-									game,
-									{
-										lifes: game.lifes - 1,
-										state: $author$project$Types$GameModels$Stopped(d)
-									}),
-								$elm$core$Platform$Cmd$none,
-								$MartinSStewart$elm_audio$Audio$cmdNone);
+						if (!game.pillActive) {
+							var _v3 = game.state;
+							if (_v3.$ === 'Running') {
+								var d = _v3.a;
+								return (!game.lifes) ? _Utils_Tuple3(
+									_Utils_update(
+										game,
+										{
+											message: $author$project$Settings$gameMessages.gameOver,
+											state: $author$project$Types$GameModels$Stopped(d)
+										}),
+									$elm$core$Platform$Cmd$none,
+									$MartinSStewart$elm_audio$Audio$cmdNone) : _Utils_Tuple3(
+									_Utils_update(
+										game,
+										{
+											lifes: game.lifes - 1,
+											state: $author$project$Types$GameModels$Stopped(d)
+										}),
+									A3($andrewMacmurray$elm_delay$Delay$after, 3000, $andrewMacmurray$elm_delay$Delay$Millisecond, $author$project$Types$GameModels$ResetGame),
+									$MartinSStewart$elm_audio$Audio$cmdNone);
+							} else {
+								return _Utils_Tuple3(game, $elm$core$Platform$Cmd$none, $MartinSStewart$elm_audio$Audio$cmdNone);
+							}
 						} else {
-							return _Utils_Tuple3(game, $elm$core$Platform$Cmd$none, $MartinSStewart$elm_audio$Audio$cmdNone);
+							if (!A2($author$project$Types$Ghost$checkGhoastEatingPacMan, game.pPosition, game.redGhost.position)) {
+								return _Utils_Tuple3(
+									_Utils_update(
+										game,
+										{
+											message: 'Roter gefressen',
+											redGhost: A2($author$project$Types$Ghost$moveGhoastToPosition, game.redGhost, $author$project$Settings$ghostSettings.pinkStartPos)
+										}),
+									$elm$core$Platform$Cmd$none,
+									$MartinSStewart$elm_audio$Audio$cmdNone);
+							} else {
+								if (!A2($author$project$Types$Ghost$checkGhoastEatingPacMan, game.pPosition, game.blueGhost.position)) {
+									return _Utils_Tuple3(
+										_Utils_update(
+											game,
+											{
+												blueGhost: A2($author$project$Types$Ghost$moveGhoastToPosition, game.blueGhost, $author$project$Settings$ghostSettings.pinkStartPos),
+												message: 'Blauer gefressen'
+											}),
+										$elm$core$Platform$Cmd$none,
+										$MartinSStewart$elm_audio$Audio$cmdNone);
+								} else {
+									if (!A2($author$project$Types$Ghost$checkGhoastEatingPacMan, game.pPosition, game.yellowGhost.position)) {
+										return _Utils_Tuple3(
+											_Utils_update(
+												game,
+												{
+													message: 'Gelder gefressen',
+													yellowGhost: A2($author$project$Types$Ghost$moveGhoastToPosition, game.yellowGhost, $author$project$Settings$ghostSettings.pinkStartPos)
+												}),
+											$elm$core$Platform$Cmd$none,
+											$MartinSStewart$elm_audio$Audio$cmdNone);
+									} else {
+										if (!A2($author$project$Types$Ghost$checkGhoastEatingPacMan, game.pPosition, game.pinkGhost.position)) {
+											return _Utils_Tuple3(
+												_Utils_update(
+													game,
+													{
+														message: 'Pinker gefressen',
+														pinkGhost: A2($author$project$Types$Ghost$moveGhoastToPosition, game.pinkGhost, $author$project$Settings$ghostSettings.pinkStartPos)
+													}),
+												$elm$core$Platform$Cmd$none,
+												$MartinSStewart$elm_audio$Audio$cmdNone);
+										} else {
+											return _Utils_Tuple3(game, $elm$core$Platform$Cmd$none, $MartinSStewart$elm_audio$Audio$cmdNone);
+										}
+									}
+								}
+							}
 						}
 					}
+				case 'ResetGame':
+					return _Utils_Tuple3(
+						$author$project$PacMan$resetGame(game),
+						A3($andrewMacmurray$elm_delay$Delay$after, 3000, $andrewMacmurray$elm_delay$Delay$Millisecond, $author$project$Types$GameModels$StartGame),
+						$MartinSStewart$elm_audio$Audio$cmdNone);
+				case 'StartGame':
+					return _Utils_Tuple3(
+						_Utils_update(
+							game,
+							{
+								message: $author$project$Settings$gameMessages.noText,
+								state: $author$project$Types$GameModels$Running($author$project$Types$GameModels$Right)
+							}),
+						$elm$core$Platform$Cmd$none,
+						$MartinSStewart$elm_audio$Audio$cmdNone);
 				case 'SoundLoaded':
 					var x = msg.a;
 					if (x.$ === 'Ok') {
 						var sound = x.a;
 						return _Utils_Tuple3(
-							_Utils_update(
-								game,
-								{lifes: 3333}),
+							game,
 							A2(
 								$elm$core$Task$perform,
 								$author$project$Types$GameModels$GetCurrentTime(sound),
@@ -8734,7 +8910,7 @@ var $author$project$PacMan$update = F2(
 						return _Utils_Tuple3(
 							_Utils_update(
 								game,
-								{lifes: 4444, sound: $author$project$Types$GameModels$LoadFailedModel}),
+								{sound: $author$project$Types$GameModels$LoadFailedModel}),
 							$elm$core$Platform$Cmd$none,
 							$MartinSStewart$elm_audio$Audio$cmdNone);
 					}
@@ -8870,11 +9046,54 @@ var $elm$html$Html$Attributes$height = function (n) {
 };
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $author$project$Style$messageCss = _List_fromArray(
+	[
+		A2($elm$html$Html$Attributes$style, 'left', '0px'),
+		A2($elm$html$Html$Attributes$style, 'top', '267px'),
+		A2($elm$html$Html$Attributes$style, 'position', 'relative'),
+		A2($elm$html$Html$Attributes$style, 'color', '#ffcc00')
+	]);
 var $elm$virtual_dom$VirtualDom$node = function (tag) {
 	return _VirtualDom_node(
 		_VirtualDom_noScript(tag));
 };
 var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $elm$html$Html$Attributes$width = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'width',
+		$elm$core$String$fromInt(n));
+};
+var $author$project$PacMan$createPacManSvg = A2(
+	$elm$html$Html$img,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$src('https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png'),
+			$elm$html$Html$Attributes$width($author$project$Settings$pacSettings.ratio),
+			$elm$html$Html$Attributes$height($author$project$Settings$pacSettings.ratio)
+		]),
+	_List_Nil);
+var $author$project$PacMan$pacManSvgList = F2(
+	function (list, amount) {
+		pacManSvgList:
+		while (true) {
+			if (amount > 0) {
+				var $temp$list = A2($elm$core$List$cons, $author$project$PacMan$createPacManSvg, list),
+					$temp$amount = amount - 1;
+				list = $temp$list;
+				amount = $temp$amount;
+				continue pacManSvgList;
+			} else {
+				return list;
+			}
+		}
+	});
 var $author$project$Style$pacmanSvgCss = _List_fromArray(
 	[
 		$elm$html$Html$Attributes$id('pacman'),
@@ -8965,12 +9184,6 @@ var $author$project$Eatable$pointsToSvg = F2(
 		}
 	});
 var $elm$svg$Svg$polygon = $elm$svg$Svg$trustedNode('polygon');
-var $elm$html$Html$Attributes$src = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'src',
-		_VirtualDom_noJavaScriptOrHtmlUri(url));
-};
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
 var $author$project$Style$styleContents = '\r\n    @import url(\'https://fonts.googleapis.com/css2?family=VT323&display=swap\');\r\n    body {\r\n        background-color: black;\r\n    }\r\n    .headline {\r\n        font-family: \'VT323\', monospace;\r\n    }\r\n    ';
@@ -8984,12 +9197,6 @@ var $author$project$Style$textCss = _List_fromArray(
 		A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
 		A2($elm$html$Html$Attributes$style, 'font-size', '1.5em')
 	]);
-var $elm$html$Html$Attributes$width = function (n) {
-	return A2(
-		_VirtualDom_attribute,
-		'width',
-		$elm$core$String$fromInt(n));
-};
 var $author$project$Style$wrapperCss = _List_fromArray(
 	[
 		A2($elm$html$Html$Attributes$style, 'width', '100%'),
@@ -9303,7 +9510,14 @@ var $author$project$PacMan$view = function (game) {
 													'transform',
 													'rotate(' + ($elm$core$String$fromInt(game.pRotation) + 'deg)'))
 												])),
-										_List_Nil)
+										_List_Nil),
+										A2(
+										$elm$html$Html$div,
+										_Utils_ap($author$project$Style$textCss, $author$project$Style$messageCss),
+										_List_fromArray(
+											[
+												$elm$html$Html$text(game.message)
+											]))
 									])),
 								A2(
 								$elm$html$Html$div,
@@ -9415,17 +9629,8 @@ var $author$project$PacMan$view = function (game) {
 									])),
 								A2(
 								$elm$html$Html$div,
-								_Utils_ap(
-									$author$project$Style$textCss,
-									_List_fromArray(
-										[
-											A2($elm$html$Html$Attributes$style, 'text-align', 'left')
-										])),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(
-										$elm$core$String$fromInt(game.lifes))
-									])),
+								$author$project$Style$textCss,
+								A2($author$project$PacMan$pacManSvgList, _List_Nil, game.lifes)),
 								A2(
 								$elm$html$Html$div,
 								_Utils_ap(

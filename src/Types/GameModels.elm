@@ -12,15 +12,18 @@ type alias Game =
     , state : State
     , nextDir : Direction
     , score : Int
+    , message : String
     , items : List Point
     , pills : List Point
     , itemCounter : Int
-    , secondCounter : Int
+    , fruitSecondCounter : Int
     , fruitAvailable : Bool
     , redGhost : Ghost
     , pinkGhost : Ghost
     , blueGhost : Ghost
     , yellowGhost : Ghost
+    , pillActive : Bool
+    , pillSecondCounter : Int
     , sound : SoundModel
     }
 
@@ -58,7 +61,10 @@ type Msg
     | NoMoving
     | ChangeDirection Direction
     | Fruit
+    | Pill
     | GhostMove
+    | ResetGame
+    | StartGame
     | SoundLoaded (Result Audio.LoadError Audio.Source)
     | GetCurrentTime Audio.Source Time.Posix
 
@@ -66,6 +72,7 @@ type Msg
 type State
     = Running Direction
     | Stopped Direction
+    | Waiting
 
 
 type Direction

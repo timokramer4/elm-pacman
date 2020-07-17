@@ -72,16 +72,48 @@ getGhostNextDir game ghost =
                     Running dir ->
                         case dir of
                             Left ->
-                                { x = game.pPosition.x - ghost.offset * pacSettings.ratio, y = game.pPosition.y }
+                                let
+                                    pos =
+                                        { x = game.pPosition.x - ghost.offset * pacSettings.ratio, y = game.pPosition.y }
+                                in
+                                if ghost.ghostColor == Blue then
+                                    { x = game.pPosition.x - getBlueGhoastOffset game.redGhost.position pos, y = game.pPosition.y }
+
+                                else
+                                    pos
 
                             Right ->
-                                { x = game.pPosition.x + ghost.offset * pacSettings.ratio, y = game.pPosition.y }
+                                let
+                                    pos =
+                                        { x = game.pPosition.x + ghost.offset * pacSettings.ratio, y = game.pPosition.y }
+                                in
+                                if ghost.ghostColor == Blue then
+                                    { x = game.pPosition.x + getBlueGhoastOffset game.redGhost.position pos, y = game.pPosition.y }
+
+                                else
+                                    pos
 
                             Down ->
-                                { x = game.pPosition.x, y = game.pPosition.y + ghost.offset * pacSettings.ratio }
+                                let
+                                    pos =
+                                        { x = game.pPosition.x, y = game.pPosition.y + ghost.offset * pacSettings.ratio }
+                                in
+                                if ghost.ghostColor == Blue then
+                                    { x = game.pPosition.x, y = game.pPosition.y + getBlueGhoastOffset game.redGhost.position pos }
+
+                                else
+                                    pos
 
                             Up ->
-                                { x = game.pPosition.x, y = game.pPosition.y - ghost.offset * pacSettings.ratio }
+                                let
+                                    pos =
+                                        { x = game.pPosition.x, y = game.pPosition.y - ghost.offset * pacSettings.ratio }
+                                in
+                                if ghost.ghostColor == Blue then
+                                    { x = game.pPosition.x, y = game.pPosition.y - getBlueGhoastOffset game.redGhost.position pos }
+
+                                else
+                                    pos
 
                             _ ->
                                 game.pPosition
@@ -257,6 +289,17 @@ getNextCross pos dir =
 
     else
         pos
+
+
+
+------------------------------------------------
+-- Calculate blue ghost offset with red ghost --
+------------------------------------------------
+
+
+getBlueGhoastOffset : Point -> Point -> Int
+getBlueGhoastOffset redGhostPos pacPos =
+    getVectorLength redGhostPos pacPos * 2
 
 
 

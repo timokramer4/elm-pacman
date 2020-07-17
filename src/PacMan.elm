@@ -43,7 +43,7 @@ initialModel =
     , fruitAvailable = False
     , redGhost = { ghostColor = Red, position = { x = 250, y = 190 }, dir = None, active = True, offset = 0 }
     , pinkGhost = { ghostColor = Pink, position = { x = 250, y = 235 }, dir = Up, active = False, offset = 4 }
-    , blueGhost = { ghostColor = Blue, position = { x = 220, y = 235 }, dir = None, active = False, offset = 0 }
+    , blueGhost = { ghostColor = Blue, position = { x = 220, y = 235 }, dir = None, active = False, offset = 2 }
     , yellowGhost = { ghostColor = Yellow, position = { x = 280, y = 235 }, dir = None, active = False, offset = 0 }
     }
 
@@ -142,7 +142,7 @@ update msg game =
         GhostMove ->
             if game.pPosition /= game.redGhost.position && game.pPosition /= game.pinkGhost.position && game.pPosition /= game.blueGhost.position && game.pPosition /= game.yellowGhost.position then
                 -- all
-                if game.itemCounter > 11 then
+                if game.itemCounter > 91 then
                     ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
                     -- blue
 

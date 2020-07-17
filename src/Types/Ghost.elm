@@ -1,8 +1,9 @@
-module Types.Ghost exposing (checkGhoastEatingPacMan, getGhostNextDir, moveGhost)
+module Types.Ghost exposing (checkGhoastEatingPacMan, getGhostNextDir, moveGhoastToPosition, moveGhost)
 
 import Arithmetic exposing (intSquareRoot)
 import Movement exposing (checkDir)
 import Settings exposing (getPoint, ghostSettings, movement, pacSettings)
+import Time exposing (Posix)
 import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), State(..))
 import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
@@ -42,6 +43,17 @@ moveGhost ghost dir =
                 ghost.active
     in
     { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset }
+
+
+
+-------------------------------------
+-- Move ghost in specific position --
+-------------------------------------
+
+
+moveGhoastToPosition : Ghost -> Point -> Ghost
+moveGhoastToPosition ghost target =
+    { ghostColor = ghost.ghostColor, position = target, dir = Up, active = False, offset = ghost.offset }
 
 
 

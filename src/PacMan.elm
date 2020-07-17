@@ -41,12 +41,14 @@ initialModel =
     , message = gameMessages.ready
     , pills = pillsList
     , itemCounter = 0
-    , secondCounter = 0
+    , fruitSecondCounter = 0
     , fruitAvailable = False
     , redGhost = { ghostColor = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0 }
     , pinkGhost = { ghostColor = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4 }
     , blueGhost = { ghostColor = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2 }
     , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0 }
+    , pillActive = False
+    , pillSecondCounter = 0
     }
 
 
@@ -138,11 +140,18 @@ update msg game =
             ( { game | nextDir = d }, Cmd.none )
 
         Fruit ->
-            if game.secondCounter == 10 then
+            if game.fruitSecondCounter == 10 then
                 ( { game | fruitAvailable = False }, Cmd.none )
 
             else
-                ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
+                ( { game | fruitSecondCounter = game.fruitSecondCounter + 1 }, Cmd.none )
+
+        Pill ->
+            if game.pillSecondCounter == 10 then
+                ( { game | pillActive = False }, Cmd.none )
+
+            else
+                ( { game | pillSecondCounter = game.pillSecondCounter + 1, message = "Pille aktiv" }, Cmd.none )
 
         GhostMove ->
             if checkGhoastEatingPacMan game.pPosition game.redGhost.position && checkGhoastEatingPacMan game.pPosition game.blueGhost.position && checkGhoastEatingPacMan game.pPosition game.yellowGhost.position && checkGhoastEatingPacMan game.pPosition game.pinkGhost.position && game.state /= Stopped None then
@@ -161,7 +170,7 @@ update msg game =
                 else
                     ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost) }, Cmd.none )
 
-            else
+            else if not game.pillActive then
                 case game.state of
                     Running d ->
                         if game.lifes == 0 then
@@ -173,6 +182,28 @@ update msg game =
                     -- pacMan Loose Animation
                     _ ->
                         ( game, Cmd.none )
+
+            else
+            -- pacMan eat redGhost
+            if
+                not (checkGhoastEatingPacMan game.pPosition game.redGhost.position)
+            then
+                ( { game | redGhost = moveGhoastToPosition game.redGhost ghostSettings.pinkStartPos, message = "Roter gefressen" }, Cmd.none )
+                -- pacMan eat blueGhost
+
+            else if not (checkGhoastEatingPacMan game.pPosition game.blueGhost.position) then
+                ( { game | blueGhost = moveGhoastToPosition game.blueGhost ghostSettings.pinkStartPos, message = "Blauer gefressen" }, Cmd.none )
+                --pacMan eat yellowGhost
+
+            else if not (checkGhoastEatingPacMan game.pPosition game.yellowGhost.position) then
+                ( { game | yellowGhost = moveGhoastToPosition game.yellowGhost ghostSettings.pinkStartPos, message = "Gelder gefressen" }, Cmd.none )
+                --pacMan eat pinkGhost
+
+            else if not (checkGhoastEatingPacMan game.pPosition game.pinkGhost.position) then
+                ( { game | pinkGhost = moveGhoastToPosition game.pinkGhost ghostSettings.pinkStartPos, message = "Pinker gefressen" }, Cmd.none )
+
+            else
+                ( game, Cmd.none )
 
         ResetGame ->
             ( resetGame game, Delay.after 3000 Millisecond StartGame )
@@ -302,6 +333,11 @@ subscriptions game =
 
           else
             Sub.none
+        , if game.pillActive then
+            Time.every 1000 (\_ -> Pill)
+
+          else
+            Sub.none
         , Time.every 20 (\_ -> GhostMove)
         ]
 
@@ -408,12 +444,14 @@ resetGame game =
     , message = gameMessages.ready
     , pills = game.pills
     , itemCounter = game.itemCounter
-    , secondCounter = 0
+    , fruitSecondCounter = 0
     , fruitAvailable = False
     , redGhost = { ghostColor = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0 }
     , pinkGhost = { ghostColor = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4 }
     , blueGhost = { ghostColor = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2 }
     , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0 }
+    , pillActive = False
+    , pillSecondCounter = 0
     }
 
 
@@ -434,4 +472,4 @@ pacManSvgList list amount =
 
 createPacManSvg : Svg Msg
 createPacManSvg =
-    img [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", width pacSettings.ratio, height pacSettings.ratio] []
+    img [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", width pacSettings.ratio, height pacSettings.ratio ] []

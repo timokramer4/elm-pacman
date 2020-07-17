@@ -2,6 +2,7 @@ module PacMan exposing (main)
 
 import Browser
 import Browser.Events exposing (onKeyDown)
+import Delay exposing (..)
 import Dict exposing (Dict, member)
 import Eatable exposing (..)
 import Html exposing (Html, div, img, node, text)
@@ -14,13 +15,12 @@ import Settings exposing (..)
 import String exposing (toInt)
 import Style exposing (..)
 import Svg exposing (circle, line, path, polygon, svg)
-import Svg.Attributes exposing (cx, cy, d, fill, points, r, stroke, strokeWidth, x1, x2, y1, y2)
+import Svg.Attributes exposing (cx, cy, d, fill, points, r, stroke, strokeWidth, x, x1, x2, y, y1, y2)
 import Time exposing (every)
 import Types.GameModels exposing (..)
 import Types.Ghost exposing (..)
 import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
-import Delay exposing (..)
 
 
 
@@ -127,8 +127,9 @@ update msg game =
 
                 Stopped d ->
                     ( { game | state = Running d }, Cmd.none )
+
                 Waiting ->
-                    (  game , Cmd.none )        
+                    ( game, Cmd.none )
 
         NoMoving ->
             ( game, Cmd.none )
@@ -144,41 +145,44 @@ update msg game =
                 ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
 
         GhostMove ->
-            if game.pPosition /= game.redGhost.position && game.pPosition /= game.pinkGhost.position && game.pPosition /= game.blueGhost.position && game.pPosition /= game.yellowGhost.position &&  game.state /= Stopped None then
+            if game.pPosition /= game.redGhost.position && game.pPosition /= game.pinkGhost.position && game.pPosition /= game.blueGhost.position && game.pPosition /= game.yellowGhost.position && game.state /= Stopped None then
                 -- all
                 if game.itemCounter > 91 then
-                    ( { game |  redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
+                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
                     -- blue
 
                 else if game.itemCounter > 31 then
-                    ( { game |  redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
+                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
                     -- pink
 
                 else if game.itemCounter > 1 then
-                    ( { game |  redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
+                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
 
                 else
-                    ( { game |  redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost) }, Cmd.none )
-  
+                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost) }, Cmd.none )
+
             else
                 case game.state of
                     Running d ->
                         if game.lifes - 1 == 0 then
-                            ( { game | state = Stopped d, message =gameMessages.gameOver }, Cmd.none )    
-                        else    
-                             ( { game | state = Stopped d, lifes = game.lifes - 1 } ,  Delay.after 3000 Millisecond ResetGame )
-                             -- pacMan Losse Animation
+                            ( { game | state = Stopped d, message = gameMessages.gameOver }, Cmd.none )
 
+                        else
+                            ( { game | state = Stopped d, lifes = game.lifes - 1 }, Delay.after 3000 Millisecond ResetGame )
+
+                    -- pacMan Losse Animation
                     _ ->
                         ( game, Cmd.none )
-        ResetGame ->
-             ( resetGame game,  Delay.after 3000 Millisecond StartGame )
-             -- pacMan wait to start
-        StartGame ->
-             ( { game | message = gameMessages.noText, state = Running Right}, Cmd.none )          
-                                     
 
-resetGame: Game -> Game
+        ResetGame ->
+            ( resetGame game, Delay.after 3000 Millisecond StartGame )
+
+        -- pacMan wait to start
+        StartGame ->
+            ( { game | message = gameMessages.noText, state = Running Right }, Cmd.none )
+
+
+resetGame : Game -> Game
 resetGame game =
     { pPosition = pacSettings.startPosition
     , state = Stopped None
@@ -196,7 +200,9 @@ resetGame game =
     , pinkGhost = { ghostColor = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4 }
     , blueGhost = { ghostColor = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2 }
     , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0 }
-    }       
+    }
+
+
 
 ----------
 -- VIEW --
@@ -213,7 +219,6 @@ view game =
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
                 , div textCss [ Html.text (String.fromInt game.score) ]
                 , div textCss [ Html.text "500x500" ]
-                , div textCss [ Html.text game.message ]
                 ]
             , div
                 gameCss
@@ -259,6 +264,7 @@ view game =
                     )
                     [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
                         []
+                    , div (textCss ++ messageCss) [ Html.text game.message ]
                     ]
                 , div
                     (gameChildCss
@@ -306,8 +312,10 @@ subscriptions game =
         , case game.state of
             Running d ->
                 Time.every 20 (\_ -> MoveDirection d)
+
             Waiting ->
-                Time.every 20 (\_ -> ResetGame)    
+                Time.every 20 (\_ -> ResetGame)
+
             _ ->
                 Sub.none
         , if game.fruitAvailable then

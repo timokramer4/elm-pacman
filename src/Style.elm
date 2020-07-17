@@ -1,4 +1,4 @@
-module Style exposing (gameChildCss, gameCss, ghostSvgCss, headlineCss, pacmanSvgCss, styleContents, textCss, wrapperCss)
+module Style exposing (gameChildCss, gameCss, ghostSvgCss, headlineCss, messageCss, pacmanSvgCss, styleContents, textCss, wrapperCss)
 
 import Html
 import Html.Attributes exposing (id, style)
@@ -83,6 +83,15 @@ ghostSvgCss =
     , Html.Attributes.style "position" "absolute"
     , Html.Attributes.style "width" (String.fromInt ghostSettings.ratio ++ "px")
     , Html.Attributes.style "height" (String.fromInt ghostSettings.ratio ++ "px")
+    ]
+
+
+messageCss : List (Html.Attribute msg)
+messageCss =
+    [ Html.Attributes.style "left" "0px"
+    , Html.Attributes.style "top" "357px"
+    , Html.Attributes.style "position" "relative"
+    , Html.Attributes.style "color" "yellow"
     ]
 
 

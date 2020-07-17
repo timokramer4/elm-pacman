@@ -65,19 +65,25 @@ checkEatable game =
         localListPills =
             checkCurrentPoint game.pills
     in
+    -- eat no pill and no item
     if List.length game.pills == List.length localListPills && List.length game.items == List.length localListItems then
+        -- eat fruit
         if game.pPosition == fruitSettings.position && game.fruitAvailable then
             { game | score = game.score + fruitSettings.xp, fruitAvailable = False }
+            -- eat nothing
 
         else
             game
+        -- eat pill
 
     else if List.length game.pills /= List.length localListPills then
+        -- eat pill an fruit
         if game.pPosition == fruitSettings.position && game.fruitAvailable then
-            { game | pills = localListPills, score = game.score + fruitSettings.xp + pillSettings.xp, fruitAvailable = False }
+            { game | pills = localListPills, score = game.score + fruitSettings.xp + pillSettings.xp, fruitAvailable = False, pillActive = True }
+            -- eat only pill
 
         else
-            { game | pills = localListPills, score = game.score + pillSettings.xp }
+            { game | pills = localListPills, score = game.score + pillSettings.xp, pillActive = True }
 
     else if game.pPosition == fruitSettings.position && game.fruitAvailable then
         { game | items = localListItems, score = game.score + fruitSettings.xp + itemSettings.xp, fruitAvailable = False }

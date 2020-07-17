@@ -1,8 +1,9 @@
-module Types.Ghost exposing (getGhostNextDir, moveGhost)
+module Types.Ghost exposing (checkGhoastEatingPacMan, getGhostNextDir, moveGhoastToPosition, moveGhost)
 
 import Arithmetic exposing (intSquareRoot)
 import Movement exposing (checkDir)
 import Settings exposing (getPoint, ghostSettings, movement, pacSettings)
+import Time exposing (Posix)
 import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), State(..))
 import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
@@ -42,6 +43,17 @@ moveGhost ghost dir =
                 ghost.active
     in
     { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset }
+
+
+
+-------------------------------------
+-- Move ghost in specific position --
+-------------------------------------
+
+
+moveGhoastToPosition : Ghost -> Point -> Ghost
+moveGhoastToPosition ghost target =
+    { ghostColor = ghost.ghostColor, position = target, dir = Up, active = False, offset = ghost.offset }
 
 
 
@@ -315,3 +327,14 @@ getVectorLength p1 p2 =
             { x = p1.x - p2.x, y = p1.y - p2.y }
     in
     intSquareRoot (dv.x * dv.x + dv.y * dv.y)
+
+
+
+-------------------------------------------
+-------- Check if ghost eat pacMan  -------
+-------------------------------------------
+
+
+checkGhoastEatingPacMan : Point -> Point -> Bool
+checkGhoastEatingPacMan pacPos ghostPos =
+    pacPos /= ghostPos && { x = pacPos.x + 1, y = pacPos.y } /= ghostPos && { x = pacPos.x - 1, y = pacPos.y } /= ghostPos && { x = pacPos.x, y = pacPos.y + 1 } /= ghostPos && { x = pacPos.x, y = pacPos.y - 1 } /= ghostPos

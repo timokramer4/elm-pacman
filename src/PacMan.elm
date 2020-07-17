@@ -14,7 +14,7 @@ import Movement exposing (..)
 import Settings exposing (..)
 import String exposing (toInt)
 import Style exposing (..)
-import Svg exposing (circle, line, path, polygon, svg)
+import Svg exposing (Svg, circle, line, path, polygon, svg)
 import Svg.Attributes exposing (cx, cy, d, fill, points, r, stroke, strokeWidth, x, x1, x2, y, y1, y2)
 import Time exposing (every)
 import Types.GameModels exposing (..)
@@ -145,8 +145,8 @@ update msg game =
                 ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
 
         GhostMove ->
-            if checkGhoastEatingPacMan game.pPosition game.redGhost.position && checkGhoastEatingPacMan game.pPosition  game.blueGhost.position && checkGhoastEatingPacMan game.pPosition  game.yellowGhost.position && checkGhoastEatingPacMan game.pPosition  game.pinkGhost.position && game.state /= Stopped None then
-                 -- all
+            if checkGhoastEatingPacMan game.pPosition game.redGhost.position && checkGhoastEatingPacMan game.pPosition game.blueGhost.position && checkGhoastEatingPacMan game.pPosition game.yellowGhost.position && checkGhoastEatingPacMan game.pPosition game.pinkGhost.position && game.state /= Stopped None then
+                -- all
                 if game.itemCounter > 91 then
                     ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
                     -- blue
@@ -164,7 +164,7 @@ update msg game =
             else
                 case game.state of
                     Running d ->
-                        if game.lifes - 1 == 0 then
+                        if game.lifes == 0 then
                             ( { game | state = Stopped d, message = gameMessages.gameOver }, Cmd.none )
 
                         else
@@ -180,6 +180,7 @@ update msg game =
         -- pacMan wait to start
         StartGame ->
             ( { game | message = gameMessages.noText, state = Running Right }, Cmd.none )
+
 
 
 ----------
@@ -260,7 +261,7 @@ view game =
                 ]
             , div (class "headline" :: headlineCss)
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Leben:" ]
-                , div (textCss ++ [ Html.Attributes.style "text-align" "left" ]) [ Html.text (String.fromInt game.lifes) ]
+                , div textCss (pacManSvgList [] game.lifes)
                 , div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Früchte:" ]
                 , div textCss
                     [ img [ src "Assets/img/fruits/apple.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
@@ -325,7 +326,9 @@ main =
 ---------------
 -- FUNCTIONS --
 ---------------
--- key functions
+-------------------
+-- key functions --
+-------------------
 
 
 keyDecoder : Json.Decode.Decoder Msg
@@ -352,6 +355,12 @@ toKey string =
             Types.GameModels.Nothing
 
 
+
+-------------------------
+-- change pac position --
+-------------------------
+
+
 changeXPosition : Int -> Game -> Point
 changeXPosition value game =
     let
@@ -370,9 +379,21 @@ changeYPosition value game =
     { oldPosition | y = value }
 
 
+
+----------------------
+-- substract lists  --
+----------------------
+
+
 substractList : List Point -> List Point -> List Point
 substractList a b =
     List.filter (\x -> not (List.member x a)) b
+
+
+
+-------------------------
+-- reset life function --
+-------------------------
 
 
 resetGame : Game -> Game
@@ -395,3 +416,22 @@ resetGame game =
     , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0 }
     }
 
+
+
+-------------------------
+-- pacMan Life display --
+-------------------------
+
+
+pacManSvgList : List (Svg Msg) -> Int -> List (Svg Msg)
+pacManSvgList list amount =
+    if amount > 0 then
+        pacManSvgList (createPacManSvg :: list) (amount - 1)
+
+    else
+        list
+
+
+createPacManSvg : Svg Msg
+createPacManSvg =
+    img [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", width pacSettings.ratio, height pacSettings.ratio] []

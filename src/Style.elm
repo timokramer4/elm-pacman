@@ -89,9 +89,9 @@ ghostSvgCss =
 messageCss : List (Html.Attribute msg)
 messageCss =
     [ Html.Attributes.style "left" "0px"
-    , Html.Attributes.style "top" "357px"
+    , Html.Attributes.style "top" "267px"
     , Html.Attributes.style "position" "relative"
-    , Html.Attributes.style "color" "yellow"
+    , Html.Attributes.style "color" "#ffcc00"
     ]
 
 

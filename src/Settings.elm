@@ -22,7 +22,7 @@ fieldSettings =
 pacSettings : { ratio : Int, startPosition : Point }
 pacSettings =
     { ratio = 22
-     , startPosition = { x = 250, y = 280 }
+     , startPosition = { x = 247, y = 370 }
     }
 
 

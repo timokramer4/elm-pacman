@@ -1,4 +1,4 @@
-module Settings exposing (fieldSettings, fruitSettings, getPoint, ghostSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh)
+module Settings exposing (fieldSettings, fruitSettings, getPoint, ghostSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh, gameMessages )
 
 import Dict exposing (Dict, get)
 import Types.Line exposing (Line, LineType(..))
@@ -19,16 +19,20 @@ fieldSettings =
     }
 
 
-pacSettings : { ratio : Int }
+pacSettings : { ratio : Int, startPosition : Point }
 pacSettings =
     { ratio = 22
+     , startPosition = { x = 250, y = 280 }
     }
 
 
-ghostSettings : { ratio : Int, startPosition : Point }
+ghostSettings : { ratio : Int, startPosition : Point, blueStartPos : Point, yellowStartPos : Point, pinkStartPos : Point }
 ghostSettings =
     { ratio = pacSettings.ratio
     , startPosition = { x = 250, y = 190 }
+    , blueStartPos = { x = 220, y = 235 }
+    , yellowStartPos = { x = 280, y = 235 }
+    , pinkStartPos = { x = 250, y = 235 }
     }
 
 
@@ -63,6 +67,13 @@ fruitSettings =
     , itemNumber2 = 170
     }
 
+gameMessages : {gameOver : String, ready: String, noText : String }
+gameMessages =
+    {
+      gameOver = "GAME OVER!"
+      ,ready = "READY!"
+      , noText =""  
+    }
 
 pointMesh : Dict Int Point
 pointMesh =

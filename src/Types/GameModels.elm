@@ -10,6 +10,7 @@ type alias Game =
     , state : State
     , nextDir : Direction
     , score : Int
+    , message : String
     , items : List Point
     , pills : List Point
     , itemCounter : Int
@@ -38,11 +39,14 @@ type Msg
     | ChangeDirection Direction
     | Fruit
     | GhostMove
+    | ResetGame
+    | StartGame
 
 
 type State
     = Running Direction
     | Stopped Direction
+    | Waiting
 
 
 type Direction

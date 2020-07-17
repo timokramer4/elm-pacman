@@ -20,6 +20,7 @@ import Types.GameModels exposing (..)
 import Types.Ghost exposing (..)
 import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
+import Delay exposing (..)
 
 
 
@@ -31,20 +32,21 @@ import Types.Point exposing (Point)
 initialModel : Game
 initialModel =
     { pPosition = { x = 250, y = 280 }
-    , state = Running Right
+    , state = Waiting
     , nextDir = Right
     , pRotation = 0
     , lifes = 3
     , score = 0
     , items = substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
+    , message = gameMessages.ready
     , pills = pillsList
     , itemCounter = 0
     , secondCounter = 0
     , fruitAvailable = False
-    , redGhost = { ghostColor = Red, position = { x = 250, y = 190 }, dir = None, active = True, offset = 0 }
-    , pinkGhost = { ghostColor = Pink, position = { x = 250, y = 235 }, dir = Up, active = False, offset = 4 }
-    , blueGhost = { ghostColor = Blue, position = { x = 220, y = 235 }, dir = None, active = False, offset = 2 }
-    , yellowGhost = { ghostColor = Yellow, position = { x = 280, y = 235 }, dir = None, active = False, offset = 0 }
+    , redGhost = { ghostColor = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0 }
+    , pinkGhost = { ghostColor = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4 }
+    , blueGhost = { ghostColor = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2 }
+    , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0 }
     }
 
 
@@ -125,6 +127,8 @@ update msg game =
 
                 Stopped d ->
                     ( { game | state = Running d }, Cmd.none )
+                Waiting ->
+                    (  game , Cmd.none )        
 
         NoMoving ->
             ( game, Cmd.none )
@@ -140,31 +144,59 @@ update msg game =
                 ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
 
         GhostMove ->
-            if game.pPosition /= game.redGhost.position && game.pPosition /= game.pinkGhost.position && game.pPosition /= game.blueGhost.position && game.pPosition /= game.yellowGhost.position then
+            if game.pPosition /= game.redGhost.position && game.pPosition /= game.pinkGhost.position && game.pPosition /= game.blueGhost.position && game.pPosition /= game.yellowGhost.position &&  game.state /= Stopped None then
                 -- all
                 if game.itemCounter > 91 then
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
+                    ( { game |  redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
                     -- blue
 
                 else if game.itemCounter > 31 then
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
+                    ( { game |  redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
                     -- pink
 
                 else if game.itemCounter > 1 then
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
+                    ( { game |  redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
 
                 else
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost) }, Cmd.none )
-
+                    ( { game |  redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost) }, Cmd.none )
+  
             else
                 case game.state of
                     Running d ->
-                        ( { game | state = Stopped d, lifes = game.lifes - 1 }, Cmd.none )
+                        if game.lifes - 1 == 0 then
+                            ( { game | state = Stopped d, message =gameMessages.gameOver }, Cmd.none )    
+                        else    
+                             ( { game | state = Stopped d, lifes = game.lifes - 1 } ,  Delay.after 3000 Millisecond ResetGame )
+                             -- pacMan Losse Animation
 
                     _ ->
                         ( game, Cmd.none )
+        ResetGame ->
+             ( resetGame game,  Delay.after 3000 Millisecond StartGame )
+             -- pacMan wait to start
+        StartGame ->
+             ( { game | message = gameMessages.noText, state = Running Right}, Cmd.none )          
+                                     
 
-
+resetGame: Game -> Game
+resetGame game =
+    { pPosition = pacSettings.startPosition
+    , state = Stopped None
+    , nextDir = Right
+    , pRotation = 0
+    , lifes = game.lifes
+    , score = game.score
+    , items = game.items
+    , message = gameMessages.ready
+    , pills = game.pills
+    , itemCounter = game.itemCounter
+    , secondCounter = 0
+    , fruitAvailable = False
+    , redGhost = { ghostColor = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0 }
+    , pinkGhost = { ghostColor = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4 }
+    , blueGhost = { ghostColor = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2 }
+    , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0 }
+    }       
 
 ----------
 -- VIEW --
@@ -181,6 +213,7 @@ view game =
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "High score" ]
                 , div textCss [ Html.text (String.fromInt game.score) ]
                 , div textCss [ Html.text "500x500" ]
+                , div textCss [ Html.text game.message ]
                 ]
             , div
                 gameCss
@@ -273,7 +306,8 @@ subscriptions game =
         , case game.state of
             Running d ->
                 Time.every 20 (\_ -> MoveDirection d)
-
+            Waiting ->
+                Time.every 20 (\_ -> ResetGame)    
             _ ->
                 Sub.none
         , if game.fruitAvailable then

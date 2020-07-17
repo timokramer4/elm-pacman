@@ -1,4 +1,4 @@
-module Types.Ghost exposing (getGhostNextDir, moveGhost)
+module Types.Ghost exposing (checkGhoastEatingPacMan, getGhostNextDir, moveGhost)
 
 import Arithmetic exposing (intSquareRoot)
 import Movement exposing (checkDir)
@@ -315,3 +315,14 @@ getVectorLength p1 p2 =
             { x = p1.x - p2.x, y = p1.y - p2.y }
     in
     intSquareRoot (dv.x * dv.x + dv.y * dv.y)
+
+
+
+-------------------------------------------
+-------- Check if ghost eat pacMan  -------
+-------------------------------------------
+
+
+checkGhoastEatingPacMan : Point -> Point -> Bool
+checkGhoastEatingPacMan pacPos ghostPos =
+    pacPos /= ghostPos && { x = pacPos.x + 1, y = pacPos.y } /= ghostPos && { x = pacPos.x - 1, y = pacPos.y } /= ghostPos && { x = pacPos.x, y = pacPos.y + 1 } /= ghostPos && { x = pacPos.x, y = pacPos.y - 1 } /= ghostPos

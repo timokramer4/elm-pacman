@@ -1,5 +1,6 @@
-module PacMan exposing (main)
+port module PacMan exposing (init, main)
 
+import Audio
 import Browser
 import Browser.Events exposing (onKeyDown)
 import Dict exposing (Dict, member)
@@ -7,14 +8,17 @@ import Eatable exposing (..)
 import Html exposing (Html, div, img, node, text)
 import Html.Attributes exposing (class, height, id, src, style, width)
 import Json.Decode exposing (..)
+import Json.Encode
 import List exposing (..)
 import List.Unique exposing (filterDuplicates)
 import Movement exposing (..)
+import Platform exposing (Task)
 import Settings exposing (..)
 import String exposing (toInt)
 import Style exposing (..)
 import Svg exposing (circle, line, path, polygon, svg)
 import Svg.Attributes exposing (cx, cy, d, fill, points, r, stroke, strokeWidth, x1, x2, y1, y2)
+import Task exposing (perform)
 import Time exposing (every)
 import Types.GameModels exposing (..)
 import Types.Ghost exposing (..)
@@ -45,6 +49,7 @@ initialModel =
     , pinkGhost = { ghostColor = Pink, position = { x = 250, y = 235 }, dir = Up, active = False, offset = 4 }
     , blueGhost = { ghostColor = Blue, position = { x = 220, y = 235 }, dir = None, active = False, offset = 2 }
     , yellowGhost = { ghostColor = Yellow, position = { x = 280, y = 235 }, dir = None, active = False, offset = 0 }
+    , sound = LoadingModel
     }
 
 
@@ -54,63 +59,63 @@ initialModel =
 ------------
 
 
-update : Msg -> Game -> ( Game, Cmd Msg )
+update : Msg -> Game -> ( Game, Cmd Msg, Audio.AudioCmd Msg )
 update msg game =
     case msg of
         MoveDirection d ->
             case d of
                 Left ->
                     if outOfBounds game then
-                        ( { game | pPosition = changeXPosition fieldSettings.width game, state = Running d, pRotation = 180 }, Cmd.none )
+                        ( { game | pPosition = changeXPosition fieldSettings.width game, state = Running d, pRotation = 180 }, Cmd.none, Audio.cmdNone )
 
                     else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
                         if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
-                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
+                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
 
                         else
-                            ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x - movement) game, state = Running d, pRotation = 180 }, Cmd.none )
+                            ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x - movement) game, state = Running d, pRotation = 180 }, Cmd.none, Audio.cmdNone )
 
                     else
                         update NoMoving game
 
                 Right ->
                     if outOfBounds game then
-                        ( { game | pPosition = changeXPosition 0 game, state = Running d, pRotation = 0 }, Cmd.none )
+                        ( { game | pPosition = changeXPosition 0 game, state = Running d, pRotation = 0 }, Cmd.none, Audio.cmdNone )
 
                     else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
                         if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
-                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
+                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
 
                         else
-                            ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x + movement) game, state = Running d, pRotation = 0 }, Cmd.none )
+                            ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x + movement) game, state = Running d, pRotation = 0 }, Cmd.none, Audio.cmdNone )
 
                     else
                         update NoMoving game
 
                 Up ->
                     if outOfBounds game then
-                        ( { game | pPosition = changeYPosition fieldSettings.height game, state = Running d, pRotation = -90 }, Cmd.none )
+                        ( { game | pPosition = changeYPosition fieldSettings.height game, state = Running d, pRotation = -90 }, Cmd.none, Audio.cmdNone )
 
                     else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
                         if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
-                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
+                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
 
                         else
-                            ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y - movement) game, state = Running d, pRotation = -90 }, Cmd.none )
+                            ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y - movement) game, state = Running d, pRotation = -90 }, Cmd.none, Audio.cmdNone )
 
                     else
                         update NoMoving game
 
                 Down ->
                     if outOfBounds game then
-                        ( { game | pPosition = changeYPosition 0 game, state = Running d, pRotation = 90 }, Cmd.none )
+                        ( { game | pPosition = changeYPosition 0 game, state = Running d, pRotation = 90 }, Cmd.none, Audio.cmdNone )
 
                     else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
                         if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
-                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none )
+                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
 
                         else
-                            ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y + movement) game, state = Running d, pRotation = 90 }, Cmd.none )
+                            ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y + movement) game, state = Running d, pRotation = 90 }, Cmd.none, Audio.cmdNone )
 
                     else
                         update NoMoving game
@@ -121,48 +126,59 @@ update msg game =
         Types.GameModels.Nothing ->
             case game.state of
                 Running d ->
-                    ( { game | state = Stopped d }, Cmd.none )
+                    ( { game | state = Stopped d }, Cmd.none, Audio.cmdNone )
 
                 Stopped d ->
-                    ( { game | state = Running d }, Cmd.none )
+                    ( { game | state = Running d }, Cmd.none, Audio.cmdNone )
 
         NoMoving ->
-            ( game, Cmd.none )
+            ( game, Cmd.none, Audio.cmdNone )
 
         ChangeDirection d ->
-            ( { game | nextDir = d }, Cmd.none )
+            ( { game | nextDir = d }, Cmd.none, Audio.cmdNone )
 
         Fruit ->
             if game.secondCounter == 10 then
-                ( { game | fruitAvailable = False }, Cmd.none )
+                ( { game | fruitAvailable = False }, Cmd.none, Audio.cmdNone )
 
             else
-                ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none )
+                ( { game | secondCounter = game.secondCounter + 1 }, Cmd.none, Audio.cmdNone )
 
         GhostMove ->
             if game.pPosition /= game.redGhost.position && game.pPosition /= game.pinkGhost.position && game.pPosition /= game.blueGhost.position && game.pPosition /= game.yellowGhost.position then
                 -- all
                 if game.itemCounter > 91 then
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
+                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none, Audio.cmdNone )
                     -- blue
 
                 else if game.itemCounter > 31 then
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
+                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none, Audio.cmdNone )
                     -- pink
 
                 else if game.itemCounter > 1 then
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none )
+                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none, Audio.cmdNone )
 
                 else
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost) }, Cmd.none )
+                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost) }, Cmd.none, Audio.cmdNone )
 
             else
                 case game.state of
                     Running d ->
-                        ( { game | state = Stopped d, lifes = game.lifes - 1 }, Cmd.none )
+                        ( { game | state = Stopped d, lifes = game.lifes - 1 }, Cmd.none, Audio.cmdNone )
 
                     _ ->
-                        ( game, Cmd.none )
+                        ( game, Cmd.none, Audio.cmdNone )
+
+        SoundLoaded x ->
+            case x of
+                Ok sound ->
+                    ( { game | lifes = 3333 }, Task.perform (GetCurrentTime sound) Time.now, Audio.cmdNone )
+
+                Err _ ->
+                    ( { game | sound = LoadFailedModel, lifes = 4444 }, Cmd.none, Audio.cmdNone )
+
+        GetCurrentTime sound posix ->
+            ( { game | sound = LoadedModel { sound = sound, soundState = Playing posix } }, Cmd.none, Audio.cmdNone )
 
 
 
@@ -291,14 +307,50 @@ subscriptions game =
 -------------------
 
 
-main : Program () Game Msg
+port audioPortToJS : Json.Encode.Value -> Cmd msg
+
+
+port audioPortFromJS : (Json.Decode.Value -> msg) -> Sub msg
+
+
+init : flags -> ( Game, Cmd Msg, Audio.AudioCmd Msg )
+init _ =
+    ( initialModel
+    , Cmd.none
+    , Audio.loadAudio SoundLoaded
+        -- "/src/Assets/sounds/start_music.wav"
+        "https://cors-anywhere.herokuapp.com/https://freepd.com/music/Wakka%20Wakka.mp3"
+    )
+
+
+main : Program () (Audio.Model Msg Game) (Audio.Msg Msg)
 main =
-    Browser.element
-        { init = \_ -> ( initialModel, Cmd.none )
+    Audio.elementWithAudio
+        { init = init
         , subscriptions = subscriptions
         , view = view
         , update = update
+        , audio = gameToAudio
+        , audioPort = { toJS = audioPortToJS, fromJS = audioPortFromJS }
         }
+
+
+gameToAudio : Game -> Audio.Audio
+gameToAudio game =
+    case game.sound of
+        LoadedModel x ->
+            case x.soundState of
+                NotPlaying ->
+                    Audio.silence
+
+                Playing time ->
+                    Audio.audio x.sound time
+
+                _ ->
+                    Audio.silence
+
+        _ ->
+            Audio.silence
 
 
 

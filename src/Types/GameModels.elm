@@ -1,5 +1,7 @@
-module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), Msg(..), State(..))
+module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), Msg(..), SoundModel(..), SoundState(..), State(..))
 
+import Audio
+import Time
 import Types.Point exposing (Point)
 
 
@@ -19,7 +21,26 @@ type alias Game =
     , pinkGhost : Ghost
     , blueGhost : Ghost
     , yellowGhost : Ghost
+    , sound : SoundModel
     }
+
+
+type alias LoadedModel_ =
+    { sound : Audio.Source
+    , soundState : SoundState
+    }
+
+
+type SoundState
+    = NotPlaying
+    | Playing Time.Posix
+    | FadingOut Time.Posix Time.Posix
+
+
+type SoundModel
+    = LoadingModel
+    | LoadedModel LoadedModel_
+    | LoadFailedModel
 
 
 type alias Ghost =
@@ -38,6 +59,8 @@ type Msg
     | ChangeDirection Direction
     | Fruit
     | GhostMove
+    | SoundLoaded (Result Audio.LoadError Audio.Source)
+    | GetCurrentTime Audio.Source Time.Posix
 
 
 type State

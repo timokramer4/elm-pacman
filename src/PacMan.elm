@@ -1,10 +1,9 @@
 port module PacMan exposing (init, main)
 
 import Audio
-import Browser
 import Browser.Events exposing (onKeyDown)
 import Delay exposing (..)
-import Dict exposing (Dict, member)
+import Dict exposing (member)
 import Eatable exposing (..)
 import Html exposing (Html, div, img, node, text)
 import Html.Attributes exposing (class, height, id, src, style, width)
@@ -17,8 +16,8 @@ import Platform exposing (Task)
 import Settings exposing (..)
 import String exposing (toInt)
 import Style exposing (..)
-import Svg exposing (Svg, circle, line, path, polygon, svg)
-import Svg.Attributes exposing (cx, cy, d, fill, points, r, stroke, strokeWidth, x, x1, x2, y, y1, y2)
+import Svg exposing (Svg, line, path, polygon, svg)
+import Svg.Attributes exposing (d, fill, points, stroke, strokeWidth, x1, x2, y1, y2)
 import Task exposing (perform)
 import Time exposing (every)
 import Types.GameModels exposing (..)
@@ -211,7 +210,7 @@ update msg game =
                 ( game, Cmd.none, Audio.cmdNone )
 
         ResetGame ->
-            ( resetGame game, Delay.after 3000 Millisecond StartGame, Audio.cmdNone )
+            ( resetGame game, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
 
         -- pacMan wait to start
         StartGame ->
@@ -375,8 +374,7 @@ init _ =
     ( initialModel
     , Cmd.none
     , Audio.loadAudio SoundLoaded
-        -- "/src/Assets/sounds/start_music.wav"
-        "https://cors-anywhere.herokuapp.com/https://freepd.com/music/Wakka%20Wakka.mp3"
+        "Assets/sounds/start_music.wav"
     )
 
 

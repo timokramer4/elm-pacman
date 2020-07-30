@@ -52,6 +52,7 @@ type alias Ghost =
     , dir : Direction
     , active : Bool
     , offset : Int
+    , src : String
     }
 
 
@@ -88,3 +89,4 @@ type GhostColors
     | Pink
     | Blue
     | Yellow
+    | Hunted

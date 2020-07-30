@@ -1,4 +1,4 @@
-module Types.Ghost exposing (checkGhoastEatingPacMan, getGhostNextDir, moveGhoastToPosition, moveGhost)
+module Types.Ghost exposing (changeGhostColor, checkGhoastEatingPacMan, getGhostNextDir, moveGhoastToPosition, moveGhost)
 
 import Arithmetic exposing (intSquareRoot)
 import Movement exposing (checkDir)
@@ -42,7 +42,7 @@ moveGhost ghost dir =
             else
                 ghost.active
     in
-    { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset }
+    { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = ghost.src }
 
 
 
@@ -53,7 +53,36 @@ moveGhost ghost dir =
 
 moveGhoastToPosition : Ghost -> Point -> Ghost
 moveGhoastToPosition ghost target =
-    { ghostColor = ghost.ghostColor, position = target, dir = Up, active = False, offset = ghost.offset }
+    { ghostColor = ghost.ghostColor, position = target, dir = Up, active = False, offset = ghost.offset, src = ghost.src }
+
+
+
+-------------------------------------
+-- Change ghost color --
+-------------------------------------
+
+
+changeGhostColor : Ghost -> GhostColors -> Ghost
+changeGhostColor ghost color =
+    let
+        ghostSrc =
+            case color of
+                Red ->
+                    "blinky"
+
+                Pink ->
+                    "pinky"
+
+                Yellow ->
+                    "clyde"
+
+                Blue ->
+                    "inky"
+
+                Hunted ->
+                    "hunted"
+    in
+    { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghostSrc }
 
 
 

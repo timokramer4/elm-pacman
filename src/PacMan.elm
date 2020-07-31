@@ -158,7 +158,7 @@ update msg game =
                 ( { game | pillActive = False, eatenGhostsCounter = 0, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
 
             else
-                ( { game | pillSecondCounter = game.pillSecondCounter + 1, message = "Pille aktiv" }, Cmd.none, Audio.cmdNone )
+                ( { game | pillSecondCounter = game.pillSecondCounter + 1 }, Cmd.none, Audio.cmdNone )
 
         GhostMove ->
             -- In the first round Pinky (pink) leaves the prison after one, Inky (blue) after 30 and Clyde (yellow) after 60 items. The counter is reset each time. After PacMan has been eaten once, Pinky (pink) leaves the prison after 7, Inky (blue) after 17 and Clyde (yellow) after 32 items. The counter is not reset like in the beginning.
@@ -196,19 +196,19 @@ update msg game =
             if
                 not (checkGhoastEatingPacMan game.pPosition game.redGhost.position)
             then
-                ( { game | redGhost = moveGhoastToPosition game.redGhost ghostSettings.pinkStartPos, message = "Roter gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
+                ( { game | redGhost = changeGhostColor (moveGhoastToPosition game.redGhost ghostSettings.pinkStartPos) game.redGhost.ghostColor, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
                 -- pacMan eat blueGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.blueGhost.position) then
-                ( { game | blueGhost = moveGhoastToPosition game.blueGhost ghostSettings.pinkStartPos, message = "Blauer gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = changeGhostColor (moveGhoastToPosition game.blueGhost ghostSettings.pinkStartPos) game.blueGhost.ghostColor, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
                 --pacMan eat yellowGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.yellowGhost.position) then
-                ( { game | yellowGhost = moveGhoastToPosition game.yellowGhost ghostSettings.pinkStartPos, message = "Gelder gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
+                ( { game | yellowGhost = changeGhostColor (moveGhoastToPosition game.yellowGhost ghostSettings.pinkStartPos) game.yellowGhost.ghostColor, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
                 --pacMan eat pinkGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.pinkGhost.position) then
-                ( { game | pinkGhost = moveGhoastToPosition game.pinkGhost ghostSettings.pinkStartPos, message = "Pinker gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
+                ( { game | pinkGhost = changeGhostColor (moveGhoastToPosition game.pinkGhost ghostSettings.pinkStartPos) game.pinkGhost.ghostColor, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
 
             else
                 ( game, Cmd.none, Audio.cmdNone )

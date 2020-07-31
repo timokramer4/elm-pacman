@@ -1,6 +1,7 @@
 module Types.Ghost exposing (changeGhostColor, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost, changeGoBackInPrison)
 
 import Arithmetic exposing (intSquareRoot)
+import Array
 import Movement exposing (checkDir)
 import Settings exposing (getPoint, ghostSettings, movement, pacSettings)
 import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), State(..))
@@ -40,11 +41,28 @@ moveGhost ghost dir goBackInPrison =
 
             else
                 ghost.active
+
+        currentSrc =
+            case dir of
+                Left ->
+                    "_left"
+
+                Right ->
+                    "_right"
+
+                Up ->
+                    "_up"
+
+                Down ->
+                    "_down"
+
+                _ ->
+                    ""
     in
     if (goBackInPrison && ghost.goBackInPrison) || not ghost.goBackInPrison then
-        { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = ghost.src, goBackInPrison= ghost.goBackInPrison }
+        { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = Maybe.withDefault "" (List.head (String.split "_" ghost.src)) ++ currentSrc, goBackInPrision = ghost.goBackInPrision }
     else
-        ghost    
+        ghost
 
 
 

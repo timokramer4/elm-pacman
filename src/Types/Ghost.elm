@@ -1,4 +1,4 @@
-module Types.Ghost exposing (changeGhostColor, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost)
+module Types.Ghost exposing (changeGhostColor, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost, changeGoBackInPrison)
 
 import Arithmetic exposing (intSquareRoot)
 import Movement exposing (checkDir)
@@ -14,8 +14,8 @@ import Types.Point exposing (Point)
 --------------------------------------
 
 
-moveGhost : Ghost -> Direction -> Ghost
-moveGhost ghost dir =
+moveGhost : Ghost -> Direction -> Bool -> Ghost
+moveGhost ghost dir goBackInPrison =
     let
         ghostNextPos =
             case dir of
@@ -41,7 +41,10 @@ moveGhost ghost dir =
             else
                 ghost.active
     in
-    { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = ghost.src }
+    if (goBackInPrison && ghost.goBackInPrison) || not ghost.goBackInPrison then
+        { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = ghost.src, goBackInPrison= ghost.goBackInPrison }
+    else
+        ghost    
 
 
 
@@ -52,7 +55,12 @@ moveGhost ghost dir =
 
 moveGhoastToPosition : Ghost -> Point -> Ghost
 moveGhoastToPosition ghost target =
-    { ghostColor = ghost.ghostColor, position = target, dir = Up, active = False, offset = ghost.offset, src = ghost.src }
+    { ghostColor = ghost.ghostColor, position = target, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison }
+
+
+changeGoBackInPrison: Ghost -> Bool -> Ghost
+changeGoBackInPrison ghost value =
+    { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = value }
 
 
 
@@ -84,7 +92,7 @@ changeGhostColor ghost color =
                 White ->
                     "hunted_white"
     in
-    { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghostSrc }
+    { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghostSrc, goBackInPrison =ghost.goBackInPrison }
 
 
 
@@ -111,18 +119,20 @@ huntedColorChange ghost =
 -----------------------------------------
 
 
-getGhostNextDir : Game -> Ghost -> Direction
-getGhostNextDir game ghost =
+getGhostNextDir : Game -> Ghost -> Bool -> Direction
+getGhostNextDir game ghost goBackToPrison =
     let
         currentType =
-            if not ghost.active then
+            if not ghost.active || (ghost.active && goBackToPrison) then
                 GhostStartLine
 
             else
                 Types.Line.Ghost
 
         targetPos =
-            if ghost.ghostColor == Yellow && getVectorLength ghost.position game.pPosition > 8 * pacSettings.ratio && currentType /= GhostStartLine then
+            if goBackToPrison then
+                ghostSettings.startPosition
+            else if ghost.ghostColor == Yellow && getVectorLength ghost.position game.pPosition > 8 * pacSettings.ratio && currentType /= GhostStartLine then
                 getPoint 44
 
             else if not ghost.active then

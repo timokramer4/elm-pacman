@@ -165,6 +165,8 @@ createFruit available level =
                 "apple"
             else if level == 7 || level == 8 then
                 "grape"
+            else if level == 9 || level == 10 then
+                "spaceship"
             else
                "cherry"                    
     in

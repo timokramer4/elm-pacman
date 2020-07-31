@@ -58,7 +58,7 @@ pillSettings =
     }
 
 
-fruitSettings : { position : Point, ratio : Int, xpCherry : Int, xpStrawberry : Int, xpOrange : Int, xpApple : Int, xpGrape : Int, itemNumber1 : Int, itemNumber2 : Int }
+fruitSettings : { position : Point, ratio : Int, xpCherry : Int, xpStrawberry : Int, xpOrange : Int, xpApple : Int, xpGrape : Int,  xpSpacechip: Int, itemNumber1 : Int, itemNumber2 : Int }
 fruitSettings =
     { position = { x = 250, y = 280 }
     , ratio = 20
@@ -67,6 +67,7 @@ fruitSettings =
     , xpOrange = 500
     , xpApple = 700
     , xpGrape = 1000
+    , xpSpacechip = 2000
     , itemNumber1 = 70
     , itemNumber2 = 170
     }

@@ -56,6 +56,7 @@ type alias Ghost =
     , active : Bool
     , offset : Int
     , src : String
+    , goBackInPrison: Bool
     }
 
 
@@ -68,6 +69,7 @@ type Msg
     | Pill
     | GhostMove
     | ChangeColor
+    | GhostGoBackInPrison
     | ResetGame StartMode
     | StartGame 
     | SoundLoaded (Result Audio.LoadError Audio.Source)

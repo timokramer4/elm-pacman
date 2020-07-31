@@ -1,9 +1,8 @@
-module Types.Ghost exposing (changeGhostColor, checkGhoastEatingPacMan, getGhostNextDir, moveGhoastToPosition, moveGhost)
+module Types.Ghost exposing (changeGhostColor, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost)
 
 import Arithmetic exposing (intSquareRoot)
 import Movement exposing (checkDir)
 import Settings exposing (getPoint, ghostSettings, movement, pacSettings)
-import Time exposing (Posix)
 import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), State(..))
 import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
@@ -81,8 +80,29 @@ changeGhostColor ghost color =
 
                 Hunted ->
                     "hunted"
+
+                White ->
+                    "hunted_white"
     in
     { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghostSrc }
+
+
+
+-----------------------------------------
+---------- change hunted color ----------
+-----------------------------------------
+
+
+huntedColorChange : Ghost -> Ghost
+huntedColorChange ghost =
+    if ghost.src == "hunted" then
+        changeGhostColor ghost White
+
+    else if ghost.src == "hunted_white" then
+        changeGhostColor ghost Hunted
+
+    else
+        ghost
 
 
 

@@ -67,6 +67,7 @@ type Msg
     | Fruit
     | Pill
     | GhostMove
+    | ChangeColor
     | ResetGame StartMode
     | StartGame 
     | SoundLoaded (Result Audio.LoadError Audio.Source)
@@ -95,3 +96,4 @@ type GhostColors
     | Blue
     | Yellow
     | Hunted
+    | White

@@ -153,23 +153,24 @@ update msg game =
 
         Pill ->
             if game.pillSecondCounter == 10 then
-                ( { game | pillActive = False, eatenGhostsCounter= 0, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | pillActive = False, eatenGhostsCounter = 0, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
 
             else
                 ( { game | pillSecondCounter = game.pillSecondCounter + 1, message = "Pille aktiv" }, Cmd.none, Audio.cmdNone )
 
         GhostMove ->
+            -- In the first round Pinky (pink) leaves the prison after one, Inky (blue) after 30 and Clyde (yellow) after 60 items. The counter is reset each time. After PacMan has been eaten once, Pinky (pink) leaves the prison after 7, Inky (blue) after 17 and Clyde (yellow) after 32 items. The counter is not reset like in the beginning.
             if checkGhoastEatingPacMan game.pPosition game.redGhost.position && checkGhoastEatingPacMan game.pPosition game.blueGhost.position && checkGhoastEatingPacMan game.pPosition game.yellowGhost.position && checkGhoastEatingPacMan game.pPosition game.pinkGhost.position && game.state /= Stopped None then
-                -- all
-                if game.itemCounter > 91 then
+                -- Clyde (yellow) starts
+                if (game.itemCounter > 91 && game.lifes == 3) || game.itemCounter > 32 then
                     ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none, Audio.cmdNone )
-                    -- blue
+                    -- Inky (blue) starts
 
-                else if game.itemCounter > 31 then
+                else if (game.itemCounter > 31 && game.lifes == 3) || game.itemCounter > 17 then
                     ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none, Audio.cmdNone )
-                    -- pink
+                    -- Pinky (pink) start
 
-                else if game.itemCounter > 1 then
+                else if (game.itemCounter > 1 && game.lifes == 3) || game.itemCounter > 7 then
                     ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none, Audio.cmdNone )
 
                 else
@@ -189,24 +190,23 @@ update msg game =
                         ( game, Cmd.none, Audio.cmdNone )
 
             else
-
             -- pacMan eat redGhost
             if
                 not (checkGhoastEatingPacMan game.pPosition game.redGhost.position)
             then
-                ( { game | redGhost = moveGhoastToPosition game.redGhost ghostSettings.pinkStartPos, message = "Roter gefressen",eatenGhostsCounter= game.eatenGhostsCounter+1, score= game.score + (game.eatenGhostsCounter+1)*200 }, Cmd.none, Audio.cmdNone )
+                ( { game | redGhost = moveGhoastToPosition game.redGhost ghostSettings.pinkStartPos, message = "Roter gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
                 -- pacMan eat blueGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.blueGhost.position) then
-                ( { game | blueGhost = moveGhoastToPosition game.blueGhost ghostSettings.pinkStartPos, message = "Blauer gefressen",eatenGhostsCounter= game.eatenGhostsCounter+1, score= game.score + (game.eatenGhostsCounter+1)*200 }, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = moveGhoastToPosition game.blueGhost ghostSettings.pinkStartPos, message = "Blauer gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
                 --pacMan eat yellowGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.yellowGhost.position) then
-                ( { game | yellowGhost = moveGhoastToPosition game.yellowGhost ghostSettings.pinkStartPos, message = "Gelder gefressen",eatenGhostsCounter= game.eatenGhostsCounter+1, score= game.score + (game.eatenGhostsCounter+1)*200 }, Cmd.none, Audio.cmdNone )
+                ( { game | yellowGhost = moveGhoastToPosition game.yellowGhost ghostSettings.pinkStartPos, message = "Gelder gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
                 --pacMan eat pinkGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.pinkGhost.position) then
-                ( { game | pinkGhost = moveGhoastToPosition game.pinkGhost ghostSettings.pinkStartPos, message = "Pinker gefressen",eatenGhostsCounter= game.eatenGhostsCounter+1, score= game.score + (game.eatenGhostsCounter+1)*200 }, Cmd.none, Audio.cmdNone )
+                ( { game | pinkGhost = moveGhoastToPosition game.pinkGhost ghostSettings.pinkStartPos, message = "Pinker gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
 
             else
                 ( game, Cmd.none, Audio.cmdNone )
@@ -356,10 +356,10 @@ subscriptions game =
           else
             Sub.none
         , if game.pillActive then
-                Time.every 30 (\_ -> GhostMove)
+            Time.every 30 (\_ -> GhostMove)
+
           else
-                Time.every 20 (\_ -> GhostMove)
-                  
+            Time.every 20 (\_ -> GhostMove)
         ]
 
 

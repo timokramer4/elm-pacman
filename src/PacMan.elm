@@ -302,13 +302,13 @@ view game =
                     (gameChildCss
                         ++ [ id "ghostArea" ]
                     )
-                    [ img (ghostSvgCss ++ [ src ("Assets/img/ghosts/" ++ game.redGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.redGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.redGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    [ img (ghostSvgCss ++ [ src ("Assets/img/ghosts/blinky/" ++ game.redGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.redGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.redGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/" ++ game.pinkGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.pinkGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pinkGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/pinky/" ++ game.pinkGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.pinkGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pinkGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/" ++ game.blueGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.blueGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.blueGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/inky/" ++ game.blueGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.blueGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.blueGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/" ++ game.yellowGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.yellowGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.yellowGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/clyde/" ++ game.yellowGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.yellowGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.yellowGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
                     ]
                 ]
@@ -553,10 +553,10 @@ resetGame game mode =
     , itemCounter = newItemCounter
     , fruitSecondCounter = 0
     , fruitAvailable = False
-    , redGhost = { ghostColor = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = "blinky" }
-    , pinkGhost = { ghostColor = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = "pinky" }
-    , blueGhost = { ghostColor = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = "inky" }
-    , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = "clyde" }
+    , redGhost = { ghostColor = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = "blinky_up" }
+    , pinkGhost = { ghostColor = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = "pinky_up" }
+    , blueGhost = { ghostColor = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = "inky_up" }
+    , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = "clyde_up" }
     , pillActive = False
     , pillSecondCounter = 0
     , sound = LoadingModel

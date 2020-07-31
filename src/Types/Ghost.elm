@@ -1,6 +1,7 @@
 module Types.Ghost exposing (changeGhostColor, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost)
 
 import Arithmetic exposing (intSquareRoot)
+import Array
 import Movement exposing (checkDir)
 import Settings exposing (getPoint, ghostSettings, movement, pacSettings)
 import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), State(..))
@@ -40,8 +41,25 @@ moveGhost ghost dir =
 
             else
                 ghost.active
+
+        currentSrc =
+            case dir of
+                Left ->
+                    "_left"
+
+                Right ->
+                    "_right"
+
+                Up ->
+                    "_up"
+
+                Down ->
+                    "_down"
+
+                _ ->
+                    ""
     in
-    { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = ghost.src }
+    { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = Maybe.withDefault "" (List.head (String.split "_" ghost.src)) ++ currentSrc }
 
 
 

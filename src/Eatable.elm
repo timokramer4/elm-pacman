@@ -77,8 +77,12 @@ checkEatable game =
                   fruitSettings.xpApple
             else if game.level == 7 || game.level == 8 then
                 fruitSettings.xpGrape
+            else if game.level == 9 || game.level == 10 then
+                fruitSettings.xpSpacechip
+            else if game.level == 11 || game.level == 1 then
+                fruitSettings.xpBell       
             else
-               0
+               fruitSettings.xpKey
 
 
     in
@@ -167,8 +171,10 @@ createFruit available level =
                 "grape"
             else if level == 9 || level == 10 then
                 "spaceship"
-            else
-               "cherry"                    
+            else if level == 11 || level == 12 then
+               "bell"
+            else 
+                "key"                       
     in
     
     if available then

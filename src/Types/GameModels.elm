@@ -1,4 +1,4 @@
-module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), Msg(..), SoundModel(..), SoundState(..), State(..), StartMode(..))
+module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), Msg(..), SoundModel(..), SoundState(..), State(..), StartMode(..), GhostName(..))
 
 import Audio
 import Time
@@ -50,13 +50,14 @@ type SoundModel
 
 
 type alias Ghost =
-    { ghostColor : GhostColors
+    { color : GhostColors
     , position : Point
     , dir : Direction
     , active : Bool
     , offset : Int
     , src : String
     , goBackInPrison: Bool
+    , name: GhostName 
     }
 
 
@@ -78,6 +79,7 @@ type Msg
 type StartMode
     = NewLevel
     | NormalReset
+
 type State
     = Running Direction
     | Stopped Direction
@@ -99,3 +101,10 @@ type GhostColors
     | Yellow
     | Hunted
     | White
+    | GoBackInPrison
+
+type GhostName
+    = Blinky
+    | Pinky
+    | Inky
+    | Clyde

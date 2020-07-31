@@ -1,9 +1,9 @@
-module Types.Ghost exposing (changeGhostColor, changeGoBackInPrison, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost)
+module Types.Ghost exposing (changeGhostSrc, getGhostSrc, changeGoBackInPrison, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost)
 
 import Arithmetic exposing (intSquareRoot)
 import Movement exposing (checkDir)
 import Settings exposing (getPoint, ghostSettings, movement, pacSettings)
-import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), State(..))
+import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), State(..), GhostName(..))
 import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
 
@@ -41,8 +41,46 @@ moveGhost ghost dir goBackInPrison =
             else
                 ghost.active
 
-        currentSrc =
-            case dir of
+    in
+    if (goBackInPrison && ghost.goBackInPrison) || not ghost.goBackInPrison then
+        {name= ghost.name, color = ghost.color, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = getGhostSrc ghost.color dir, goBackInPrison = ghost.goBackInPrison }
+
+    else
+        ghost
+
+
+
+-------------------------------------
+-- Move ghost in specific position --
+-------------------------------------
+
+
+moveGhoastToPosition : Ghost -> Point -> Ghost
+moveGhoastToPosition ghost target =
+    { name= ghost.name, color = ghost.color, position = target, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison }
+
+changeGoBackInPrison : Ghost -> Bool -> Ghost
+changeGoBackInPrison ghost value =
+    {name= ghost.name, color = ghost.color, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = value }
+
+
+
+-------------------------------------
+-- Change ghost color --
+-------------------------------------
+
+
+changeGhostSrc : Ghost -> GhostColors -> Ghost
+changeGhostSrc ghost color =
+  
+    { name= ghost.name, color = color, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = getGhostSrc color ghost.dir, goBackInPrison = ghost.goBackInPrison }
+
+
+getGhostSrc : GhostColors -> Direction -> String
+getGhostSrc color dir =
+  let
+        ghostSrcDir = 
+           case dir of
                 Left ->
                     "_left"
 
@@ -57,61 +95,27 @@ moveGhost ghost dir goBackInPrison =
 
                 _ ->
                     ""
-    in
-    if (goBackInPrison && ghost.goBackInPrison) || not ghost.goBackInPrison then
-        { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = Maybe.withDefault "" (List.head (String.split "_" ghost.src)) ++ currentSrc, goBackInPrison = ghost.goBackInPrison }
+        in
+        case color of
+            Red ->
+                "blinky/blinky" ++ ghostSrcDir
 
-    else
-        ghost
+            Pink ->
+                "pinky/pinky" ++ ghostSrcDir
 
+            Yellow ->
+                "clyde/clyde" ++ ghostSrcDir
 
+            Blue ->
+                "inky/inky" ++ ghostSrcDir
 
--------------------------------------
--- Move ghost in specific position --
--------------------------------------
+            Hunted ->
+                "hunted"
 
-
-moveGhoastToPosition : Ghost -> Point -> Ghost
-moveGhoastToPosition ghost target =
-    { ghostColor = ghost.ghostColor, position = target, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison }
-
-
-changeGoBackInPrison : Ghost -> Bool -> Ghost
-changeGoBackInPrison ghost value =
-    { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = value }
-
-
-
--------------------------------------
--- Change ghost color --
--------------------------------------
-
-
-changeGhostColor : Ghost -> GhostColors -> Ghost
-changeGhostColor ghost color =
-    let
-        ghostSrc =
-            case color of
-                Red ->
-                    "blinky"
-
-                Pink ->
-                    "pinky"
-
-                Yellow ->
-                    "clyde"
-
-                Blue ->
-                    "inky"
-
-                Hunted ->
-                    "hunted"
-
-                White ->
-                    "hunted_white"
-    in
-    { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghostSrc, goBackInPrison = ghost.goBackInPrison }
-
+            White ->
+                "hunted_white"
+            GoBackInPrison ->
+                "eyes/eyes" ++ ghostSrcDir    
 
 
 -----------------------------------------
@@ -122,10 +126,10 @@ changeGhostColor ghost color =
 huntedColorChange : Ghost -> Ghost
 huntedColorChange ghost =
     if ghost.src == "hunted" then
-        changeGhostColor ghost White
+        changeGhostSrc ghost White
 
     else if ghost.src == "hunted_white" then
-        changeGhostColor ghost Hunted
+        changeGhostSrc ghost Hunted
 
     else
         ghost
@@ -141,7 +145,7 @@ getGhostNextDir : Game -> Ghost -> Bool -> Direction
 getGhostNextDir game ghost goBackToPrison =
     let
         currentType =
-            if not ghost.active || (ghost.active && goBackToPrison) then
+            if not ghost.active then
                 GhostStartLine
 
             else
@@ -151,7 +155,7 @@ getGhostNextDir game ghost goBackToPrison =
             if goBackToPrison then
                 ghostSettings.startPosition
 
-            else if ghost.ghostColor == Yellow && getVectorLength ghost.position game.pPosition > 8 * pacSettings.ratio && currentType /= GhostStartLine then
+            else if ghost.name == Clyde && getVectorLength ghost.position game.pPosition > 8 * pacSettings.ratio && currentType /= GhostStartLine then
                 getPoint 44
 
             else if not ghost.active then
@@ -166,7 +170,7 @@ getGhostNextDir game ghost goBackToPrison =
                                     pos =
                                         { x = game.pPosition.x - ghost.offset * pacSettings.ratio, y = game.pPosition.y }
                                 in
-                                if ghost.ghostColor == Blue then
+                                if ghost.name == Inky then
                                     { x = game.pPosition.x - getBlueGhoastOffset game.redGhost.position pos, y = game.pPosition.y }
 
                                 else
@@ -177,7 +181,7 @@ getGhostNextDir game ghost goBackToPrison =
                                     pos =
                                         { x = game.pPosition.x + ghost.offset * pacSettings.ratio, y = game.pPosition.y }
                                 in
-                                if ghost.ghostColor == Blue then
+                                if ghost.name == Inky then
                                     { x = game.pPosition.x + getBlueGhoastOffset game.redGhost.position pos, y = game.pPosition.y }
 
                                 else
@@ -188,7 +192,7 @@ getGhostNextDir game ghost goBackToPrison =
                                     pos =
                                         { x = game.pPosition.x, y = game.pPosition.y + ghost.offset * pacSettings.ratio }
                                 in
-                                if ghost.ghostColor == Blue then
+                                if ghost.name == Inky then
                                     { x = game.pPosition.x, y = game.pPosition.y + getBlueGhoastOffset game.redGhost.position pos }
 
                                 else
@@ -199,7 +203,7 @@ getGhostNextDir game ghost goBackToPrison =
                                     pos =
                                         { x = game.pPosition.x, y = game.pPosition.y - ghost.offset * pacSettings.ratio }
                                 in
-                                if ghost.ghostColor == Blue then
+                                if ghost.name == Inky then
                                     { x = game.pPosition.x, y = game.pPosition.y - getBlueGhoastOffset game.redGhost.position pos }
 
                                 else

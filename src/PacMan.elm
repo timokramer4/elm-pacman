@@ -47,10 +47,10 @@ initialModel =
     , itemCounter = 0
     , fruitSecondCounter = 0
     , fruitAvailable = False
-    , redGhost = { ghostColor = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = "blinky_left", goBackInPrison = False }
-    , pinkGhost = { ghostColor = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = "pinky_up", goBackInPrison = False }
-    , blueGhost = { ghostColor = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = "inky_up", goBackInPrison = False }
-    , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = "clyde", goBackInPrison = False }
+    , redGhost = { name = Blinky, color = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = getGhostSrc Red Right, goBackInPrison = False }
+    , pinkGhost = { name = Pinky, color = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = getGhostSrc Pink Up, goBackInPrison = False }
+    , blueGhost = { name = Inky, color = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = getGhostSrc Blue Up, goBackInPrison = False }
+    , yellowGhost = { name = Clyde, color = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = getGhostSrc Yellow Up, goBackInPrison = False }
     , pillActive = False
     , pillSecondCounter = 0
     , sound = LoadingModel
@@ -155,7 +155,7 @@ update msg game =
 
         Pill ->
             if game.pillSecondCounter == 10 then
-                ( { game | pillActive = False, pillSecondCounter = 0, eatenGhostsCounter = 0, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | pillActive = False, pillSecondCounter = 0, eatenGhostsCounter = 0, redGhost = changeGhostSrc game.redGhost Red, yellowGhost = changeGhostSrc game.yellowGhost Yellow, blueGhost = changeGhostSrc game.blueGhost Blue, pinkGhost = changeGhostSrc game.pinkGhost Pink }, Cmd.none, Audio.cmdNone )
 
             else
                 ( { game | pillSecondCounter = game.pillSecondCounter + 1 }, Cmd.none, Audio.cmdNone )
@@ -237,31 +237,31 @@ update msg game =
         GhostGoBackInPrison ->
             -- red ghost
             if game.redGhost.goBackInPrison && game.redGhost.position /= ghostSettings.startPosition then
-                ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost True) True }, Cmd.none, Audio.cmdNone )
+                ( { game | redGhost = changeGhostSrc (moveGhost game.redGhost (getGhostNextDir game game.redGhost True) True) GoBackInPrison } , Cmd.none, Audio.cmdNone )
 
             else if game.redGhost.goBackInPrison && game.redGhost.position == ghostSettings.startPosition then
-                ( { game | redGhost = changeGhostColor (moveGhoastToPosition (changeGoBackInPrison game.redGhost False) ghostSettings.pinkStartPos) game.redGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | redGhost = changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison game.redGhost False) ghostSettings.pinkStartPos) Red }, Cmd.none, Audio.cmdNone )
                 --pink ghost
 
             else if game.pinkGhost.goBackInPrison && game.pinkGhost.position /= ghostSettings.startPosition then
-                ( { game | pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost True) True }, Cmd.none, Audio.cmdNone )
+                ( { game | pinkGhost = changeGhostSrc (moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost True) True) GoBackInPrison }, Cmd.none, Audio.cmdNone )
 
             else if game.pinkGhost.goBackInPrison && game.pinkGhost.position == ghostSettings.startPosition then
-                ( { game | pinkGhost = changeGhostColor (moveGhoastToPosition (changeGoBackInPrison game.pinkGhost False) ghostSettings.pinkStartPos) game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | pinkGhost = changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison game.pinkGhost False) ghostSettings.pinkStartPos) Pink}, Cmd.none, Audio.cmdNone )
                 --blue ghost
 
             else if game.blueGhost.goBackInPrison && game.blueGhost.position /= ghostSettings.startPosition then
-                ( { game | blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost True) True }, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = changeGhostSrc (moveGhost game.blueGhost (getGhostNextDir game game.blueGhost True) True ) GoBackInPrison}, Cmd.none, Audio.cmdNone )
 
             else if game.blueGhost.goBackInPrison && game.blueGhost.position == ghostSettings.startPosition then
-                ( { game | blueGhost = changeGhostColor (moveGhoastToPosition (changeGoBackInPrison game.blueGhost False) ghostSettings.blueStartPos) game.blueGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison game.blueGhost False) ghostSettings.blueStartPos)Blue }, Cmd.none, Audio.cmdNone )
                 --yellow ghost
 
             else if game.yellowGhost.goBackInPrison && game.yellowGhost.position /= ghostSettings.startPosition then
-                ( { game | yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost True) True }, Cmd.none, Audio.cmdNone )
+                ( { game | yellowGhost = changeGhostSrc (moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost True) True) GoBackInPrison }, Cmd.none, Audio.cmdNone )
 
             else if game.yellowGhost.goBackInPrison && game.yellowGhost.position == ghostSettings.startPosition then
-                ( { game | yellowGhost = changeGhostColor (moveGhoastToPosition (changeGoBackInPrison game.yellowGhost False) ghostSettings.yellowStartPos) game.yellowGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | yellowGhost = changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison game.yellowGhost False) ghostSettings.yellowStartPos) Yellow }, Cmd.none, Audio.cmdNone )
 
             else
                 ( game, Cmd.none, Audio.cmdNone )
@@ -334,13 +334,13 @@ view game =
                     (gameChildCss
                         ++ [ id "ghostArea" ]
                     )
-                    [ img (ghostSvgCss ++ [ src ("Assets/img/ghosts/blinky/" ++ game.redGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.redGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.redGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    [ img (ghostSvgCss ++ [ src ("Assets/img/ghosts/" ++ game.redGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.redGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.redGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/pinky/" ++ game.pinkGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.pinkGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pinkGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/" ++ game.pinkGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.pinkGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pinkGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/inky/" ++ game.blueGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.blueGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.blueGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/" ++ game.blueGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.blueGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.blueGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
-                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/clyde/" ++ game.yellowGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.yellowGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.yellowGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
+                    , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/" ++ game.yellowGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.yellowGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.yellowGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
                     ]
                 ]
@@ -592,10 +592,10 @@ resetGame game mode =
     , itemCounter = newItemCounter
     , fruitSecondCounter = 0
     , fruitAvailable = False
-    , redGhost = { ghostColor = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = "blinky_left", goBackInPrison = False }
-    , pinkGhost = { ghostColor = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = "pinky_up", goBackInPrison = False }
-    , blueGhost = { ghostColor = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = "inky_up", goBackInPrison = False }
-    , yellowGhost = { ghostColor = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = "clyde_up", goBackInPrison = False }
+    , redGhost = { name = game.redGhost.name, color = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = getGhostSrc Red Right, goBackInPrison = False }
+    , pinkGhost = { name = game.pinkGhost.name, color = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = getGhostSrc Pink Up, goBackInPrison = False }
+    , blueGhost = { name = game.blueGhost.name, color = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = getGhostSrc Blue Up, goBackInPrison = False }
+    , yellowGhost = { name = game.yellowGhost.name, color = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = getGhostSrc Yellow Up, goBackInPrison = False }
     , pillActive = False
     , pillSecondCounter = 0
     , sound = LoadingModel

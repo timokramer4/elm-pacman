@@ -6,7 +6,7 @@ import Settings exposing (fruitSettings, itemSettings, pillSettings)
 import Svg exposing (Svg, circle, image, rect)
 import Svg.Attributes exposing (cx, cy, fill, height, r, width, x, xlinkHref, y)
 import Types.GameModels exposing (Game, GhostColors(..), Msg)
-import Types.Ghost exposing (changeGhostColor)
+import Types.Ghost exposing (changeGhostSrc)
 import Types.Line exposing (Line, LineType(..))
 import Types.Point exposing (Point)
 
@@ -100,11 +100,11 @@ checkEatable game =
     else if List.length game.pills /= List.length localListPills then
         -- eat pill an fruit
         if game.pPosition == fruitSettings.position && game.fruitAvailable then
-            { game | pills = localListPills, score = game.score + fruitXp + pillSettings.xp, fruitAvailable = False, pillActive = True, redGhost = changeGhostColor game.redGhost Hunted, yellowGhost = changeGhostColor game.yellowGhost Hunted, blueGhost = changeGhostColor game.blueGhost Hunted, pinkGhost = changeGhostColor game.pinkGhost Hunted }
+            { game | pills = localListPills, score = game.score + fruitXp + pillSettings.xp, fruitAvailable = False, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
             -- eat only pill
 
         else
-            { game | pills = localListPills, score = game.score + pillSettings.xp, pillActive = True, redGhost = changeGhostColor game.redGhost Hunted, yellowGhost = changeGhostColor game.yellowGhost Hunted, blueGhost = changeGhostColor game.blueGhost Hunted, pinkGhost = changeGhostColor game.pinkGhost Hunted }
+            { game | pills = localListPills, score = game.score + pillSettings.xp, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
 
     else if game.pPosition == fruitSettings.position && game.fruitAvailable then
         { game | items = localListItems, score = game.score + fruitXp + itemSettings.xp, fruitAvailable = False }

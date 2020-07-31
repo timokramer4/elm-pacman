@@ -40,7 +40,8 @@ initialModel =
     , pRotation = 0
     , lifes = 3
     , score = 0
-    , items = substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
+    , items = getFullItemList
+    , totalItemCount = length getFullItemList
     , message = gameMessages.ready
     , pills = pillsList
     , itemCounter = 0
@@ -54,6 +55,7 @@ initialModel =
     , pillSecondCounter = 0
     , sound = LoadingModel
     , eatenGhostsCounter = 0
+    , level = 1
     }
 
 
@@ -146,31 +148,31 @@ update msg game =
 
         Fruit ->
             if game.fruitSecondCounter == 10 then
-                ( { game | fruitAvailable = False }, Cmd.none, Audio.cmdNone )
+                ( { game | fruitAvailable = False, fruitSecondCounter = 0 }, Cmd.none, Audio.cmdNone )
 
             else
                 ( { game | fruitSecondCounter = game.fruitSecondCounter + 1 }, Cmd.none, Audio.cmdNone )
 
         Pill ->
             if game.pillSecondCounter == 10 then
-                ( { game | pillActive = False, eatenGhostsCounter = 0, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | pillActive = False, pillSecondCounter = 0, eatenGhostsCounter = 0, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
 
             else
-                ( { game | pillSecondCounter = game.pillSecondCounter + 1, message = "Pille aktiv" }, Cmd.none, Audio.cmdNone )
+                ( { game | pillSecondCounter = game.pillSecondCounter + 1 }, Cmd.none, Audio.cmdNone )
 
         GhostMove ->
             -- In the first round Pinky (pink) leaves the prison after one, Inky (blue) after 30 and Clyde (yellow) after 60 items. The counter is reset each time. After PacMan has been eaten once, Pinky (pink) leaves the prison after 7, Inky (blue) after 17 and Clyde (yellow) after 32 items. The counter is not reset like in the beginning.
             if checkGhoastEatingPacMan game.pPosition game.redGhost.position && checkGhoastEatingPacMan game.pPosition game.blueGhost.position && checkGhoastEatingPacMan game.pPosition game.yellowGhost.position && checkGhoastEatingPacMan game.pPosition game.pinkGhost.position && game.state /= Stopped None then
                 -- Clyde (yellow) starts
-                if (game.itemCounter > 91 && game.lifes == 3) || game.itemCounter > 32 then
+                if (game.itemCounter > 91 && game.lifes == 3) || (game.itemCounter > 32 && game.lifes /= 3) then
                     ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none, Audio.cmdNone )
                     -- Inky (blue) starts
 
-                else if (game.itemCounter > 31 && game.lifes == 3) || game.itemCounter > 17 then
+                else if (game.itemCounter > 31 && game.lifes == 3) || (game.itemCounter > 17 && game.lifes /= 3) then
                     ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none, Audio.cmdNone )
                     -- Pinky (pink) start
 
-                else if (game.itemCounter > 1 && game.lifes == 3) || game.itemCounter > 7 then
+                else if (game.itemCounter > 1 && game.lifes == 3) || (game.itemCounter > 7 && game.lifes /= 3) then
                     ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost), pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost) }, Cmd.none, Audio.cmdNone )
 
                 else
@@ -183,7 +185,7 @@ update msg game =
                             ( { game | state = Stopped d, message = gameMessages.gameOver }, Cmd.none, Audio.cmdNone )
 
                         else
-                            ( { game | state = Stopped d, lifes = game.lifes - 1 }, Delay.after 3000 Millisecond ResetGame, Audio.cmdNone )
+                            ( { game | state = Stopped d, lifes = game.lifes - 1 }, Delay.after 3000 Millisecond (ResetGame NormalReset), Audio.cmdNone )
 
                     -- pacMan Loose Animation
                     _ ->
@@ -194,25 +196,25 @@ update msg game =
             if
                 not (checkGhoastEatingPacMan game.pPosition game.redGhost.position)
             then
-                ( { game | redGhost = moveGhoastToPosition game.redGhost ghostSettings.pinkStartPos, message = "Roter gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
+                ( { game | redGhost = changeGhostColor (moveGhoastToPosition game.redGhost ghostSettings.pinkStartPos) game.redGhost.ghostColor, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
                 -- pacMan eat blueGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.blueGhost.position) then
-                ( { game | blueGhost = moveGhoastToPosition game.blueGhost ghostSettings.pinkStartPos, message = "Blauer gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = changeGhostColor (moveGhoastToPosition game.blueGhost ghostSettings.pinkStartPos) game.blueGhost.ghostColor, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
                 --pacMan eat yellowGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.yellowGhost.position) then
-                ( { game | yellowGhost = moveGhoastToPosition game.yellowGhost ghostSettings.pinkStartPos, message = "Gelder gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
+                ( { game | yellowGhost = changeGhostColor (moveGhoastToPosition game.yellowGhost ghostSettings.pinkStartPos) game.yellowGhost.ghostColor, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
                 --pacMan eat pinkGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.pinkGhost.position) then
-                ( { game | pinkGhost = moveGhoastToPosition game.pinkGhost ghostSettings.pinkStartPos, message = "Pinker gefressen", eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
+                ( { game | pinkGhost = changeGhostColor (moveGhoastToPosition game.pinkGhost ghostSettings.pinkStartPos) game.pinkGhost.ghostColor, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = game.score + (game.eatenGhostsCounter + 1) * 200 }, Cmd.none, Audio.cmdNone )
 
             else
                 ( game, Cmd.none, Audio.cmdNone )
 
-        ResetGame ->
-            ( resetGame game, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
+        ResetGame mode ->
+            ( resetGame game mode, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
 
         -- pacMan wait to start
         StartGame ->
@@ -255,7 +257,7 @@ view game =
                     )
                     (pointsToSvg game.items 1
                         ++ pointsToSvg game.pills 2
-                        ++ createFruit game.fruitAvailable
+                        ++ createFruit game.fruitAvailable game.level
                         ++ [ path [ fill fieldSettings.borderColor, d "M94,70.7H43.7c-2.8,0-5-2.3-5-5V42.3c0-2.8,2.3-5,5-5H94c2.8,0,5,2.3,5,5v23.3C99,68.4,96.8,70.7,94,70.7z" ] []
                            , path [ fill fieldSettings.borderColor, d "M200.3,70.7h-66c-2.8,0-5-2.3-5-5V42.3c0-2.8,2.2-5,5-5h66c2.8,0,5,2.3,5,5v23.3 C205.3,68.4,203.1,70.7,200.3,70.7z" ] []
                            , path [ fill fieldSettings.borderColor, d "M366.1,71.6h-67.5c-3,0-5.3-2.3-5.3-5V43.2c0-2.8,2.5-5,5.3-5h67.5c3,0,5.3,2.3,5.3,5v23.3 C371.5,69.3,369.1,71.6,366.1,71.6z" ] []
@@ -311,16 +313,7 @@ view game =
                 [ div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Leben:" ]
                 , div textCss (pacManSvgList [] game.lifes)
                 , div (textCss ++ [ Html.Attributes.style "text-transform" "uppercase" ]) [ Html.text "Früchte:" ]
-                , div textCss
-                    [ img [ src "Assets/img/fruits/apple.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
-                        []
-                    , img [ src "Assets/img/fruits/orange.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
-                        []
-                    , img [ src "Assets/img/fruits/strawberry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
-                        []
-                    , img [ src "Assets/img/fruits/cherry.svg", width fruitSettings.ratio, height fruitSettings.ratio ]
-                        []
-                    ]
+                , div textCss (fruitSvgList [] 1 game.level)
                 ]
             ]
         ]
@@ -337,29 +330,42 @@ subscriptions game =
     Sub.batch
         [ Browser.Events.onKeyDown keyDecoder
         , case game.state of
+            -- normal running
             Running d ->
                 Time.every 20 (\_ -> MoveDirection d)
 
+            -- start case (waiting till pacMan can run)
             Waiting ->
-                Time.every 20 (\_ -> ResetGame)
+                Time.every 20 (\_ -> ResetGame NormalReset)
 
             _ ->
                 Sub.none
+
+        -- timer for fruit
         , if game.fruitAvailable then
             Time.every 1000 (\_ -> Fruit)
 
           else
             Sub.none
+
+        -- timer for pill
         , if game.pillActive then
             Time.every 1000 (\_ -> Pill)
 
           else
             Sub.none
+
+        -- ghost moving (fast in normal mode and slow when pill active)
         , if game.pillActive then
             Time.every 30 (\_ -> GhostMove)
 
           else
             Time.every 20 (\_ -> GhostMove)
+        , if game.totalItemCount == game.itemCounter then
+            Time.every 20 (\_ -> ResetGame NewLevel)
+
+          else
+            Sub.none
         ]
 
 
@@ -483,23 +489,60 @@ substractList a b =
 
 
 
+----------------------
+-- getFullItemList  --
+----------------------
+
+
+getFullItemList : List Point
+getFullItemList =
+    substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
+
+
+
 -------------------------
 -- reset life function --
 -------------------------
 
 
-resetGame : Game -> Game
-resetGame game =
+resetGame : Game -> StartMode -> Game
+resetGame game mode =
+    let
+        itemList =
+            case mode of
+                NormalReset ->
+                    game.items
+
+                NewLevel ->
+                    getFullItemList
+
+        level =
+            case mode of
+                NormalReset ->
+                    game.level
+
+                NewLevel ->
+                    game.level + 1
+
+        newItemCounter =
+            case mode of
+                NormalReset ->
+                    game.itemCounter
+
+                NewLevel ->
+                    0
+    in
     { pPosition = pacSettings.startPosition
     , state = Stopped None
     , nextDir = Right
     , pRotation = 0
     , lifes = game.lifes
     , score = game.score
-    , items = game.items
+    , items = itemList
+    , totalItemCount = game.totalItemCount
     , message = gameMessages.ready
     , pills = game.pills
-    , itemCounter = game.itemCounter
+    , itemCounter = newItemCounter
     , fruitSecondCounter = 0
     , fruitAvailable = False
     , redGhost = { ghostColor = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = "blinky" }
@@ -510,6 +553,7 @@ resetGame game =
     , pillSecondCounter = 0
     , sound = LoadingModel
     , eatenGhostsCounter = 0
+    , level = level
     }
 
 
@@ -523,6 +567,37 @@ pacManSvgList : List (Svg Msg) -> Int -> List (Svg Msg)
 pacManSvgList list amount =
     if amount > 0 then
         pacManSvgList (img [ src "Assets/img/pacman/pacman.svg", width pacSettings.ratio, height pacSettings.ratio ] [] :: list) (amount - 1)
+
+    else
+        list
+
+
+
+-------------------------
+----- fruit display -----
+-------------------------
+
+
+fruitSvgList : List (Svg Msg) -> Int -> Int -> List (Svg Msg)
+fruitSvgList list counter level =
+    if counter <= level then
+        if counter == 1 then
+            fruitSvgList (img [ src "Assets/img/fruits/cherry.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 1) level
+
+        else if counter == 2 then
+            fruitSvgList (img [ src "Assets/img/fruits/strawberry.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 1) level
+
+        else if counter == 3 then
+            fruitSvgList (img [ src "Assets/img/fruits/orange.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
+
+        else if counter == 5 then
+            fruitSvgList (img [ src "Assets/img/fruits/apple.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
+
+        else if counter == 7 then
+            fruitSvgList (img [ src "Assets/img/fruits/grape.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
+
+        else
+            list
 
     else
         list

@@ -148,14 +148,14 @@ update msg game =
 
         Fruit ->
             if game.fruitSecondCounter == 10 then
-                ( { game | fruitAvailable = False }, Cmd.none, Audio.cmdNone )
+                ( { game | fruitAvailable = False, fruitSecondCounter = 0 }, Cmd.none, Audio.cmdNone )
 
             else
                 ( { game | fruitSecondCounter = game.fruitSecondCounter + 1 }, Cmd.none, Audio.cmdNone )
 
         Pill ->
             if game.pillSecondCounter == 10 then
-                ( { game | pillActive = False, eatenGhostsCounter = 0, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | pillActive = False, pillSecondCounter = 0, eatenGhostsCounter = 0, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
 
             else
                 ( { game | pillSecondCounter = game.pillSecondCounter + 1 }, Cmd.none, Audio.cmdNone )

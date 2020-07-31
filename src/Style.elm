@@ -13,7 +13,7 @@ import Settings exposing (fieldSettings, ghostSettings, pacSettings)
 
 wrapperCss : List (Html.Attribute msg)
 wrapperCss =
-    [ Html.Attributes.style "width" "100%"
+    [ Html.Attributes.style "width" "99%"
     , Html.Attributes.style "height" "auto"
     , Html.Attributes.style "position" "absolute"
     , Html.Attributes.style "top" "50%"

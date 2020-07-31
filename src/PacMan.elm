@@ -289,7 +289,7 @@ view game =
                     (gameChildCss
                         ++ [ id "pacmanArea" ]
                     )
-                    [ img (pacmanSvgCss ++ [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
+                    [ img (pacmanSvgCss ++ [ src "Assets/img/pacman/pacman.svg", Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
                         []
                     , div (textCss ++ messageCss) [ Html.text game.message ]
                     ]
@@ -522,12 +522,7 @@ resetGame game =
 pacManSvgList : List (Svg Msg) -> Int -> List (Svg Msg)
 pacManSvgList list amount =
     if amount > 0 then
-        pacManSvgList (createPacManSvg :: list) (amount - 1)
+        pacManSvgList (img [ src "Assets/img/pacman/pacman.svg", width pacSettings.ratio, height pacSettings.ratio ] [] :: list) (amount - 1)
 
     else
         list
-
-
-createPacManSvg : Svg Msg
-createPacManSvg =
-    img [ src "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pacman.svg/972px-Pacman.svg.png", width pacSettings.ratio, height pacSettings.ratio ] []

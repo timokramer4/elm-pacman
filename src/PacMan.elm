@@ -53,6 +53,7 @@ initialModel =
     , pillActive = False
     , pillSecondCounter = 0
     , sound = LoadingModel
+    , eatenGhostsCounter = 0
     }
 
 
@@ -152,7 +153,7 @@ update msg game =
 
         Pill ->
             if game.pillSecondCounter == 10 then
-                ( { game | pillActive = False, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | pillActive = False, eatenGhostsCounter= 0, redGhost = changeGhostColor game.redGhost game.redGhost.ghostColor, yellowGhost = changeGhostColor game.yellowGhost game.yellowGhost.ghostColor, blueGhost = changeGhostColor game.blueGhost game.blueGhost.ghostColor, pinkGhost = changeGhostColor game.pinkGhost game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
 
             else
                 ( { game | pillSecondCounter = game.pillSecondCounter + 1, message = "Pille aktiv" }, Cmd.none, Audio.cmdNone )
@@ -188,23 +189,24 @@ update msg game =
                         ( game, Cmd.none, Audio.cmdNone )
 
             else
+
             -- pacMan eat redGhost
             if
                 not (checkGhoastEatingPacMan game.pPosition game.redGhost.position)
             then
-                ( { game | redGhost = moveGhoastToPosition game.redGhost ghostSettings.pinkStartPos, message = "Roter gefressen" }, Cmd.none, Audio.cmdNone )
+                ( { game | redGhost = moveGhoastToPosition game.redGhost ghostSettings.pinkStartPos, message = "Roter gefressen",eatenGhostsCounter= game.eatenGhostsCounter+1, score= game.score + (game.eatenGhostsCounter+1)*200 }, Cmd.none, Audio.cmdNone )
                 -- pacMan eat blueGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.blueGhost.position) then
-                ( { game | blueGhost = moveGhoastToPosition game.blueGhost ghostSettings.pinkStartPos, message = "Blauer gefressen" }, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = moveGhoastToPosition game.blueGhost ghostSettings.pinkStartPos, message = "Blauer gefressen",eatenGhostsCounter= game.eatenGhostsCounter+1, score= game.score + (game.eatenGhostsCounter+1)*200 }, Cmd.none, Audio.cmdNone )
                 --pacMan eat yellowGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.yellowGhost.position) then
-                ( { game | yellowGhost = moveGhoastToPosition game.yellowGhost ghostSettings.pinkStartPos, message = "Gelder gefressen" }, Cmd.none, Audio.cmdNone )
+                ( { game | yellowGhost = moveGhoastToPosition game.yellowGhost ghostSettings.pinkStartPos, message = "Gelder gefressen",eatenGhostsCounter= game.eatenGhostsCounter+1, score= game.score + (game.eatenGhostsCounter+1)*200 }, Cmd.none, Audio.cmdNone )
                 --pacMan eat pinkGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.pinkGhost.position) then
-                ( { game | pinkGhost = moveGhoastToPosition game.pinkGhost ghostSettings.pinkStartPos, message = "Pinker gefressen" }, Cmd.none, Audio.cmdNone )
+                ( { game | pinkGhost = moveGhoastToPosition game.pinkGhost ghostSettings.pinkStartPos, message = "Pinker gefressen",eatenGhostsCounter= game.eatenGhostsCounter+1, score= game.score + (game.eatenGhostsCounter+1)*200 }, Cmd.none, Audio.cmdNone )
 
             else
                 ( game, Cmd.none, Audio.cmdNone )
@@ -503,6 +505,7 @@ resetGame game =
     , pillActive = False
     , pillSecondCounter = 0
     , sound = LoadingModel
+    , eatenGhostsCounter = 0
     }
 
 

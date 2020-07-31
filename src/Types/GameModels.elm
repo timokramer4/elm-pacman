@@ -24,6 +24,7 @@ type alias Game =
     , yellowGhost : Ghost
     , pillActive : Bool
     , pillSecondCounter : Int
+    , eatenGhostsCounter : Int
     , sound : SoundModel
     }
 

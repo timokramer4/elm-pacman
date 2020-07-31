@@ -130,7 +130,7 @@ update msg game =
         Types.GameModels.Nothing ->
             case game.state of
                 Running d ->
-                    ( { game | state = Stopped d }, Cmd.none, Audio.cmdNone )
+                    ( { game | state = Stopped d }, Cmd.none, Audio.loadAudio SoundLoaded "Assets/sounds/start_music.wav" )
 
                 Stopped d ->
                     ( { game | state = Running d }, Cmd.none, Audio.cmdNone )
@@ -216,7 +216,7 @@ update msg game =
 
         -- pacMan wait to start
         StartGame ->
-            ( { game | message = gameMessages.noText, state = Running Right }, Cmd.none, Audio.cmdNone )
+            ( { game | message = gameMessages.noText, state = Running Right }, Cmd.none, Audio.loadAudio SoundLoaded "Assets/sounds/start_music.wav" )
 
         SoundLoaded x ->
             case x of

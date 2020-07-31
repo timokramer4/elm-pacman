@@ -1,7 +1,6 @@
-module Types.Ghost exposing (changeGhostColor, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost, changeGoBackInPrison)
+module Types.Ghost exposing (changeGhostColor, changeGoBackInPrison, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost)
 
 import Arithmetic exposing (intSquareRoot)
-import Array
 import Movement exposing (checkDir)
 import Settings exposing (getPoint, ghostSettings, movement, pacSettings)
 import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), State(..))
@@ -60,7 +59,8 @@ moveGhost ghost dir goBackInPrison =
                     ""
     in
     if (goBackInPrison && ghost.goBackInPrison) || not ghost.goBackInPrison then
-        { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = Maybe.withDefault "" (List.head (String.split "_" ghost.src)) ++ currentSrc, goBackInPrision = ghost.goBackInPrision }
+        { ghostColor = ghost.ghostColor, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = Maybe.withDefault "" (List.head (String.split "_" ghost.src)) ++ currentSrc, goBackInPrison = ghost.goBackInPrison }
+
     else
         ghost
 
@@ -76,7 +76,7 @@ moveGhoastToPosition ghost target =
     { ghostColor = ghost.ghostColor, position = target, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison }
 
 
-changeGoBackInPrison: Ghost -> Bool -> Ghost
+changeGoBackInPrison : Ghost -> Bool -> Ghost
 changeGoBackInPrison ghost value =
     { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = value }
 
@@ -110,7 +110,7 @@ changeGhostColor ghost color =
                 White ->
                     "hunted_white"
     in
-    { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghostSrc, goBackInPrison =ghost.goBackInPrison }
+    { ghostColor = ghost.ghostColor, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghostSrc, goBackInPrison = ghost.goBackInPrison }
 
 
 
@@ -150,6 +150,7 @@ getGhostNextDir game ghost goBackToPrison =
         targetPos =
             if goBackToPrison then
                 ghostSettings.startPosition
+
             else if ghost.ghostColor == Yellow && getVectorLength ghost.position game.pPosition > 8 * pacSettings.ratio && currentType /= GhostStartLine then
                 getPoint 44
 

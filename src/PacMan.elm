@@ -254,14 +254,14 @@ update msg game =
                 ( { game | blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost True) True }, Cmd.none, Audio.cmdNone )
 
             else if game.blueGhost.goBackInPrison && game.blueGhost.position == ghostSettings.startPosition then
-                ( { game | blueGhost = changeGhostColor (moveGhoastToPosition (changeGoBackInPrison game.blueGhost False) ghostSettings.blueStartPos) game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = changeGhostColor (moveGhoastToPosition (changeGoBackInPrison game.blueGhost False) ghostSettings.blueStartPos) game.blueGhost.ghostColor }, Cmd.none, Audio.cmdNone )
                 --yellow ghost
 
             else if game.yellowGhost.goBackInPrison && game.yellowGhost.position /= ghostSettings.startPosition then
                 ( { game | yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost True) True }, Cmd.none, Audio.cmdNone )
 
             else if game.yellowGhost.goBackInPrison && game.yellowGhost.position == ghostSettings.startPosition then
-                ( { game | yellowGhost = changeGhostColor (moveGhoastToPosition (changeGoBackInPrison game.yellowGhost False) ghostSettings.yellowStartPos) game.pinkGhost.ghostColor }, Cmd.none, Audio.cmdNone )
+                ( { game | yellowGhost = changeGhostColor (moveGhoastToPosition (changeGoBackInPrison game.yellowGhost False) ghostSettings.yellowStartPos) game.yellowGhost.ghostColor }, Cmd.none, Audio.cmdNone )
 
             else
                 ( game, Cmd.none, Audio.cmdNone )
@@ -642,9 +642,16 @@ fruitSvgList list counter level =
 
         else if counter == 7 then
             fruitSvgList (img [ src "Assets/img/fruits/grape.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
+        
+        else if counter == 9 then
+            fruitSvgList (img [ src "Assets/img/fruits/spaceship.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
+        
+        else if counter == 11 then
+            fruitSvgList (img [ src "Assets/img/fruits/bell.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
 
         else
-            list
+            fruitSvgList (img [ src "Assets/img/fruits/key.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
+
 
     else
         list

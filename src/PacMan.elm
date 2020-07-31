@@ -355,7 +355,11 @@ subscriptions game =
 
           else
             Sub.none
-        , Time.every 20 (\_ -> GhostMove)
+        , if game.pillActive then
+                Time.every 30 (\_ -> GhostMove)
+          else
+                Time.every 20 (\_ -> GhostMove)
+                  
         ]
 
 

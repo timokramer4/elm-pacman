@@ -1,4 +1,4 @@
-module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), Msg(..), SoundModel(..), SoundState(..), State(..))
+module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), Msg(..), SoundModel(..), SoundState(..), State(..), StartMode(..))
 
 import Audio
 import Time
@@ -14,6 +14,7 @@ type alias Game =
     , score : Int
     , message : String
     , items : List Point
+    , totalItemCount: Int
     , pills : List Point
     , itemCounter : Int
     , fruitSecondCounter : Int
@@ -25,6 +26,7 @@ type alias Game =
     , pillActive : Bool
     , pillSecondCounter : Int
     , eatenGhostsCounter : Int
+    , level : Int
     , sound : SoundModel
     }
 
@@ -65,12 +67,14 @@ type Msg
     | Fruit
     | Pill
     | GhostMove
-    | ResetGame
-    | StartGame
+    | ResetGame StartMode
+    | StartGame 
     | SoundLoaded (Result Audio.LoadError Audio.Source)
     | GetCurrentTime Audio.Source Time.Posix
 
-
+type StartMode
+    = NewLevel
+    | NormalReset
 type State
     = Running Direction
     | Stopped Direction

@@ -213,6 +213,9 @@ update msg game =
             else
                 ( game, Cmd.none, Audio.cmdNone )
 
+        ChangeColor ->
+            ( { game | redGhost = huntedColorChange game.redGhost, yellowGhost = huntedColorChange game.yellowGhost, blueGhost = huntedColorChange game.blueGhost, pinkGhost = huntedColorChange game.pinkGhost }, Cmd.none, Audio.cmdNone )
+
         ResetGame mode ->
             ( resetGame game mode, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
 
@@ -351,6 +354,11 @@ subscriptions game =
         -- timer for pill
         , if game.pillActive then
             Time.every 1000 (\_ -> Pill)
+
+          else
+            Sub.none
+        , if game.pillActive && game.pillSecondCounter > 7 then
+            Time.every 250 (\_ -> ChangeColor)
 
           else
             Sub.none

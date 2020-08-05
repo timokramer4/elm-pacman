@@ -1,4 +1,4 @@
-module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), Msg(..), SoundModel(..), SoundState(..), State(..), StartMode(..), GhostName(..))
+module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), GhostName(..), Msg(..), SoundModel(..), SoundState(..), StartMode(..), State(..))
 
 import Audio
 import Time
@@ -8,13 +8,14 @@ import Types.Point exposing (Point)
 type alias Game =
     { pPosition : Point
     , pRotation : Int
+    , pacmanSrc : String
     , lifes : Int
     , state : State
     , nextDir : Direction
     , score : Int
     , message : String
     , items : List Point
-    , totalItemCount: Int
+    , totalItemCount : Int
     , pills : List Point
     , itemCounter : Int
     , fruitSecondCounter : Int
@@ -56,8 +57,8 @@ type alias Ghost =
     , active : Bool
     , offset : Int
     , src : String
-    , goBackInPrison: Bool
-    , name: GhostName 
+    , goBackInPrison : Bool
+    , name : GhostName
     }
 
 
@@ -72,13 +73,15 @@ type Msg
     | ChangeColor
     | GhostGoBackInPrison
     | ResetGame StartMode
-    | StartGame 
+    | StartGame
     | SoundLoaded (Result Audio.LoadError Audio.Source)
     | GetCurrentTime Audio.Source Time.Posix
+
 
 type StartMode
     = NewLevel
     | NormalReset
+
 
 type State
     = Running Direction
@@ -102,6 +105,7 @@ type GhostColors
     | Hunted
     | White
     | GoBackInPrison
+
 
 type GhostName
     = Blinky

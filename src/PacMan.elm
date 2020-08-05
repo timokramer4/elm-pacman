@@ -35,6 +35,7 @@ import Types.Point exposing (Point)
 initialModel : Game
 initialModel =
     { pPosition = { x = 250, y = 280 }
+    , pacmanSrc = "Assets/img/pacman/pacman_opened_mouth.svg"
     , state = Waiting
     , nextDir = Right
     , pRotation = 0
@@ -69,65 +70,73 @@ update : Msg -> Game -> ( Game, Cmd Msg, Audio.AudioCmd Msg )
 update msg game =
     case msg of
         MoveDirection d ->
+            let
+                newPacSrc =
+                    if String.contains "opened" game.pacmanSrc then
+                        "Assets/img/pacman/pacman_closed_mouth.svg"
+
+                    else
+                        "Assets/img/pacman/pacman_opened_mouth.svg"
+            in
             case d of
                 Left ->
                     if outOfBounds game then
-                        ( { game | pPosition = changeXPosition fieldSettings.width game, state = Running d, pRotation = 180 }, Cmd.none, Audio.cmdNone )
+                        ( { game | pacmanSrc = newPacSrc, pPosition = changeXPosition fieldSettings.width game, state = Running d, pRotation = 180 }, Cmd.none, Audio.cmdNone )
 
                     else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
                         if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
-                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
+                            ( { game | pacmanSrc = newPacSrc, state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
 
                         else
-                            ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x - movement) game, state = Running d, pRotation = 180 }, Cmd.none, Audio.cmdNone )
+                            ( checkEatable { game | pacmanSrc = newPacSrc, pPosition = changeXPosition (game.pPosition.x - movement) game, state = Running d, pRotation = 180 }, Cmd.none, Audio.cmdNone )
 
                     else
-                        update NoMoving game
+                        update NoMoving { game | pacmanSrc = initialModel.pacmanSrc }
 
                 Right ->
                     if outOfBounds game then
-                        ( { game | pPosition = changeXPosition 0 game, state = Running d, pRotation = 0 }, Cmd.none, Audio.cmdNone )
+                        ( { game | pacmanSrc = newPacSrc, pPosition = changeXPosition 0 game, state = Running d, pRotation = 0 }, Cmd.none, Audio.cmdNone )
 
                     else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
                         if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
-                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
+                            ( { game | pacmanSrc = newPacSrc, state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
 
                         else
-                            ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x + movement) game, state = Running d, pRotation = 0 }, Cmd.none, Audio.cmdNone )
+                            ( checkEatable { game | pacmanSrc = newPacSrc, pPosition = changeXPosition (game.pPosition.x + movement) game, state = Running d, pRotation = 0 }, Cmd.none, Audio.cmdNone )
 
                     else
-                        update NoMoving game
+                        update NoMoving { game | pacmanSrc = initialModel.pacmanSrc }
 
                 Up ->
                     if outOfBounds game then
-                        ( { game | pPosition = changeYPosition fieldSettings.height game, state = Running d, pRotation = -90 }, Cmd.none, Audio.cmdNone )
+                        ( { game | pacmanSrc = newPacSrc, pPosition = changeYPosition fieldSettings.height game, state = Running d, pRotation = -90 }, Cmd.none, Audio.cmdNone )
 
                     else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
                         if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
-                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
+                            ( { game | pacmanSrc = newPacSrc, state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
 
                         else
-                            ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y - movement) game, state = Running d, pRotation = -90 }, Cmd.none, Audio.cmdNone )
+                            ( checkEatable { game | pacmanSrc = newPacSrc, pPosition = changeYPosition (game.pPosition.y - movement) game, state = Running d, pRotation = -90 }, Cmd.none, Audio.cmdNone )
 
                     else
-                        update NoMoving game
+                        update NoMoving { game | pacmanSrc = initialModel.pacmanSrc }
 
                 Down ->
                     if outOfBounds game then
-                        ( { game | pPosition = changeYPosition 0 game, state = Running d, pRotation = 90 }, Cmd.none, Audio.cmdNone )
+                        ( { game | pacmanSrc = newPacSrc, pPosition = changeYPosition 0 game, state = Running d, pRotation = 90 }, Cmd.none, Audio.cmdNone )
 
                     else if checkDir game.pPosition d Pacman || checkDir game.pPosition game.nextDir Pacman then
                         if checkDir game.pPosition game.nextDir Pacman && game.nextDir /= d then
-                            ( { game | state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
+                            ( { game | pacmanSrc = newPacSrc, state = Running game.nextDir, nextDir = None }, Cmd.none, Audio.cmdNone )
 
                         else
-                            ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y + movement) game, state = Running d, pRotation = 90 }, Cmd.none, Audio.cmdNone )
+                            ( checkEatable { game | pacmanSrc = newPacSrc, pPosition = changeYPosition (game.pPosition.y + movement) game, state = Running d, pRotation = 90 }, Cmd.none, Audio.cmdNone )
 
                     else
-                        update NoMoving game
+                        update NoMoving { game | pacmanSrc = initialModel.pacmanSrc }
 
                 _ ->
-                    update NoMoving game
+                    update NoMoving { game | pacmanSrc = initialModel.pacmanSrc }
 
         Types.GameModels.Nothing ->
             case game.state of
@@ -237,7 +246,7 @@ update msg game =
         GhostGoBackInPrison ->
             -- red ghost
             if game.redGhost.goBackInPrison && game.redGhost.position /= ghostSettings.startPosition then
-                ( { game | redGhost = changeGhostSrc (moveGhost game.redGhost (getGhostNextDir game game.redGhost True) True) GoBackInPrison } , Cmd.none, Audio.cmdNone )
+                ( { game | redGhost = changeGhostSrc (moveGhost game.redGhost (getGhostNextDir game game.redGhost True) True) GoBackInPrison }, Cmd.none, Audio.cmdNone )
 
             else if game.redGhost.goBackInPrison && game.redGhost.position == ghostSettings.startPosition then
                 ( { game | redGhost = changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison game.redGhost False) ghostSettings.pinkStartPos) Red }, Cmd.none, Audio.cmdNone )
@@ -247,14 +256,14 @@ update msg game =
                 ( { game | pinkGhost = changeGhostSrc (moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost True) True) GoBackInPrison }, Cmd.none, Audio.cmdNone )
 
             else if game.pinkGhost.goBackInPrison && game.pinkGhost.position == ghostSettings.startPosition then
-                ( { game | pinkGhost = changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison game.pinkGhost False) ghostSettings.pinkStartPos) Pink}, Cmd.none, Audio.cmdNone )
+                ( { game | pinkGhost = changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison game.pinkGhost False) ghostSettings.pinkStartPos) Pink }, Cmd.none, Audio.cmdNone )
                 --blue ghost
 
             else if game.blueGhost.goBackInPrison && game.blueGhost.position /= ghostSettings.startPosition then
-                ( { game | blueGhost = changeGhostSrc (moveGhost game.blueGhost (getGhostNextDir game game.blueGhost True) True ) GoBackInPrison}, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = changeGhostSrc (moveGhost game.blueGhost (getGhostNextDir game game.blueGhost True) True) GoBackInPrison }, Cmd.none, Audio.cmdNone )
 
             else if game.blueGhost.goBackInPrison && game.blueGhost.position == ghostSettings.startPosition then
-                ( { game | blueGhost = changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison game.blueGhost False) ghostSettings.blueStartPos)Blue }, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison game.blueGhost False) ghostSettings.blueStartPos) Blue }, Cmd.none, Audio.cmdNone )
                 --yellow ghost
 
             else if game.yellowGhost.goBackInPrison && game.yellowGhost.position /= ghostSettings.startPosition then
@@ -326,7 +335,7 @@ view game =
                     (gameChildCss
                         ++ [ id "pacmanArea" ]
                     )
-                    [ img (pacmanSvgCss ++ [ src "Assets/img/pacman/pacman.svg", Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
+                    [ img (pacmanSvgCss ++ [ src game.pacmanSrc, Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
                         []
                     , div (textCss ++ messageCss) [ Html.text game.message ]
                     ]
@@ -580,6 +589,7 @@ resetGame game mode =
                     0
     in
     { pPosition = pacSettings.startPosition
+    , pacmanSrc = initialModel.pacmanSrc
     , state = Stopped None
     , nextDir = Right
     , pRotation = 0
@@ -613,7 +623,7 @@ resetGame game mode =
 pacManSvgList : List (Svg Msg) -> Int -> List (Svg Msg)
 pacManSvgList list amount =
     if amount > 0 then
-        pacManSvgList (img [ src "Assets/img/pacman/pacman.svg", width pacSettings.ratio, height pacSettings.ratio ] [] :: list) (amount - 1)
+        pacManSvgList (img [ src initialModel.pacmanSrc, width pacSettings.ratio, height pacSettings.ratio ] [] :: list) (amount - 1)
 
     else
         list
@@ -642,16 +652,15 @@ fruitSvgList list counter level =
 
         else if counter == 7 then
             fruitSvgList (img [ src "Assets/img/fruits/grape.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
-        
+
         else if counter == 9 then
             fruitSvgList (img [ src "Assets/img/fruits/spaceship.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
-        
+
         else if counter == 11 then
             fruitSvgList (img [ src "Assets/img/fruits/bell.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
 
         else
             fruitSvgList (img [ src "Assets/img/fruits/key.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
-
 
     else
         list

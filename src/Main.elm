@@ -1,4 +1,4 @@
-port module PacMan exposing (init, main)
+port module Main exposing (init, main)
 
 import Audio
 import Browser.Events exposing (onKeyDown)

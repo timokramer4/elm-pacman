@@ -64,7 +64,7 @@ type alias Ghost =
     , src : String
     , goBackInPrison : Bool
     , name : GhostName
-    , running : Bool 
+    , running : Bool
     }
 
 

@@ -105,11 +105,11 @@ checkEatable game =
     else if List.length game.pills /= List.length localListPills then
         -- eat pill and fruit
         if game.pPosition == fruitSettings.position && game.fruitAvailable then
-            { game | mouthMovement = True, pills = localListPills, score = game.score + fruitXp + pillSettings.xp, fruitAvailable = False, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
+            { game | mouthMovement = True, pills = localListPills, score = game.score + fruitXp + pillSettings.xp, fruitAvailable = False, pillActive = True, pillSecondCounter = 0, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
             -- eat only pill
 
         else
-            { game | mouthMovement = True, pills = localListPills, score = game.score + pillSettings.xp, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
+            { game | mouthMovement = True, pills = localListPills, score = game.score + pillSettings.xp, pillSecondCounter = 0, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
 
     else if game.pPosition == fruitSettings.position && game.fruitAvailable then
         { game | mouthMovement = True, items = localListItems, score = game.score + fruitXp + itemSettings.xp, fruitAvailable = False, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }

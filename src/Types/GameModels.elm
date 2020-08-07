@@ -81,6 +81,7 @@ type Msg
 type StartMode
     = NewLevel
     | NormalReset
+    | Init
 
 
 type State

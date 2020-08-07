@@ -34,30 +34,7 @@ import Types.Point exposing (Point)
 
 initialModel : Game
 initialModel =
-    { pPosition = { x = 250, y = 280 }
-    , pacmanSrc = "Assets/img/pacman/pacman_opened_mouth.svg"
-    , state = Waiting
-    , nextDir = Right
-    , pRotation = 0
-    , lifes = 3
-    , score = 0
-    , items = getFullItemList
-    , totalItemCount = length getFullItemList
-    , message = gameMessages.ready
-    , pills = pillsList
-    , itemCounter = 0
-    , fruitSecondCounter = 0
-    , fruitAvailable = False
-    , redGhost = { name = Blinky, color = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = getGhostSrc Red Right, goBackInPrison = False }
-    , pinkGhost = { name = Pinky, color = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = getGhostSrc Pink Up, goBackInPrison = False }
-    , blueGhost = { name = Inky, color = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = getGhostSrc Blue Up, goBackInPrison = False }
-    , yellowGhost = { name = Clyde, color = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = getGhostSrc Yellow Up, goBackInPrison = False }
-    , pillActive = False
-    , pillSecondCounter = 0
-    , sound = LoadingModel
-    , eatenGhostsCounter = 0
-    , level = 1
-    }
+    resetGame 3 0 [] [] 0 1 Init
 
 
 
@@ -229,7 +206,7 @@ update msg game =
             ( { game | redGhost = huntedColorChange game.redGhost, yellowGhost = huntedColorChange game.yellowGhost, blueGhost = huntedColorChange game.blueGhost, pinkGhost = huntedColorChange game.pinkGhost }, Cmd.none, Audio.cmdNone )
 
         ResetGame mode ->
-            ( resetGame game mode, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
+            ( resetGame game.lifes game.score game.items game.pills game.itemCounter game.level mode, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
 
         -- pacMan wait to start
         StartGame ->
@@ -559,61 +536,77 @@ getFullItemList =
 
 
 
+
 -------------------------
 -- reset life function --
 -------------------------
 
 
-resetGame : Game -> StartMode -> Game
-resetGame game mode =
-    let
-        itemList =
+resetGame : Int -> Int -> List Point -> List Point -> Int -> Int -> StartMode -> Game
+resetGame newLife newScore prevItemList prevPillsList prevItemCounter prevLevel mode =
+    let    
+        newState =
+            case mode of
+                Init -> 
+                    Waiting
+                _ ->
+                    Stopped None 
+
+        newItemList =
             case mode of
                 NormalReset ->
-                    game.items
+                    prevItemList
 
-                NewLevel ->
+                _ ->
                     getFullItemList
 
-        level =
-            case mode of
+        newPillsList =
+             case mode of
                 NormalReset ->
-                    game.level
+                    prevPillsList
 
-                NewLevel ->
-                    game.level + 1
-
+                _ ->
+                    pillsList 
+        
         newItemCounter =
             case mode of
                 NormalReset ->
-                    game.itemCounter
+                    prevItemCounter
 
-                NewLevel ->
+                _ ->
                     0
+        
+        newLevel =
+            case mode of
+                NewLevel ->
+                    prevLevel + 1
+                _ ->
+                    prevLevel                          
+               
     in
     { pPosition = pacSettings.startPosition
-    , pacmanSrc = initialModel.pacmanSrc
-    , state = Stopped None
+    , pacmanSrc = "Assets/img/pacman/pacman_opened_mouth.svg"
+    , state = newState
     , nextDir = Right
     , pRotation = 0
-    , lifes = game.lifes
-    , score = game.score
-    , items = itemList
-    , totalItemCount = game.totalItemCount
+    , lifes = newLife
+    , score = newScore
+    , items = newItemList
+    , totalItemCount = length getFullItemList
     , message = gameMessages.ready
-    , pills = game.pills
+    , pills = newPillsList
     , itemCounter = newItemCounter
     , fruitSecondCounter = 0
     , fruitAvailable = False
-    , redGhost = { name = game.redGhost.name, color = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = getGhostSrc Red Right, goBackInPrison = False }
-    , pinkGhost = { name = game.pinkGhost.name, color = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = getGhostSrc Pink Up, goBackInPrison = False }
-    , blueGhost = { name = game.blueGhost.name, color = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = getGhostSrc Blue Up, goBackInPrison = False }
-    , yellowGhost = { name = game.yellowGhost.name, color = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = getGhostSrc Yellow Up, goBackInPrison = False }
+    , redGhost = { name = Blinky, color = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = getGhostSrc Red Right, goBackInPrison = False }
+    , pinkGhost = { name = Pinky, color = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = getGhostSrc Pink Up, goBackInPrison = False }
+    , blueGhost = { name = Inky, color = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = getGhostSrc Blue Up, goBackInPrison = False }
+    , yellowGhost = { name = Clyde, color = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = getGhostSrc Yellow Up, goBackInPrison = False }
     , pillActive = False
     , pillSecondCounter = 0
     , sound = LoadingModel
     , eatenGhostsCounter = 0
-    , level = level
+    , level = newLevel
     }
 
 

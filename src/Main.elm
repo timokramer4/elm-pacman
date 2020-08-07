@@ -173,20 +173,23 @@ update msg game =
             -- In the first round Pinky (pink) leaves the prison after one, Inky (blue) after 30 and Clyde (yellow) after 60 items. The counter is reset each time. After PacMan has been eaten once, Pinky (pink) leaves the prison after 7, Inky (blue) after 17 and Clyde (yellow) after 32 items. The counter is not reset like in the beginning.
             if checkGhoastEatingPacMan game.pPosition game.redGhost.position && checkGhoastEatingPacMan game.pPosition game.blueGhost.position && checkGhoastEatingPacMan game.pPosition game.yellowGhost.position && checkGhoastEatingPacMan game.pPosition game.pinkGhost.position && game.state /= Stopped None then
                 -- Clyde (yellow) starts
-                if (game.itemCounter > 91 && game.lifes == 3) || (game.itemCounter > 32 && game.lifes /= 3) then
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False, yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
-                    -- Inky (blue) starts
+                if game.level < 3 then  
+                    if (game.itemCounter > 91 && game.lifes == 3) || (game.itemCounter > 32 && game.lifes /= 3) then
+                        ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False, yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
+                        -- Inky (blue) starts
 
-                else if (game.itemCounter > 31 && game.lifes == 3) || (game.itemCounter > 17 && game.lifes /= 3) then
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
-                    -- Pinky (pink) start
+                    else if (game.itemCounter > 31 && game.lifes == 3) || (game.itemCounter > 17 && game.lifes /= 3) then
+                        ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
+                        -- Pinky (pink) start
 
-                else if (game.itemCounter > 1 && game.lifes == 3) || (game.itemCounter > 7 && game.lifes /= 3) then
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
+                    else if (game.itemCounter > 1 && game.lifes == 3) || (game.itemCounter > 7 && game.lifes /= 3) then
+                        ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
 
+                    else
+                        ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False }, Cmd.none, Audio.cmdNone )
                 else
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False }, Cmd.none, Audio.cmdNone )
-
+                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False, yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
+                    
             else if not game.pillActive then
                 case game.state of
                     Running d ->
@@ -552,8 +555,7 @@ substractList a b =
 
 getFullItemList : List Point
 getFullItemList =
-    [{ x = 280, y = 370}, { x = 325, y = 370 }, { x = 385, y = 370 }]
-    --substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
+    substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
 
 
 

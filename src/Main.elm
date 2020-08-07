@@ -34,7 +34,7 @@ import Types.Point exposing (Point)
 
 initialModel : Game
 initialModel =
-    resetGame 3 0 [] [] 0 1 Init
+    resetGame 3 0 [] [] 1 Init
 
 
 
@@ -146,27 +146,58 @@ update msg game =
             else
                 ( { game | pillSecondCounter = game.pillSecondCounter + 1 }, Cmd.none, Audio.cmdNone )
 
+        EatWaiter ->
+            if game.eatItemSecondCounter == 0 then
+                -- activate next ghost, if not all running
+                if not game.blueGhost.running || not game.yellowGhost.running || not game.pinkGhost.running then
+                    ( { game | nextGhostCanGoOut = True, eatItemSecondCounter = itemSettings.noEatingRange }, Cmd.none, Audio.cmdNone )
+
+                else
+                    ( game, Cmd.none, Audio.cmdNone )
+
+            else
+                ( { game | eatItemSecondCounter = game.eatItemSecondCounter - 1 }, Cmd.none, Audio.cmdNone )
+
         GhostMove ->
             -- In the first round Pinky (pink) leaves the prison after one, Inky (blue) after 30 and Clyde (yellow) after 60 items. The counter is reset each time. After PacMan has been eaten once, Pinky (pink) leaves the prison after 7, Inky (blue) after 17 and Clyde (yellow) after 32 items. The counter is not reset like in the beginning.
             if checkGhoastEatingPacMan game.pPosition game.redGhost.position && checkGhoastEatingPacMan game.pPosition game.blueGhost.position && checkGhoastEatingPacMan game.pPosition game.yellowGhost.position && checkGhoastEatingPacMan game.pPosition game.pinkGhost.position && game.state /= Stopped None then
-                -- Clyde (yellow) starts
-                if game.level < 3 then  
-                    if (game.itemCounter > 91 && game.lifes == 3) || (game.itemCounter > 32 && game.lifes /= 3) then
+                if game.level < 3 then
+                    -- activate Clyde (yellow) starts moving
+                    if ((game.itemCounter > 91 && game.lifes == 3) && not game.yellowGhost.running) || ((game.itemCounter > 32 && game.lifes /= 3) && not game.yellowGhost.running) || (game.nextGhostCanGoOut && game.blueGhost.running && not game.yellowGhost.running) then
+                        ( { game | nextGhostCanGoOut = False, redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False, blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False, yellowGhost = activateGhost (moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost False) False) }, Cmd.none, Audio.cmdNone )
+                        -- activate Inky (blue) starts moving
+
+                    else if ((game.itemCounter > 31 && game.lifes == 3) && not game.blueGhost.running) || ((game.itemCounter > 17 && game.lifes /= 3) && not game.blueGhost.running) || (game.nextGhostCanGoOut && game.pinkGhost.running && not game.blueGhost.running) then
+                        ( { game | nextGhostCanGoOut = False, redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False, blueGhost = activateGhost (moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False) }, Cmd.none, Audio.cmdNone )
+                        -- activate Pinky (pink) and start moving
+
+                    else if ((game.itemCounter > 1 && game.lifes == 3) && not game.pinkGhost.running) || ((game.itemCounter > 7 && game.lifes /= 3) && not game.pinkGhost.running) || (game.nextGhostCanGoOut && game.redGhost.running && not game.pinkGhost.running) then
+                        ( { game | nextGhostCanGoOut = False, redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, pinkGhost = activateGhost (moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False) }, Cmd.none, Audio.cmdNone )
+                        -- no ghost can be activated then only move ghosts
+
+                    else
+                    -- move activatedGhosts
+                    if
+                        game.redGhost.running && game.blueGhost.running && game.yellowGhost.running && game.pinkGhost.running
+                    then
                         ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False, yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
                         -- Inky (blue) starts
 
-                    else if (game.itemCounter > 31 && game.lifes == 3) || (game.itemCounter > 17 && game.lifes /= 3) then
+                    else if game.redGhost.running && game.blueGhost.running && game.pinkGhost.running then
                         ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
                         -- Pinky (pink) start
 
-                    else if (game.itemCounter > 1 && game.lifes == 3) || (game.itemCounter > 7 && game.lifes /= 3) then
+                    else if game.redGhost.running && game.pinkGhost.running then
                         ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
+                        -- Blinky (red) start
 
                     else
                         ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False }, Cmd.none, Audio.cmdNone )
+
                 else
-                    ( { game | redGhost = moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False, blueGhost = moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False, yellowGhost = moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost False) False, pinkGhost = moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False }, Cmd.none, Audio.cmdNone )
-                    
+                    -- acvtivate all ghosts and move all one step when level >3
+                    ( { game | redGhost = activateGhost (moveGhost game.redGhost (getGhostNextDir game game.redGhost False) False), blueGhost = activateGhost (moveGhost game.blueGhost (getGhostNextDir game game.blueGhost False) False), yellowGhost = activateGhost (moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost False) False), pinkGhost = activateGhost (moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost False) False) }, Cmd.none, Audio.cmdNone )
+
             else if not game.pillActive then
                 case game.state of
                     Running d ->
@@ -206,7 +237,7 @@ update msg game =
             ( { game | redGhost = huntedColorChange game.redGhost, yellowGhost = huntedColorChange game.yellowGhost, blueGhost = huntedColorChange game.blueGhost, pinkGhost = huntedColorChange game.pinkGhost }, Cmd.none, Audio.cmdNone )
 
         ResetGame mode ->
-            ( resetGame game.lifes game.score game.items game.pills game.itemCounter game.level mode, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
+            ( resetGame game.lifes game.score game.items game.pills game.level mode, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
 
         -- pacMan wait to start
         StartGame ->
@@ -402,6 +433,13 @@ subscriptions game =
 
           else
             Sub.none
+
+        -- if pacMan eat Item start Counter
+        , if game.eatItem then
+            Time.every 1000 (\_ -> EatWaiter)
+
+          else
+            Sub.none
         ]
 
 
@@ -536,21 +574,21 @@ getFullItemList =
 
 
 
-
 -------------------------
 -- reset life function --
 -------------------------
 
 
-resetGame : Int -> Int -> List Point -> List Point -> Int -> Int -> StartMode -> Game
-resetGame newLife newScore prevItemList prevPillsList prevItemCounter prevLevel mode =
-    let    
+resetGame : Int -> Int -> List Point -> List Point -> Int -> StartMode -> Game
+resetGame newLife newScore prevItemList prevPillsList prevLevel mode =
+    let
         newState =
             case mode of
-                Init -> 
+                Init ->
                     Waiting
+
                 _ ->
-                    Stopped None 
+                    Stopped None
 
         newItemList =
             case mode of
@@ -561,28 +599,20 @@ resetGame newLife newScore prevItemList prevPillsList prevItemCounter prevLevel 
                     getFullItemList
 
         newPillsList =
-             case mode of
+            case mode of
                 NormalReset ->
                     prevPillsList
 
                 _ ->
-                    pillsList 
-        
-        newItemCounter =
-            case mode of
-                NormalReset ->
-                    prevItemCounter
+                    pillsList
 
-                _ ->
-                    0
-        
         newLevel =
             case mode of
                 NewLevel ->
                     prevLevel + 1
+
                 _ ->
-                    prevLevel                          
-               
+                    prevLevel
     in
     { pPosition = pacSettings.startPosition
     , pacmanSrc = "Assets/img/pacman/pacman_opened_mouth.svg"
@@ -595,18 +625,21 @@ resetGame newLife newScore prevItemList prevPillsList prevItemCounter prevLevel 
     , totalItemCount = length getFullItemList
     , message = gameMessages.ready
     , pills = newPillsList
-    , itemCounter = newItemCounter
+    , itemCounter = 0
     , fruitSecondCounter = 0
     , fruitAvailable = False
-    , redGhost = { name = Blinky, color = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = getGhostSrc Red Right, goBackInPrison = False }
-    , pinkGhost = { name = Pinky, color = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = getGhostSrc Pink Up, goBackInPrison = False }
-    , blueGhost = { name = Inky, color = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = getGhostSrc Blue Up, goBackInPrison = False }
-    , yellowGhost = { name = Clyde, color = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = getGhostSrc Yellow Up, goBackInPrison = False }
+    , redGhost = { name = Blinky, color = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = getGhostSrc Red Right, goBackInPrison = False, running = True }
+    , pinkGhost = { name = Pinky, color = Pink, position = ghostSettings.pinkStartPos, dir = Up, active = False, offset = 4, src = getGhostSrc Pink Up, goBackInPrison = False, running = False }
+    , blueGhost = { name = Inky, color = Blue, position = ghostSettings.blueStartPos, dir = None, active = False, offset = 2, src = getGhostSrc Blue Up, goBackInPrison = False, running = False }
+    , yellowGhost = { name = Clyde, color = Yellow, position = ghostSettings.yellowStartPos, dir = None, active = False, offset = 0, src = getGhostSrc Yellow Up, goBackInPrison = False, running = False }
     , pillActive = False
     , pillSecondCounter = 0
     , sound = LoadingModel
     , eatenGhostsCounter = 0
     , level = newLevel
+    , eatItem = True
+    , eatItemSecondCounter = 4
+    , nextGhostCanGoOut = False
     }
 
 
@@ -655,8 +688,8 @@ fruitSvgList list counter level =
         else if counter == 11 then
             fruitSvgList (img [ src "Assets/img/fruits/bell.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
 
-        else 
-            fruitSvgList (img [ src "Assets/img/fruits/key.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (level+1) level
+        else
+            fruitSvgList (img [ src "Assets/img/fruits/key.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (level + 1) level
 
     else
         list

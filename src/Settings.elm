@@ -41,12 +41,13 @@ movement =
     1
 
 
-itemSettings : { fill : String, step : Int, size : Int, xp : Int }
+itemSettings : { fill : String, step : Int, size : Int, xp : Int, noEatingRange: Int }
 itemSettings =
     { fill = "#FFAAA5"
     , step = 15
     , size = 5
     , xp = 10
+    , noEatingRange = 4
     }
 
 

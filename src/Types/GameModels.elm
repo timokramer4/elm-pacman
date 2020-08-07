@@ -29,6 +29,9 @@ type alias Game =
     , eatenGhostsCounter : Int
     , level : Int
     , sound : SoundModel
+    , eatItem : Bool
+    , eatItemSecondCounter : Int
+    , nextGhostCanGoOut: Bool
     }
 
 
@@ -59,6 +62,7 @@ type alias Ghost =
     , src : String
     , goBackInPrison : Bool
     , name : GhostName
+    , running : Bool 
     }
 
 
@@ -76,6 +80,7 @@ type Msg
     | StartGame
     | SoundLoaded (Result Audio.LoadError Audio.Source)
     | GetCurrentTime Audio.Source Time.Posix
+    | EatWaiter
 
 
 type StartMode

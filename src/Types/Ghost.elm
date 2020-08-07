@@ -1,4 +1,4 @@
-module Types.Ghost exposing (changeGhostSrc, getGhostSrc, changeGoBackInPrison, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost)
+module Types.Ghost exposing (changeGhostSrc, getGhostSrc, changeGoBackInPrison, checkGhoastEatingPacMan, getGhostNextDir, huntedColorChange, moveGhoastToPosition, moveGhost, activateGhost)
 
 import Arithmetic exposing (intSquareRoot)
 import Movement exposing (checkDir)
@@ -43,7 +43,7 @@ moveGhost ghost dir goBackInPrison =
 
     in
     if (goBackInPrison && ghost.goBackInPrison) || not ghost.goBackInPrison then
-        {name= ghost.name, color = ghost.color, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = getGhostSrc ghost.color dir, goBackInPrison = ghost.goBackInPrison }
+        {name= ghost.name, color = ghost.color, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = getGhostSrc ghost.color dir, goBackInPrison = ghost.goBackInPrison, running = ghost.running }
 
     else
         ghost
@@ -57,13 +57,15 @@ moveGhost ghost dir goBackInPrison =
 
 moveGhoastToPosition : Ghost -> Point -> Ghost
 moveGhoastToPosition ghost target =
-    { name= ghost.name, color = ghost.color, position = target, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison }
+    { name= ghost.name, color = ghost.color, position = target, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison, running = ghost.running }
 
 changeGoBackInPrison : Ghost -> Bool -> Ghost
 changeGoBackInPrison ghost value =
-    {name= ghost.name, color = ghost.color, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = value }
+    {name= ghost.name, color = ghost.color, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = value, running = ghost.running }
 
-
+activateGhost : Ghost -> Ghost
+activateGhost ghost =
+    {name= ghost.name, color = ghost.color, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison, running = True }    
 
 -------------------------------------
 -- Change ghost color --
@@ -73,7 +75,7 @@ changeGoBackInPrison ghost value =
 changeGhostSrc : Ghost -> GhostColors -> Ghost
 changeGhostSrc ghost color =
   
-    { name= ghost.name, color = color, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = getGhostSrc color ghost.dir, goBackInPrison = ghost.goBackInPrison }
+    { name= ghost.name, color = color, position = ghost.position, dir = Up, active = False, offset = ghost.offset, src = getGhostSrc color ghost.dir, goBackInPrison = ghost.goBackInPrison, running = ghost.running }
 
 
 getGhostSrc : GhostColors -> Direction -> String

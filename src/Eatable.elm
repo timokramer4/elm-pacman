@@ -107,13 +107,13 @@ checkEatable game =
             { game | pills = localListPills, score = game.score + pillSettings.xp, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
 
     else if game.pPosition == fruitSettings.position && game.fruitAvailable then
-        { game | items = localListItems, score = game.score + fruitXp + itemSettings.xp, fruitAvailable = False }
+        { game | items = localListItems, score = game.score + fruitXp + itemSettings.xp, fruitAvailable = False, eatItem = True, eatItemSecondCounter=itemSettings.noEatingRange }
 
     else if game.itemCounter == fruitSettings.itemNumber1 || game.itemCounter == fruitSettings.itemNumber2 then
-        { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, fruitAvailable = True }
+        { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, fruitAvailable = True, eatItem = True, eatItemSecondCounter=itemSettings.noEatingRange }
 
     else
-        { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1 }
+        { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, eatItem = True, eatItemSecondCounter=itemSettings.noEatingRange }
 
 
 pointsToSvg : List Point -> Int -> List (Svg Msg)

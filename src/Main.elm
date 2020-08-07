@@ -34,7 +34,7 @@ import Types.Point exposing (Point)
 
 initialModel : Game
 initialModel =
-    resetGame 3 0 [] [] 1 Init
+    resetGame 3 0 [] [] 0 1 Init
 
 
 
@@ -237,7 +237,7 @@ update msg game =
             ( { game | redGhost = huntedColorChange game.redGhost, yellowGhost = huntedColorChange game.yellowGhost, blueGhost = huntedColorChange game.blueGhost, pinkGhost = huntedColorChange game.pinkGhost }, Cmd.none, Audio.cmdNone )
 
         ResetGame mode ->
-            ( resetGame game.lifes game.score game.items game.pills game.level mode, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
+            ( resetGame game.lifes game.score game.items game.pills game.itemCounter game.level mode, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
 
         -- pacMan wait to start
         StartGame ->
@@ -594,8 +594,8 @@ getFullItemList =
 -------------------------
 
 
-resetGame : Int -> Int -> List Point -> List Point -> Int -> StartMode -> Game
-resetGame newLife newScore prevItemList prevPillsList prevLevel mode =
+resetGame : Int -> Int -> List Point -> List Point -> Int -> Int -> StartMode -> Game
+resetGame newLife newScore prevItemList prevPillsList prevItemCounter prevLevel mode =
     let
         newState =
             case mode of
@@ -628,6 +628,15 @@ resetGame newLife newScore prevItemList prevPillsList prevLevel mode =
 
                 _ ->
                     prevLevel
+        
+        newItemCounter =
+            case mode of
+                NormalReset ->
+                    prevItemCounter
+
+                _ ->
+                    0
+                    
     in
     { pPosition = pacSettings.startPosition
     , pacmanSrc = pacSettings.openedMouthSrc
@@ -641,7 +650,7 @@ resetGame newLife newScore prevItemList prevPillsList prevLevel mode =
     , totalItemCount = length getFullItemList
     , message = gameMessages.ready
     , pills = newPillsList
-    , itemCounter = 0
+    , itemCounter = newItemCounter
     , fruitSecondCounter = 0
     , fruitAvailable = False
     , redGhost = { name = Blinky, color = Red, position = ghostSettings.startPosition, dir = None, active = True, offset = 0, src = getGhostSrc Red Right, goBackInPrison = False, running = True }

@@ -651,6 +651,7 @@ resetGame newLife newScore prevItemList prevPillsList prevLevel mode =
     , eatItem = True
     , eatItemSecondCounter = 4
     , nextGhostCanGoOut = False
+    , scoreMessage = {point = {x=0, y=0}, msg= ""}
     }
 
 

@@ -1,4 +1,4 @@
-module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), GhostName(..), Msg(..), SoundModel(..), SoundState(..), StartMode(..), State(..))
+module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), GhostName(..), Msg(..), SoundModel(..), SoundState(..), StartMode(..), State(..), ScoreMessage)
 
 import Audio
 import Time
@@ -32,7 +32,8 @@ type alias Game =
     , sound : SoundModel
     , eatItem : Bool
     , eatItemSecondCounter : Int
-    , nextGhostCanGoOut: Bool
+    , nextGhostCanGoOut : Bool
+    , scoreMessage : ScoreMessage
     }
 
 
@@ -66,6 +67,12 @@ type alias Ghost =
     , running : Bool 
     }
 
+
+type alias ScoreMessage =
+    {
+        point : Point
+        , msg : String
+    }
 
 type Msg
     = MoveDirection Direction

@@ -5,11 +5,10 @@ import Html.Attributes exposing (src)
 import Settings exposing (fruitSettings, itemSettings, pacSettings, pillSettings)
 import Svg exposing (Svg, circle, image, rect)
 import Svg.Attributes exposing (cx, cy, fill, height, r, width, x, xlinkHref, y)
-import Types.GameModels exposing (Game, GhostColors(..), Msg)
+import Types.GameModels exposing (Game, GhostColors(..), Msg, ScoreMessage)
 import Types.Ghost exposing (changeGhostSrc)
 import Types.Line exposing (Line, LineType(..))
 import Types.Point exposing (Point)
-import Types.GameModels exposing (ScoreMessage)
 
 
 createPoints : Line -> List Point -> List Point
@@ -104,19 +103,16 @@ checkEatable game =
         -- eat pill
 
     else if List.length game.pills /= List.length localListPills then
-        -- eat pill and fruit
-        if game.pPosition == fruitSettings.position && game.fruitAvailable then
-            { game | mouthMovement = True, pills = localListPills, score = game.score + fruitXp + pillSettings.xp, fruitAvailable = False, pillActive = True, pillSecondCounter = 0, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted, scoreMessage = setScoreMsg fruitSettings.position (String.fromInt fruitXp) }
-            -- eat only pill
-
-        else
-            { game | mouthMovement = True, pills = localListPills, score = game.score + pillSettings.xp, pillSecondCounter = 0, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
+        { game | mouthMovement = True, pills = localListPills, score = game.score + pillSettings.xp, pillSecondCounter = 0, pillActive = True, scoreMessage = setScoreMsg game.pPosition (String.fromInt pillSettings.xp), redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
+        -- eat fruit, if fruit availeble
 
     else if game.pPosition == fruitSettings.position && game.fruitAvailable then
         { game | mouthMovement = True, items = localListItems, score = game.score + fruitXp + itemSettings.xp, fruitAvailable = False, scoreMessage = setScoreMsg fruitSettings.position (String.fromInt fruitXp), eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
+        -- eat item and unlock fruit
 
     else if game.itemCounter == fruitSettings.itemNumber1 || game.itemCounter == fruitSettings.itemNumber2 then
         { game | mouthMovement = True, items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, fruitAvailable = True, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
+        -- eat  only item
 
     else
         { game | mouthMovement = True, items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
@@ -198,9 +194,8 @@ createFruit available level =
 
 setScoreMsg : Point -> String -> ScoreMessage
 setScoreMsg msgPoint msgText =
-    {
-        point = msgPoint
-        , msg = msgText
+    { point = msgPoint
+    , msg = msgText
     }
 
 

@@ -9,6 +9,7 @@ type alias Game =
     { pPosition : Point
     , pRotation : Int
     , pacmanSrc : String
+    , mouthMovement : Bool
     , lifes : Int
     , state : State
     , nextDir : Direction
@@ -75,6 +76,7 @@ type Msg
     | Pill
     | GhostMove
     | ChangeColor
+    | ChangePacmanSrc
     | GhostGoBackInPrison
     | ResetGame StartMode
     | StartGame

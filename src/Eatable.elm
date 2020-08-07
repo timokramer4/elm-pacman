@@ -2,7 +2,7 @@ module Eatable exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (src)
-import Settings exposing (fruitSettings, itemSettings, pillSettings)
+import Settings exposing (fruitSettings, itemSettings, pacSettings, pillSettings)
 import Svg exposing (Svg, circle, image, rect)
 import Svg.Attributes exposing (cx, cy, fill, height, r, width, x, xlinkHref, y)
 import Types.GameModels exposing (Game, GhostColors(..), Msg)
@@ -69,28 +69,33 @@ checkEatable game =
         fruitXp =
             if game.level == 1 then
                 fruitSettings.xpCherry
+
             else if game.level == 2 then
-                  fruitSettings.xpStrawberry
+                fruitSettings.xpStrawberry
+
             else if game.level == 3 || game.level == 4 then
-                  fruitSettings.xpOrange
+                fruitSettings.xpOrange
+
             else if game.level == 5 || game.level == 6 then
-                  fruitSettings.xpApple
+                fruitSettings.xpApple
+
             else if game.level == 7 || game.level == 8 then
                 fruitSettings.xpGrape
+
             else if game.level == 9 || game.level == 10 then
                 fruitSettings.xpSpacechip
+
             else if game.level == 11 || game.level == 1 then
-                fruitSettings.xpBell       
+                fruitSettings.xpBell
+
             else
-               fruitSettings.xpKey
-
-
+                fruitSettings.xpKey
     in
     -- eat no pill and no item
     if List.length game.pills == List.length localListPills && List.length game.items == List.length localListItems then
         -- eat fruit
         if game.pPosition == fruitSettings.position && game.fruitAvailable then
-            { game | score = game.score + fruitXp, fruitAvailable = False }
+            { game | mouthMovement = True, score = game.score + fruitXp, fruitAvailable = False }
             -- eat nothing
 
         else
@@ -98,22 +103,22 @@ checkEatable game =
         -- eat pill
 
     else if List.length game.pills /= List.length localListPills then
-        -- eat pill an fruit
+        -- eat pill and fruit
         if game.pPosition == fruitSettings.position && game.fruitAvailable then
-            { game | pills = localListPills, score = game.score + fruitXp + pillSettings.xp, fruitAvailable = False, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
+            { game | mouthMovement = True, pills = localListPills, score = game.score + fruitXp + pillSettings.xp, fruitAvailable = False, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
             -- eat only pill
 
         else
-            { game | pills = localListPills, score = game.score + pillSettings.xp, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
+            { game | mouthMovement = True, pills = localListPills, score = game.score + pillSettings.xp, pillActive = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
 
     else if game.pPosition == fruitSettings.position && game.fruitAvailable then
-        { game | items = localListItems, score = game.score + fruitXp + itemSettings.xp, fruitAvailable = False, eatItem = True, eatItemSecondCounter=itemSettings.noEatingRange }
+        { game | mouthMovement = True, items = localListItems, score = game.score + fruitXp + itemSettings.xp, fruitAvailable = False, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
 
     else if game.itemCounter == fruitSettings.itemNumber1 || game.itemCounter == fruitSettings.itemNumber2 then
-        { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, fruitAvailable = True, eatItem = True, eatItemSecondCounter=itemSettings.noEatingRange }
+        { game | mouthMovement = True, items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, fruitAvailable = True, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
 
     else
-        { game | items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, eatItem = True, eatItemSecondCounter=itemSettings.noEatingRange }
+        { game | mouthMovement = True, items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
 
 
 pointsToSvg : List Point -> Int -> List (Svg Msg)
@@ -161,24 +166,30 @@ createFruit available level =
         fruit =
             if level == 1 then
                 "cherry"
+
             else if level == 2 then
                 "strawberry"
+
             else if level == 3 || level == 4 then
                 "orange"
+
             else if level == 5 || level == 6 then
                 "apple"
+
             else if level == 7 || level == 8 then
                 "grape"
+
             else if level == 9 || level == 10 then
                 "spaceship"
+
             else if level == 11 || level == 12 then
-               "bell"
-            else 
-                "key"                       
+                "bell"
+
+            else
+                "key"
     in
-    
     if available then
-        [ image [ xlinkHref ("Assets/img/fruits/"++fruit++".svg"), width (String.fromInt fruitSettings.ratio), height (String.fromInt fruitSettings.ratio), x (String.fromInt (fruitSettings.position.x - round (toFloat fruitSettings.ratio / 2))), y (String.fromInt (fruitSettings.position.y - round (toFloat fruitSettings.ratio / 2))) ] [] ]
+        [ image [ xlinkHref ("Assets/img/fruits/" ++ fruit ++ ".svg"), width (String.fromInt fruitSettings.ratio), height (String.fromInt fruitSettings.ratio), x (String.fromInt (fruitSettings.position.x - round (toFloat fruitSettings.ratio / 2))), y (String.fromInt (fruitSettings.position.y - round (toFloat fruitSettings.ratio / 2))) ] [] ]
 
     else
         []

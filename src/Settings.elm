@@ -1,4 +1,4 @@
-module Settings exposing (fieldSettings, fruitSettings, getPoint, ghostSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh, gameMessages )
+module Settings exposing (fieldSettings, fruitSettings, gameMessages, getPoint, ghostSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh)
 
 import Dict exposing (Dict, get)
 import Types.Line exposing (Line, LineType(..))
@@ -19,10 +19,12 @@ fieldSettings =
     }
 
 
-pacSettings : { ratio : Int, startPosition : Point }
+pacSettings : { ratio : Int, startPosition : Point, openedMouthSrc : String, closedMouthSrc : String }
 pacSettings =
     { ratio = 22
-     , startPosition = { x = 247, y = 370 }
+    , startPosition = { x = 247, y = 370 }
+    , openedMouthSrc = "Assets/img/pacman/pacman_opened_mouth.svg"
+    , closedMouthSrc = "Assets/img/pacman/pacman_closed_mouth.svg"
     }
 
 
@@ -41,13 +43,13 @@ movement =
     1
 
 
-itemSettings : { fill : String, step : Int, size : Int, xp : Int, noEatingRange: Int }
+itemSettings : { fill : String, step : Int, size : Int, xp : Int, noEatingCooldownMs : Int }
 itemSettings =
     { fill = "#FFAAA5"
     , step = 15
     , size = 5
     , xp = 10
-    , noEatingRange = 4
+    , noEatingCooldownMs = 4000
     }
 
 
@@ -59,7 +61,7 @@ pillSettings =
     }
 
 
-fruitSettings : { position : Point, ratio : Int, xpCherry : Int, xpStrawberry : Int, xpOrange : Int, xpApple : Int, xpGrape : Int,  xpSpacechip: Int, xpKey: Int, xpBell: Int, itemNumber1 : Int, itemNumber2 : Int }
+fruitSettings : { position : Point, ratio : Int, xpCherry : Int, xpStrawberry : Int, xpOrange : Int, xpApple : Int, xpGrape : Int, xpSpacechip : Int, xpKey : Int, xpBell : Int, itemNumber1 : Int, itemNumber2 : Int }
 fruitSettings =
     { position = { x = 250, y = 280 }
     , ratio = 20
@@ -75,13 +77,14 @@ fruitSettings =
     , itemNumber2 = 170
     }
 
-gameMessages : {gameOver : String, ready: String, noText : String }
+
+gameMessages : { gameOver : String, ready : String, noText : String }
 gameMessages =
-    {
-      gameOver = "GAME OVER!"
-      ,ready = "READY!"
-      , noText =""  
+    { gameOver = "GAME OVER!"
+    , ready = "READY!"
+    , noText = ""
     }
+
 
 pointMesh : Dict Int Point
 pointMesh =

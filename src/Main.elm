@@ -216,19 +216,19 @@ update msg game =
             if
                 not (checkGhoastEatingPacMan game.pPosition game.redGhost.position)
             then
-                ( { game | redGhost = changeGoBackInPrison game.redGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.redGhost.position (String.fromInt ghostScore) }, Cmd.none, Audio.cmdNone )
+                ( { game | redGhost = changeGoBackInPrison game.redGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.redGhost.position (String.fromInt ghostScore) }, Delay.after 1500 Millisecond ClearScoreMsg, Audio.cmdNone )
                 -- pacMan eat blueGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.blueGhost.position) then
-                ( { game | blueGhost = changeGoBackInPrison game.blueGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score =newScore, scoreMessage = setScoreMsg game.blueGhost.position (String.fromInt ghostScore) }, Cmd.none, Audio.cmdNone )
+                ( { game | blueGhost = changeGoBackInPrison game.blueGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score =newScore, scoreMessage = setScoreMsg game.blueGhost.position (String.fromInt ghostScore) }, Delay.after 1500 Millisecond ClearScoreMsg, Audio.cmdNone )
                 --pacMan eat yellowGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.yellowGhost.position) then
-                ( { game | yellowGhost = changeGoBackInPrison game.yellowGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.yellowGhost.position (String.fromInt ghostScore) }, Cmd.none, Audio.cmdNone )
+                ( { game | yellowGhost = changeGoBackInPrison game.yellowGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.yellowGhost.position (String.fromInt ghostScore) }, Delay.after 1500 Millisecond ClearScoreMsg, Audio.cmdNone )
                 --pacMan eat pinkGhost
 
             else if not (checkGhoastEatingPacMan game.pPosition game.pinkGhost.position) then
-                ( { game | pinkGhost = changeGoBackInPrison game.pinkGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.pinkGhost.position (String.fromInt ghostScore) }, Cmd.none, Audio.cmdNone )
+                ( { game | pinkGhost = changeGoBackInPrison game.pinkGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.pinkGhost.position (String.fromInt ghostScore) }, Delay.after 1500 Millisecond ClearScoreMsg, Audio.cmdNone )
 
             else
                 ( game, Cmd.none, Audio.cmdNone )
@@ -292,6 +292,9 @@ update msg game =
 
             else
                 ( { game | pacmanSrc = pacSettings.openedMouthSrc, mouthMovement = False }, Cmd.none, Audio.cmdNone )
+        
+        ClearScoreMsg ->
+                 ( { game | scoreMessage = setScoreMsg {x=0, y=0} ""}, Cmd.none, Audio.cmdNone )
 
 
 

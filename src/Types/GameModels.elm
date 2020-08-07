@@ -90,6 +90,7 @@ type Msg
     | SoundLoaded (Result Audio.LoadError Audio.Source)
     | GetCurrentTime Audio.Source Time.Posix
     | EatWaiter
+    | ClearScoreMsg
 
 
 type StartMode

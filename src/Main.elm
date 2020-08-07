@@ -356,7 +356,6 @@ view game =
                     )
                     [ img (pacmanSvgCss ++ [ src game.pacmanSrc, Html.Attributes.style "top" (String.fromInt (game.pPosition.y - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.pPosition.x - round (toFloat pacSettings.ratio / 2)) ++ "px"), Html.Attributes.style "transform" ("rotate(" ++ String.fromInt game.pRotation ++ "deg)") ])
                         []
-                    , div (textCss ++ messageCss) [ Html.text game.scoreMessage.msg ]
                     ]
                 , div
                     (gameChildCss
@@ -370,6 +369,13 @@ view game =
                         []
                     , img (ghostSvgCss ++ [ src ("Assets/img/ghosts/" ++ game.yellowGhost.src ++ ".svg"), Html.Attributes.style "top" (String.fromInt (game.yellowGhost.position.y - round (toFloat ghostSettings.ratio / 2)) ++ "px"), Html.Attributes.style "left" (String.fromInt (game.yellowGhost.position.x - round (toFloat ghostSettings.ratio / 2)) ++ "px") ])
                         []
+                    ]
+                , div
+                    (gameChildCss
+                        ++ [ id "otherArea" ]
+                    )
+                    [ div (textCss ++ messageCss) [ Html.text game.message ]
+                    , addMsgText game.scoreMessage.point game.scoreMessage.msg
                     ]
                 ]
             , div (class "headline" :: headlineCss)
@@ -665,7 +671,7 @@ resetGame newLife newScore prevItemList prevPillsList prevItemCounter prevLevel 
     , eatItem = True
     , eatItemSecondCounter = 4
     , nextGhostCanGoOut = False
-    , scoreMessage = {point = {x=0, y=0}, msg= ""}
+    , scoreMessage = { point = { x = 0, y = 0 }, msg = "" }
     }
 
 

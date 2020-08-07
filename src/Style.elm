@@ -1,8 +1,10 @@
-module Style exposing (gameChildCss, gameCss, ghostSvgCss, headlineCss, messageCss, pacmanSvgCss, styleContents, textCss, wrapperCss)
+module Style exposing (addMsgText, gameChildCss, gameCss, ghostSvgCss, headlineCss, messageCss, pacmanSvgCss, styleContents, textCss, wrapperCss)
 
-import Html
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (id, style)
 import Settings exposing (fieldSettings, ghostSettings, pacSettings)
+import Types.GameModels exposing (Msg)
+import Types.Point exposing (Point)
 
 
 
@@ -41,6 +43,19 @@ textCss =
     , Html.Attributes.style "font-family" "VT323, monospace"
     , Html.Attributes.style "font-weight" "bold"
     , Html.Attributes.style "font-size" "1.5em"
+    ]
+
+
+pointPopupCss : Point -> List (Html.Attribute msg)
+pointPopupCss point =
+    [ Html.Attributes.style "font-family" "VT323, monospace"
+    , Html.Attributes.style "font-size" "1em"
+    , Html.Attributes.style "font-weight" "bold"
+    , Html.Attributes.style "transform" " translate(-50%, -50%)"
+    , Html.Attributes.style "left" (String.fromInt point.x ++ "px")
+    , Html.Attributes.style "top" (String.fromInt point.y ++ "px")
+    , Html.Attributes.style "position" "absolute"
+    , Html.Attributes.style "color" "#5DADE2"
     ]
 
 
@@ -106,3 +121,10 @@ styleContents =
         font-family: 'VT323', monospace;
     }
     """
+
+
+addMsgText : Point -> String -> Html Msg
+addMsgText point str =
+    div
+        (pointPopupCss point)
+        [ Html.text str ]

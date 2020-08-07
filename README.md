@@ -8,7 +8,7 @@ In the following the browser game PacMan based on Elm is developed. Due to the l
 Before you start the application, you must compile the newest PacMan class as javascript file, as the following:
 
 ```elm
-$ elm make src/PacMan.elm --optimize --output src/Assets/elm.js
+$ elm make src/Main.elm --optimize --output src/Assets/elm.js
 ```
 
 #### 2.  Start the application

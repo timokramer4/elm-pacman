@@ -552,7 +552,8 @@ substractList a b =
 
 getFullItemList : List Point
 getFullItemList =
-    substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
+    [{ x = 280, y = 370}, { x = 325, y = 370 }, { x = 385, y = 370 }]
+    --substractList pillsList (filterDuplicates (List.foldl createPoints [] (Dict.values runMesh)))
 
 
 
@@ -659,8 +660,8 @@ fruitSvgList list counter level =
         else if counter == 11 then
             fruitSvgList (img [ src "Assets/img/fruits/bell.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
 
-        else
-            fruitSvgList (img [ src "Assets/img/fruits/key.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (counter + 2) level
+        else 
+            fruitSvgList (img [ src "Assets/img/fruits/key.svg", width fruitSettings.ratio, height fruitSettings.ratio ] [] :: list) (level+1) level
 
     else
         list

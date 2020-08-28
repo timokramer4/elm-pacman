@@ -1,4 +1,4 @@
-module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), GhostName(..), Msg(..), SoundModel(..), SoundState(..), StartMode(..), State(..), ScoreMessage)
+module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), GhostName(..), Msg(..), ScoreMessage, SoundModel(..), SoundState(..), StartMode(..), State(..))
 
 import Audio
 import Time
@@ -34,6 +34,7 @@ type alias Game =
     , eatItemSecondCounter : Int
     , nextGhostCanGoOut : Bool
     , scoreMessage : ScoreMessage
+    , showScoreMessage : Bool
     }
 
 
@@ -69,10 +70,10 @@ type alias Ghost =
 
 
 type alias ScoreMessage =
-    {
-        point : Point
-        , msg : String
+    { point : Point
+    , msg : String
     }
+
 
 type Msg
     = MoveDirection Direction
@@ -81,10 +82,9 @@ type Msg
     | ChangeDirection Direction
     | Fruit
     | Pill
-    | GhostMove
+    | GhostMove GhostName
     | ChangeColor
     | ChangePacmanSrc
-    | GhostGoBackInPrison
     | ResetGame StartMode
     | StartGame
     | SoundLoaded (Result Audio.LoadError Audio.Source)

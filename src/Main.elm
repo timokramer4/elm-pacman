@@ -110,10 +110,10 @@ update msg game =
         Types.GameModels.Nothing ->
             case game.state of
                 Running d ->
-                    ( { game | state = Stopped d, message=gameMessages.pause }, Cmd.none, Audio.loadAudio SoundLoaded "Assets/sounds/start_music.wav" )
+                    ( { game | state = Stopped d, message = gameMessages.pause }, Cmd.none, Audio.loadAudio SoundLoaded "Assets/sounds/start_music.wav" )
 
                 Stopped d ->
-                    ( { game | state = Running d, message=gameMessages.noText }, Cmd.none, Audio.cmdNone )
+                    ( { game | state = Running d, message = gameMessages.noText }, Cmd.none, Audio.cmdNone )
 
                 Waiting ->
                     ( game, Cmd.none, Audio.cmdNone )
@@ -473,29 +473,33 @@ subscriptions game =
 
                 else
                     Sub.none
+
             _ ->
-                Sub.none  
+                Sub.none
 
         -- timer for pill, when its active (only if game is running)
-        ,case game.state of
-            Running _ -> 
+        , case game.state of
+            Running _ ->
                 if game.pillActive then
                     Time.every 1000 (\_ -> Pill)
 
                 else
                     Sub.none
+
             _ ->
                 Sub.none
-         -- change ghost color, when pill active for the last 3 seconds (only if game is running)               
-        ,case game.state of
-            Running _ ->  
+
+        -- change ghost color, when pill active for the last 3 seconds (only if game is running)
+        , case game.state of
+            Running _ ->
                 if game.pillActive && game.pillSecondCounter > 7 then
                     Time.every 250 (\_ -> ChangeColor)
 
                 else
                     Sub.none
+
             _ ->
-                Sub.none         
+                Sub.none
 
         -- reset game
         , if game.totalItemCount == game.itemCounter then
@@ -512,19 +516,22 @@ subscriptions game =
 
                 else
                     Sub.none
+
             _ ->
                 Sub.none
 
         -- if pacman move mouth
-        ,case game.state of
-            Running _ -> 
+        , case game.state of
+            Running _ ->
                 if game.mouthMovement then
                     Time.every 200 (\_ -> ChangePacmanSrc)
 
                 else
                     Sub.none
+
             _ ->
                 Sub.none
+
         -- red ghost movement (only if game is running)
         , case game.state of
             Running _ ->
@@ -586,14 +593,16 @@ subscriptions game =
                 Sub.none
 
         -- clear score msg after 1500 ms (only if game is running)
-        ,case game.state of
-            Running _ -> 
+        , case game.state of
+            Running _ ->
                 if game.showScoreMessage then
                     Time.every 1500 (\_ -> ClearScoreMsg)
+
                 else
                     Sub.none
+
             _ ->
-                Sub.none        
+                Sub.none
         ]
 
 
@@ -691,8 +700,9 @@ toKey string =
 
         "Escape" ->
             Types.GameModels.Nothing
+
         _ ->
-            Types.GameModels.NoMoving    
+            Types.GameModels.NoMoving
 
 
 

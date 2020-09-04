@@ -5,6 +5,10 @@ import Time
 import Types.Point exposing (Point)
 
 
+
+-- Global game model
+
+
 type alias Game =
     { pPosition : Point
     , pRotation : Int
@@ -38,10 +42,18 @@ type alias Game =
     }
 
 
+
+-- Loaded sound file/state
+
+
 type alias LoadedModel_ =
     { sound : Audio.Source
     , soundState : SoundState
     }
+
+
+
+-- Sound states
 
 
 type SoundState
@@ -50,10 +62,18 @@ type SoundState
     | FadingOut Time.Posix Time.Posix
 
 
+
+-- Different states when loading a sound file
+
+
 type SoundModel
     = LoadingModel
     | LoadedModel LoadedModel_
     | LoadFailedModel
+
+
+
+-- Ghost model
 
 
 type alias Ghost =
@@ -69,10 +89,18 @@ type alias Ghost =
     }
 
 
+
+-- Score message
+
+
 type alias ScoreMessage =
     { point : Point
     , msg : String
     }
+
+
+
+-- Global message struct
 
 
 type Msg
@@ -93,16 +121,28 @@ type Msg
     | ClearScoreMsg
 
 
+
+-- Start modes
+
+
 type StartMode
     = NewLevel
     | NormalReset
     | Init
 
 
+
+-- Game states
+
+
 type State
     = Running Direction
     | Stopped Direction
     | Waiting
+
+
+
+-- Available move directions
 
 
 type Direction
@@ -113,6 +153,10 @@ type Direction
     | None
 
 
+
+-- Ghost colors
+
+
 type GhostColors
     = Red
     | Pink
@@ -121,6 +165,10 @@ type GhostColors
     | Hunted
     | White
     | GoBackInPrison
+
+
+
+-- Ghost names
 
 
 type GhostName

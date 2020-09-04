@@ -1,14 +1,17 @@
-module Eatable exposing (..)
+module Eatable exposing (checkEatable, createFruit, createPoints, pointsToSvg, setScoreMsg)
 
-import Html exposing (..)
-import Html.Attributes exposing (src)
-import Settings exposing (fruitSettings, itemSettings, pacSettings, pillSettings)
+import Html exposing (Html)
+import Settings exposing (fruitSettings, itemSettings, pillSettings)
 import Svg exposing (Svg, circle, image, rect)
 import Svg.Attributes exposing (cx, cy, fill, height, r, width, x, xlinkHref, y)
 import Types.GameModels exposing (Game, GhostColors(..), Msg, ScoreMessage)
 import Types.Ghost exposing (changeGhostSrc)
 import Types.Line exposing (Line, LineType(..))
 import Types.Point exposing (Point)
+
+
+
+-- Creates a list of points from a line
 
 
 createPoints : Line -> List Point -> List Point
@@ -37,9 +40,17 @@ createPoints line pointList =
         pointList
 
 
+
+-- Returns the next eatable point
+
+
 moveToWards : Point -> Point -> Int -> Point
 moveToWards from to lenght =
     { x = from.x + min lenght (to.x - from.x), y = from.y + min lenght (to.y - from.y) }
+
+
+
+-- Checks if there is an eatable item at the current position
 
 
 checkEatable : Game -> Game
@@ -118,6 +129,10 @@ checkEatable game =
         { game | mouthMovement = True, items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
 
 
+
+-- Converts a list of points to a list of SVGs
+
+
 pointsToSvg : List Point -> Int -> List (Svg Msg)
 pointsToSvg points mode =
     -- Modes
@@ -134,6 +149,10 @@ pointsToSvg points mode =
             []
 
 
+
+-- Creates a normal, eatable item as SVG
+
+
 createItemSvg : Int -> Point -> Svg Msg
 createItemSvg _ point =
     rect
@@ -146,6 +165,10 @@ createItemSvg _ point =
         []
 
 
+
+-- Creates a pill as SVG
+
+
 createPillSvg : Int -> Point -> Svg Msg
 createPillSvg _ point =
     circle
@@ -155,6 +178,10 @@ createPillSvg _ point =
         , fill pillSettings.fill
         ]
         []
+
+
+
+-- Creates a fruit as SVG using the current level
 
 
 createFruit : Bool -> Int -> List (Html Msg)
@@ -192,11 +219,19 @@ createFruit available level =
         []
 
 
+
+-- Sets the score message of the previously collected item
+
+
 setScoreMsg : Point -> String -> ScoreMessage
 setScoreMsg msgPoint msgText =
     { point = msgPoint
     , msg = msgText
     }
+
+
+
+-- Indexed map
 
 
 indexedMap : (Int -> a -> b) -> List a -> List b

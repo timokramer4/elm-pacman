@@ -1,5 +1,7 @@
 module Types.Point exposing (Point)
 
+-- Point alias
+
 
 type alias Point =
     { x : Int

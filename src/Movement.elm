@@ -16,24 +16,19 @@ checkDir : Point -> Direction -> LineType -> Bool
 checkDir point dir ghost =
     case dir of
         Left ->
-            getMesh runMesh { x = point.x - movement, y = point.y } ghost
+            List.foldl ((\x y -> checkPath x y)  { x = point.x - movement, y = point.y } ghost) False (Dict.values runMesh)
 
         Right ->
-            getMesh runMesh { x = point.x + movement, y = point.y } ghost
+            List.foldl ((\x y -> checkPath x y)  { x = point.x + movement, y = point.y } ghost) False (Dict.values runMesh)
 
         Up ->
-            getMesh runMesh { x = point.x, y = point.y - movement } ghost
+            List.foldl ((\x y -> checkPath x y)  { x = point.x, y = point.y - movement } ghost) False (Dict.values runMesh)
 
         Down ->
-            getMesh runMesh { x = point.x, y = point.y + movement } ghost
+            List.foldl ((\x y -> checkPath x y)  { x = point.x, y = point.y + movement } ghost) False (Dict.values runMesh)
 
         _ ->
             False
-
-
-getMesh : Dict Int Line -> Point -> LineType -> Bool
-getMesh mesh pos ghost =
-    List.foldl ((\x y -> checkPath x y) pos ghost) False (Dict.values mesh)
 
 
 checkPath : Point -> LineType -> Line -> Bool -> Bool

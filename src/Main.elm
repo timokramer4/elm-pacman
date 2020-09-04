@@ -449,24 +449,37 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- timer for fruit
-        , if game.fruitAvailable then
-            Time.every 1000 (\_ -> Fruit)
+        -- timer for fruit, when its availeble (only if game is running)
+        , case game.state of
+            Running _ ->
+                if game.fruitAvailable then
+                    Time.every 1000 (\_ -> Fruit)
 
-          else
-            Sub.none
+                else
+                    Sub.none
+            _ ->
+                Sub.none  
 
-        -- timer for pill
-        , if game.pillActive then
-            Time.every 1000 (\_ -> Pill)
+        -- timer for pill, when its active (only if game is running)
+        ,case game.state of
+            Running _ -> 
+                if game.pillActive then
+                    Time.every 1000 (\_ -> Pill)
 
-          else
-            Sub.none
-        , if game.pillActive && game.pillSecondCounter > 7 then
-            Time.every 250 (\_ -> ChangeColor)
+                else
+                    Sub.none
+            _ ->
+                Sub.none
+         -- change ghost color, when pill active for the last 3 seconds (only if game is running)               
+        ,case game.state of
+            Running _ ->  
+                if game.pillActive && game.pillSecondCounter > 7 then
+                    Time.every 250 (\_ -> ChangeColor)
 
-          else
-            Sub.none
+                else
+                    Sub.none
+            _ ->
+                Sub.none         
 
         -- reset game
         , if game.totalItemCount == game.itemCounter then
@@ -475,12 +488,16 @@ subscriptions game =
           else
             Sub.none
 
-        -- if pacMan eat Item start Counter
-        , if game.eatItem then
-            Time.every 1000 (\_ -> EatWaiter)
+        -- if pacMan eat Item start Counter, because if pacman eats 4seconds nothning a ghost comes out of prison (only if game is running)
+        , case game.state of
+            Running _ ->
+                if game.eatItem then
+                    Time.every 1000 (\_ -> EatWaiter)
 
-          else
-            Sub.none
+                else
+                    Sub.none
+            _ ->
+                Sub.none
 
         -- if pacman move mouth
         , if game.mouthMovement then
@@ -489,7 +506,7 @@ subscriptions game =
           else
             Sub.none
 
-        -- red ghost movement
+        -- red ghost movement (only if game is running)
         , case game.state of
             Running _ ->
                 if game.redGhost.goBackInPrison then
@@ -504,7 +521,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- pink ghost movement
+        -- pink ghost movement (only if game is running)
         , case game.state of
             Running _ ->
                 if game.pinkGhost.goBackInPrison then
@@ -519,7 +536,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- blue ghost movement
+        -- blue ghost movement (only if game is running)
         , case game.state of
             Running _ ->
                 if game.blueGhost.goBackInPrison then
@@ -534,7 +551,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- yellow ghost movement
+        -- yellow ghost movement (only if game is running)
         , case game.state of
             Running _ ->
                 if game.yellowGhost.goBackInPrison then
@@ -549,12 +566,15 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- clear score msg after 1500 ms
-        , if game.showScoreMessage then
-            Time.every 1500 (\_ -> ClearScoreMsg)
-
-          else
-            Sub.none
+        -- clear score msg after 1500 ms (only if game is running)
+        ,case game.state of
+            Running _ -> 
+                if game.showScoreMessage then
+                    Time.every 1500 (\_ -> ClearScoreMsg)
+                else
+                    Sub.none
+            _ ->
+                Sub.none        
         ]
 
 

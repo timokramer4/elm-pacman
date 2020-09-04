@@ -78,10 +78,11 @@ fruitSettings =
     }
 
 
-gameMessages : { gameOver : String, ready : String, noText : String }
+gameMessages : { gameOver : String, ready : String, pause : String, noText : String }
 gameMessages =
     { gameOver = "GAME OVER!"
     , ready = "READY!"
+    , pause ="PAUSE"
     , noText = ""
     }
 

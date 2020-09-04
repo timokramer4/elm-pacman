@@ -110,10 +110,10 @@ update msg game =
         Types.GameModels.Nothing ->
             case game.state of
                 Running d ->
-                    ( { game | state = Stopped d }, Cmd.none, Audio.loadAudio SoundLoaded "Assets/sounds/start_music.wav" )
+                    ( { game | state = Stopped d, message=gameMessages.pause }, Cmd.none, Audio.loadAudio SoundLoaded "Assets/sounds/start_music.wav" )
 
                 Stopped d ->
-                    ( { game | state = Running d }, Cmd.none, Audio.cmdNone )
+                    ( { game | state = Running d, message=gameMessages.noText }, Cmd.none, Audio.cmdNone )
 
                 Waiting ->
                     ( game, Cmd.none, Audio.cmdNone )
@@ -516,12 +516,15 @@ subscriptions game =
                 Sub.none
 
         -- if pacman move mouth
-        , if game.mouthMovement then
-            Time.every 200 (\_ -> ChangePacmanSrc)
+        ,case game.state of
+            Running _ -> 
+                if game.mouthMovement then
+                    Time.every 200 (\_ -> ChangePacmanSrc)
 
-          else
-            Sub.none
-
+                else
+                    Sub.none
+            _ ->
+                Sub.none
         -- red ghost movement (only if game is running)
         , case game.state of
             Running _ ->
@@ -686,8 +689,10 @@ toKey string =
         "ArrowRight" ->
             ChangeDirection Right
 
-        _ ->
+        "Escape" ->
             Types.GameModels.Nothing
+        _ ->
+            Types.GameModels.NoMoving    
 
 
 

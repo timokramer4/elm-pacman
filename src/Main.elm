@@ -2,26 +2,24 @@ port module Main exposing (init, main)
 
 import Audio
 import Browser.Events exposing (onKeyDown)
-import Delay exposing (..)
+import Delay exposing (TimeUnit(..), after)
 import Dict exposing (member)
-import Eatable exposing (..)
+import Eatable exposing (checkEatable, createFruit, createPoints, pointsToSvg, setScoreMsg)
 import Html exposing (Html, div, img, node, text)
 import Html.Attributes exposing (class, height, id, src, style, width)
-import Json.Decode exposing (..)
-import Json.Encode
-import List exposing (..)
+import Json.Decode exposing (Decoder, Value)
+import Json.Encode exposing (Value)
+import List exposing (length)
 import List.Unique exposing (filterDuplicates)
-import Movement exposing (..)
-import Platform exposing (Task)
-import Settings exposing (..)
-import String exposing (toInt)
+import Movement exposing (checkDir, outOfBounds)
+import Settings exposing (fieldSettings, fruitSettings, gameMessages, ghostSettings, itemSettings, movement, pacSettings, pillsList, runMesh)
 import Style exposing (..)
 import Svg exposing (Svg, line, path, polygon, svg)
 import Svg.Attributes exposing (d, fill, points, stroke, strokeWidth, x1, x2, y1, y2)
 import Task exposing (perform)
 import Time exposing (every)
-import Types.GameModels exposing (..)
-import Types.Ghost exposing (..)
+import Types.GameModels exposing (Direction(..), Game, GhostColors(..), GhostName(..), Msg(..), SoundModel(..), SoundState(..), StartMode(..), State(..))
+import Types.Ghost exposing (changeGhostSrc, changeGoBackInPrison, checkGhoastEatingPacMan, getGhostNextDir, getGhostSrc, huntedColorChange, moveGhoastToPosition, moveGhost, setActiveState, setGhostRunning)
 import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
 
@@ -46,6 +44,7 @@ initialModel =
 update : Msg -> Game -> ( Game, Cmd Msg, Audio.AudioCmd Msg )
 update msg game =
     case msg of
+        -- Default movement
         MoveDirection d ->
             case d of
                 Left ->
@@ -107,6 +106,7 @@ update msg game =
                 _ ->
                     update NoMoving game
 
+        -- Pressed play/pause button
         Types.GameModels.Nothing ->
             case game.state of
                 Running d ->
@@ -118,12 +118,15 @@ update msg game =
                 Waiting ->
                     ( game, Cmd.none, Audio.cmdNone )
 
+        -- Game is freezed
         NoMoving ->
             ( game, Cmd.none, Audio.cmdNone )
 
+        -- Change next direction
         ChangeDirection d ->
             ( { game | nextDir = d }, Cmd.none, Audio.cmdNone )
 
+        -- When a fruit is shown
         Fruit ->
             if game.fruitSecondCounter == 10 then
                 ( { game | fruitAvailable = False, fruitSecondCounter = 0 }, Cmd.none, Audio.cmdNone )
@@ -131,6 +134,7 @@ update msg game =
             else
                 ( { game | fruitSecondCounter = game.fruitSecondCounter + 1 }, Cmd.none, Audio.cmdNone )
 
+        -- When the pill is active
         Pill ->
             if game.pillSecondCounter == 10 then
                 ( { game | pillActive = False, pillSecondCounter = 0, eatenGhostsCounter = 0, redGhost = changeGhostSrc game.redGhost Red, yellowGhost = changeGhostSrc game.yellowGhost Yellow, blueGhost = changeGhostSrc game.blueGhost Blue, pinkGhost = changeGhostSrc game.pinkGhost Pink }, Cmd.none, Audio.cmdNone )
@@ -138,6 +142,7 @@ update msg game =
             else
                 ( { game | pillSecondCounter = game.pillSecondCounter + 1 }, Cmd.none, Audio.cmdNone )
 
+        -- Counts the time in which nothing was eaten
         EatWaiter ->
             if game.eatItemSecondCounter == 0 then
                 -- activate next ghost, if not all running
@@ -153,8 +158,10 @@ update msg game =
             else
                 ( { game | eatItemSecondCounter = game.eatItemSecondCounter - 1000 }, Cmd.none, Audio.cmdNone )
 
+        -- Ghost movement
         GhostMove ghostName ->
             let
+                -- Red ghost (Blinky)
                 newRedGhost =
                     case ghostName of
                         Blinky ->
@@ -172,6 +179,7 @@ update msg game =
                         _ ->
                             game.redGhost
 
+                -- Pink ghost (Pinky)
                 newPinkGhost =
                     case ghostName of
                         Pinky ->
@@ -189,6 +197,7 @@ update msg game =
                         _ ->
                             game.pinkGhost
 
+                -- Blue ghost (Inky)
                 newBlueGhost =
                     case ghostName of
                         Inky ->
@@ -206,6 +215,7 @@ update msg game =
                         _ ->
                             game.blueGhost
 
+                -- Yellow ghost (Clyde)
                 newYellowGhost =
                     case ghostName of
                         Clyde ->
@@ -302,16 +312,19 @@ update msg game =
                 else
                     ( game, Cmd.none, Audio.cmdNone )
 
+        -- Changes the color of a ghost
         ChangeColor ->
             ( { game | redGhost = huntedColorChange game.redGhost, yellowGhost = huntedColorChange game.yellowGhost, blueGhost = huntedColorChange game.blueGhost, pinkGhost = huntedColorChange game.pinkGhost }, Cmd.none, Audio.cmdNone )
 
+        -- Resets the game to its default values
         ResetGame mode ->
             ( resetGame game.lifes game.score game.items game.pills game.itemCounter game.level mode, Delay.after 4500 Millisecond StartGame, Audio.cmdNone )
 
-        -- pacMan wait to start
+        -- PacMan wait to start
         StartGame ->
             ( { game | message = gameMessages.noText, state = Running Right }, Cmd.none, Audio.loadAudio SoundLoaded "Assets/sounds/start_music.wav" )
 
+        -- When a sound file is loaded
         SoundLoaded x ->
             case x of
                 Ok sound ->
@@ -320,9 +333,11 @@ update msg game =
                 Err _ ->
                     ( { game | sound = LoadFailedModel }, Cmd.none, Audio.cmdNone )
 
+        -- Adds the LoadedModel the current posix time
         GetCurrentTime sound posix ->
             ( { game | sound = LoadedModel { sound = sound, soundState = Playing posix } }, Cmd.none, Audio.cmdNone )
 
+        -- Changes the source of PacMan
         ChangePacmanSrc ->
             if game.pacmanSrc == pacSettings.openedMouthSrc then
                 ( { game | pacmanSrc = pacSettings.closedMouthSrc, mouthMovement = False }, Delay.after 200 Millisecond ChangePacmanSrc, Audio.cmdNone )
@@ -330,6 +345,7 @@ update msg game =
             else
                 ( { game | pacmanSrc = pacSettings.openedMouthSrc, mouthMovement = False }, Cmd.none, Audio.cmdNone )
 
+        -- Clears the score message
         ClearScoreMsg ->
             ( { game | scoreMessage = setScoreMsg { x = 0, y = 0 } "", showScoreMessage = False }, Cmd.none, Audio.cmdNone )
 
@@ -584,10 +600,14 @@ subscriptions game =
 -------------------
 
 
-port audioPortToJS : Json.Encode.Value -> Cmd msg
+port audioPortToJS : Value -> Cmd msg
 
 
-port audioPortFromJS : (Json.Decode.Value -> msg) -> Sub msg
+port audioPortFromJS : (Value -> msg) -> Sub msg
+
+
+
+-- Initialize model
 
 
 init : flags -> ( Game, Cmd Msg, Audio.AudioCmd Msg )
@@ -597,6 +617,10 @@ init _ =
     , Audio.loadAudio SoundLoaded
         "Assets/sounds/start_music.wav"
     )
+
+
+
+-- Main programm
 
 
 main : Program () (Audio.Model Msg Game) (Audio.Msg Msg)
@@ -609,6 +633,10 @@ main =
         , audio = gameToAudio
         , audioPort = { toJS = audioPortToJS, fromJS = audioPortFromJS }
         }
+
+
+
+-- Changes the status when playing a sound file and returns the audio
 
 
 gameToAudio : Game -> Audio.Audio
@@ -634,11 +662,11 @@ gameToAudio game =
 -- FUNCTIONS --
 ---------------
 -------------------
--- key functions --
+-- Key functions --
 -------------------
 
 
-keyDecoder : Json.Decode.Decoder Msg
+keyDecoder : Decoder Msg
 keyDecoder =
     Json.Decode.map toKey (Json.Decode.field "key" Json.Decode.string)
 
@@ -663,9 +691,10 @@ toKey string =
 
 
 
--------------------------
--- change pac position --
--------------------------
+----------------------------
+-- Change PacMan position --
+----------------------------
+-- Changes the x-position of PacMan
 
 
 changeXPosition : Int -> Game -> Point
@@ -675,6 +704,10 @@ changeXPosition value game =
             game.pPosition
     in
     { oldPosition | x = value }
+
+
+
+-- Changes the y-position of PacMan
 
 
 changeYPosition : Int -> Game -> Point
@@ -688,8 +721,9 @@ changeYPosition value game =
 
 
 ----------------------
--- substract lists  --
+-- Substract lists  --
 ----------------------
+-- Subtracts two lists from each other to avoid double entries within one list
 
 
 substractList : List Point -> List Point -> List Point
@@ -701,6 +735,7 @@ substractList a b =
 ----------------------
 -- getFullItemList  --
 ----------------------
+-- Returns a list of all items distributed on the playing field
 
 
 getFullItemList : List Point
@@ -709,10 +744,10 @@ getFullItemList =
 
 
 
---[ { x = 280, y = 370 }, { x = 325, y = 370 } , { x = 385, y = 370 }]
 -------------------------
--- reset life function --
+-- Reset game function --
 -------------------------
+-- Resets the whole game and sets passed values as initial values depending on the desired mode
 
 
 resetGame : Int -> Int -> List Point -> List Point -> Int -> Int -> StartMode -> Game
@@ -792,8 +827,9 @@ resetGame newLife newScore prevItemList prevPillsList prevItemCounter prevLevel 
 
 
 -------------------------
--- pacMan Life display --
+-- PacMan life display --
 -------------------------
+-- Returns a list of SVG depending on the lives still available
 
 
 pacManSvgList : List (Svg Msg) -> Int -> List (Svg Msg)
@@ -807,8 +843,9 @@ pacManSvgList list amount =
 
 
 -------------------------
------ fruit display -----
+----- Fruit display -----
 -------------------------
+-- Returns a list of SVG depending on the current level
 
 
 fruitSvgList : List (Svg Msg) -> Int -> Int -> List (Svg Msg)

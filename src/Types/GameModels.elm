@@ -105,8 +105,8 @@ type alias ScoreMessage =
 
 type Msg
     = MoveDirection Direction
-    | Nothing
-    | NoMoving
+    | ChangeState
+    | DoNothing
     | ChangeDirection Direction
     | Fruit
     | Pill

@@ -59,7 +59,7 @@ update msg game =
                             ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x - movement) game, state = Running d, pRotation = 180 }, Cmd.none, Audio.cmdNone )
 
                     else
-                        update NoMoving game
+                        update DoNothing game
 
                 Right ->
                     if outOfBounds game then
@@ -73,7 +73,7 @@ update msg game =
                             ( checkEatable { game | pPosition = changeXPosition (game.pPosition.x + movement) game, state = Running d, pRotation = 0 }, Cmd.none, Audio.cmdNone )
 
                     else
-                        update NoMoving game
+                        update DoNothing game
 
                 Up ->
                     if outOfBounds game then
@@ -87,7 +87,7 @@ update msg game =
                             ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y - movement) game, state = Running d, pRotation = -90 }, Cmd.none, Audio.cmdNone )
 
                     else
-                        update NoMoving game
+                        update DoNothing game
 
                 Down ->
                     if outOfBounds game then
@@ -101,13 +101,13 @@ update msg game =
                             ( checkEatable { game | pPosition = changeYPosition (game.pPosition.y + movement) game, state = Running d, pRotation = 90 }, Cmd.none, Audio.cmdNone )
 
                     else
-                        update NoMoving game
+                        update DoNothing game
 
                 _ ->
-                    update NoMoving game
+                    update DoNothing game
 
         -- Pressed play/pause button
-        Types.GameModels.Nothing ->
+        Types.GameModels.ChangeState ->
             case game.state of
                 Running d ->
                     ( { game | state = Stopped d, message = gameMessages.pause }, Cmd.none, Audio.loadAudio SoundLoaded "Assets/sounds/start_music.wav" )
@@ -115,11 +115,12 @@ update msg game =
                 Stopped d ->
                     ( { game | state = Running d, message = gameMessages.noText }, Cmd.none, Audio.cmdNone )
 
+                -- Waiting before start the game
                 Waiting ->
                     ( game, Cmd.none, Audio.cmdNone )
 
-        -- Game is freezed
-        NoMoving ->
+        -- Do nothing
+        DoNothing ->
             ( game, Cmd.none, Audio.cmdNone )
 
         -- Change next direction
@@ -699,10 +700,10 @@ toKey string =
             ChangeDirection Right
 
         "Escape" ->
-            Types.GameModels.Nothing
+            Types.GameModels.ChangeState
 
         _ ->
-            Types.GameModels.NoMoving
+            Types.GameModels.DoNothing
 
 
 

@@ -28,5 +28,5 @@ To move PacMan the arrow keys of the keyboard are used.
 To pause or resume the game the escape key is used.
 
 
-## Dokumente
+## 📚 Dokumente
 [Anforderungen](https://git.jt-networker.myds.me/tkramer/elm-pacman/wikis/Anforderungen)

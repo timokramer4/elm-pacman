@@ -166,10 +166,10 @@ update msg game =
                 newRedGhost =
                     case ghostName of
                         Blinky ->
-                            -- change ghost source, if ghost not at start position and go back in prison
+                            -- Change ghost source, if ghost not at start position and go back in prison
                             if game.redGhost.goBackInPrison && game.redGhost.position /= ghostSettings.startPosition then
                                 changeGhostSrc (moveGhost game.redGhost (getGhostNextDir game game.redGhost)) GoBackInPrison
-                                -- change ghost source, if ghost at start position and go back in prison
+                                -- Change ghost source, if ghost at start position and go back in prison
 
                             else if game.redGhost.goBackInPrison && game.redGhost.position == ghostSettings.startPosition then
                                 changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison (setActiveState game.redGhost False) False) ghostSettings.pinkStartPos) Red
@@ -184,10 +184,10 @@ update msg game =
                 newPinkGhost =
                     case ghostName of
                         Pinky ->
-                            -- change ghost source, if ghost not at start position and go back in prison
+                            -- Change ghost source, if ghost not at start position and go back in prison
                             if game.pinkGhost.goBackInPrison && game.pinkGhost.position /= ghostSettings.startPosition then
                                 changeGhostSrc (moveGhost game.pinkGhost (getGhostNextDir game game.pinkGhost)) GoBackInPrison
-                                -- change ghost source, if ghost at start position and go back in prison
+                                -- Change ghost source, if ghost at start position and go back in prison
 
                             else if game.pinkGhost.goBackInPrison && game.pinkGhost.position == ghostSettings.startPosition then
                                 changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison (setActiveState game.pinkGhost False) False) ghostSettings.pinkStartPos) Pink
@@ -202,10 +202,10 @@ update msg game =
                 newBlueGhost =
                     case ghostName of
                         Inky ->
-                            -- change ghost source, if ghost not at start position and go back in prison
+                            -- Change ghost source, if ghost not at start position and go back in prison
                             if game.blueGhost.goBackInPrison && game.blueGhost.position /= ghostSettings.startPosition then
                                 changeGhostSrc (moveGhost game.blueGhost (getGhostNextDir game game.blueGhost)) GoBackInPrison
-                                -- change ghost source, if ghost at start position and go back in prison
+                                -- Change ghost source, if ghost at start position and go back in prison
 
                             else if game.blueGhost.goBackInPrison && game.blueGhost.position == ghostSettings.startPosition then
                                 changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison (setActiveState game.blueGhost False) False) ghostSettings.blueStartPos) Blue
@@ -220,10 +220,10 @@ update msg game =
                 newYellowGhost =
                     case ghostName of
                         Clyde ->
-                            -- change ghost source, if ghost not at start position and go back in prison
+                            -- Change ghost source, if ghost not at start position and go back in prison
                             if game.yellowGhost.goBackInPrison && game.yellowGhost.position /= ghostSettings.startPosition then
                                 changeGhostSrc (moveGhost game.yellowGhost (getGhostNextDir game game.yellowGhost)) GoBackInPrison
-                                -- change ghost source, if ghost at start position and go back in prison
+                                -- Change ghost source, if ghost at start position and go back in prison
 
                             else if game.yellowGhost.goBackInPrison && game.yellowGhost.position == ghostSettings.startPosition then
                                 changeGhostSrc (moveGhoastToPosition (changeGoBackInPrison (setActiveState game.yellowGhost False) False) ghostSettings.yellowStartPos) Yellow
@@ -237,21 +237,21 @@ update msg game =
             -- In the first round Pinky (pink) leaves the prison after one, Inky (blue) after 30 and Clyde (yellow) after 60 items. The counter is reset each time. After PacMan has been eaten once, Pinky (pink) leaves the prison after 7, Inky (blue) after 17 and Clyde (yellow) after 32 items. The counter is not reset like in the beginning.
             if checkGhoastEatingPacMan game.pPosition game.redGhost.position && checkGhoastEatingPacMan game.pPosition game.blueGhost.position && checkGhoastEatingPacMan game.pPosition game.yellowGhost.position && checkGhoastEatingPacMan game.pPosition game.pinkGhost.position && game.state /= Stopped None then
                 if game.level < 3 then
-                    -- activate Clyde (yellow) starts moving
+                    -- Activate Clyde (yellow) starts moving
                     if ((game.itemCounter > 91 && game.lifes == 3) && not game.yellowGhost.running) || ((game.itemCounter > 32 && game.lifes /= 3) && not game.yellowGhost.running) || (game.nextGhostCanGoOut && game.blueGhost.running && not game.yellowGhost.running) then
                         ( { game | nextGhostCanGoOut = False, redGhost = newRedGhost, pinkGhost = newPinkGhost, blueGhost = newBlueGhost, yellowGhost = setGhostRunning newYellowGhost }, Cmd.none, Audio.cmdNone )
-                        -- activate Inky (blue) starts moving
+                        -- Activate Inky (blue) starts moving
 
                     else if ((game.itemCounter > 31 && game.lifes == 3) && not game.blueGhost.running) || ((game.itemCounter > 17 && game.lifes /= 3) && not game.blueGhost.running) || (game.nextGhostCanGoOut && game.pinkGhost.running && not game.blueGhost.running) then
                         ( { game | nextGhostCanGoOut = False, redGhost = newRedGhost, pinkGhost = newPinkGhost, blueGhost = setGhostRunning newBlueGhost }, Cmd.none, Audio.cmdNone )
-                        -- activate Pinky (pink) and start moving
+                        -- Activate Pinky (pink) and start moving
 
                     else if ((game.itemCounter > 1 && game.lifes == 3) && not game.pinkGhost.running) || ((game.itemCounter > 7 && game.lifes /= 3) && not game.pinkGhost.running) || (game.nextGhostCanGoOut && game.redGhost.running && not game.pinkGhost.running) then
                         ( { game | nextGhostCanGoOut = False, redGhost = newRedGhost, pinkGhost = setGhostRunning newPinkGhost }, Cmd.none, Audio.cmdNone )
-                        -- no ghost can be activated then only move ghosts
+                        -- No ghost can be activated then only move ghosts
 
                     else
-                    -- move activatedGhosts
+                    -- Move activatedGhosts
                     if
                         game.redGhost.running && game.blueGhost.running && game.yellowGhost.running && game.pinkGhost.running
                     then
@@ -270,7 +270,7 @@ update msg game =
                         ( { game | redGhost = newRedGhost }, Cmd.none, Audio.cmdNone )
 
                 else
-                    -- acvtivate all ghosts and move all one step when level grather than 3
+                    -- Acvtivate all ghosts and move all one step when level grather than 3
                     ( { game | redGhost = setGhostRunning newRedGhost, blueGhost = setGhostRunning newBlueGhost, yellowGhost = setGhostRunning newYellowGhost, pinkGhost = setGhostRunning newPinkGhost }, Cmd.none, Audio.cmdNone )
 
             else if not game.pillActive then
@@ -282,7 +282,7 @@ update msg game =
                         else
                             ( { game | state = Stopped d, lifes = game.lifes - 1 }, Delay.after 3000 Millisecond (ResetGame NormalReset), Audio.cmdNone )
 
-                    -- pacMan Loose Animation
+                    -- PacMan loose animation
                     _ ->
                         ( game, Cmd.none, Audio.cmdNone )
 
@@ -294,18 +294,18 @@ update msg game =
                     newScore =
                         game.score + ghostScore
                 in
-                -- pacMan eat redGhost
+                -- PacMan eat redGhost
                 if not (checkGhoastEatingPacMan game.pPosition game.redGhost.position) && not game.redGhost.goBackInPrison then
                     ( { game | redGhost = changeGoBackInPrison game.redGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.redGhost.position (String.fromInt ghostScore), showScoreMessage = True }, Cmd.none, Audio.cmdNone )
-                    -- pacMan eat blueGhost
+                    -- PacMan eat blueGhost
 
                 else if not (checkGhoastEatingPacMan game.pPosition game.blueGhost.position) && not game.blueGhost.goBackInPrison then
                     ( { game | blueGhost = changeGoBackInPrison game.blueGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.blueGhost.position (String.fromInt ghostScore), showScoreMessage = True }, Cmd.none, Audio.cmdNone )
-                    --pacMan eat yellowGhost
+                    -- PacMan eat yellowGhost
 
                 else if not (checkGhoastEatingPacMan game.pPosition game.yellowGhost.position) && not game.yellowGhost.goBackInPrison then
                     ( { game | yellowGhost = changeGoBackInPrison game.yellowGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.yellowGhost.position (String.fromInt ghostScore), showScoreMessage = True }, Cmd.none, Audio.cmdNone )
-                    --pacMan eat pinkGhost
+                    -- PacMan eat pinkGhost
 
                 else if not (checkGhoastEatingPacMan game.pPosition game.pinkGhost.position) && not game.pinkGhost.goBackInPrison then
                     ( { game | pinkGhost = changeGoBackInPrison game.pinkGhost True, eatenGhostsCounter = game.eatenGhostsCounter + 1, score = newScore, scoreMessage = setScoreMsg game.pinkGhost.position (String.fromInt ghostScore), showScoreMessage = True }, Cmd.none, Audio.cmdNone )
@@ -455,18 +455,18 @@ subscriptions game =
     Sub.batch
         [ Browser.Events.onKeyDown keyDecoder
         , case game.state of
-            -- normal running
+            -- Normal running
             Running d ->
                 Time.every 20 (\_ -> MoveDirection d)
 
-            -- start case (waiting till pacMan can run)
+            -- Start case (waiting till pacMan can run)
             Waiting ->
                 Time.every 20 (\_ -> ResetGame NormalReset)
 
             _ ->
                 Sub.none
 
-        -- timer for fruit, when its availeble (only if game is running)
+        -- Timer for fruit, when its availeble (only if game is running)
         , case game.state of
             Running _ ->
                 if game.fruitAvailable then
@@ -478,7 +478,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- timer for pill, when its active (only if game is running)
+        -- Timer for pill, when its active (only if game is running)
         , case game.state of
             Running _ ->
                 if game.pillActive then
@@ -490,7 +490,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- change ghost color, when pill active for the last 3 seconds (only if game is running)
+        -- Change ghost color, when pill active for the last 3 seconds (only if game is running)
         , case game.state of
             Running _ ->
                 if game.pillActive && game.pillSecondCounter > 7 then
@@ -502,14 +502,14 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- reset game
+        -- Reset game
         , if game.totalItemCount == game.itemCounter then
             Time.every 20 (\_ -> ResetGame NewLevel)
 
           else
             Sub.none
 
-        -- if pacMan eat Item start Counter, because if pacman eats 4seconds nothning a ghost comes out of prison (only if game is running)
+        -- If pacMan eat Item start Counter, because if pacman eats 4seconds nothning a ghost comes out of prison (only if game is running)
         , case game.state of
             Running _ ->
                 if game.eatItem then
@@ -521,7 +521,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- if pacman move mouth
+        -- If pacman move mouth
         , case game.state of
             Running _ ->
                 if game.mouthMovement then
@@ -533,7 +533,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- red ghost movement (only if game is running)
+        -- Red ghost movement (only if game is running)
         , case game.state of
             Running _ ->
                 if game.redGhost.goBackInPrison then
@@ -548,7 +548,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- pink ghost movement (only if game is running)
+        -- Pink ghost movement (only if game is running)
         , case game.state of
             Running _ ->
                 if game.pinkGhost.goBackInPrison then
@@ -563,7 +563,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- blue ghost movement (only if game is running)
+        -- Blue ghost movement (only if game is running)
         , case game.state of
             Running _ ->
                 if game.blueGhost.goBackInPrison then
@@ -578,7 +578,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- yellow ghost movement (only if game is running)
+        -- Yellow ghost movement (only if game is running)
         , case game.state of
             Running _ ->
                 if game.yellowGhost.goBackInPrison then
@@ -593,7 +593,7 @@ subscriptions game =
             _ ->
                 Sub.none
 
-        -- clear score msg after 1500 ms (only if game is running)
+        -- Clear score msg after 1500 ms (only if game is running)
         , case game.state of
             Running _ ->
                 if game.showScoreMessage then

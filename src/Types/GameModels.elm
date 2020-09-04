@@ -6,7 +6,9 @@ import Types.Point exposing (Point)
 
 
 
--- Global game model
+-----------------------
+-- GLOBAL GAME MODEL --
+-----------------------
 
 
 type alias Game =
@@ -43,7 +45,9 @@ type alias Game =
 
 
 
--- Loaded sound file/state
+-----------------------------
+-- LOADED SOUND FILE/STATE --
+-----------------------------
 
 
 type alias LoadedModel_ =
@@ -53,7 +57,9 @@ type alias LoadedModel_ =
 
 
 
--- Sound states
+------------------
+-- SOUND STATES --
+------------------
 
 
 type SoundState
@@ -63,7 +69,9 @@ type SoundState
 
 
 
--- Different states when loading a sound file
+------------------------------------------------
+-- DIFFERENT STATES WHEN LOADING A SOUND FILE --
+------------------------------------------------
 
 
 type SoundModel
@@ -73,7 +81,9 @@ type SoundModel
 
 
 
--- Ghost model
+-----------------
+-- GHOST MODEL --
+-----------------
 
 
 type alias Ghost =
@@ -90,7 +100,9 @@ type alias Ghost =
 
 
 
--- Score message
+-------------------
+-- SCORE MESSAGE --
+-------------------
 
 
 type alias ScoreMessage =
@@ -100,7 +112,9 @@ type alias ScoreMessage =
 
 
 
--- Global message struct
+---------------------------
+-- GLOBAL MESSAGE STRUCT --
+---------------------------
 
 
 type Msg
@@ -122,7 +136,9 @@ type Msg
 
 
 
--- Start modes
+-----------------
+-- START MODES --
+-----------------
 
 
 type StartMode
@@ -132,7 +148,9 @@ type StartMode
 
 
 
--- Game states
+-----------------
+-- GAME STATES --
+-----------------
 
 
 type State
@@ -142,7 +160,9 @@ type State
 
 
 
--- Available move directions
+-------------------------------
+-- AVAILABLE MOVE DIRECTIONS --
+-------------------------------
 
 
 type Direction
@@ -154,7 +174,9 @@ type Direction
 
 
 
--- Ghost colors
+------------------
+-- GHOST COLORS --
+------------------
 
 
 type GhostColors
@@ -168,7 +190,9 @@ type GhostColors
 
 
 
--- Ghost names
+-----------------
+-- GHOST NAMES --
+-----------------
 
 
 type GhostName

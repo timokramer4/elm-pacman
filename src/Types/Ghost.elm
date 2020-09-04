@@ -1,7 +1,6 @@
 module Types.Ghost exposing (changeGhostSrc, changeGoBackInPrison, checkGhoastEatingPacMan, getGhostNextDir, getGhostSrc, huntedColorChange, moveGhoastToPosition, moveGhost, setActiveState, setGhostRunning)
 
 import Arithmetic exposing (intSquareRoot)
-import Debug exposing (..)
 import Movement exposing (checkDir)
 import Settings exposing (getPoint, ghostSettings, movement, pacSettings)
 import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), GhostName(..), State(..))
@@ -233,14 +232,14 @@ getGhostNextDir game ghost =
         let
             moveOptions : { vertical : Direction, horizontal : Direction, cVertical : Direction, cHorizontal : Direction }
             moveOptions =
-                -- targetPos right down
+                -- Target position right down
                 if targetPos.x > ghost.position.x && targetPos.y > ghost.position.y then
                     { vertical = Down
                     , horizontal = Right
                     , cVertical = Up
                     , cHorizontal = Left
                     }
-                    -- targetPos right up
+                    -- Target position right up
 
                 else if targetPos.x > ghost.position.x && targetPos.y < ghost.position.y then
                     { vertical = Up
@@ -248,7 +247,7 @@ getGhostNextDir game ghost =
                     , cVertical = Down
                     , cHorizontal = Left
                     }
-                    -- targetPos left up
+                    -- Target position left up
 
                 else if targetPos.x < ghost.position.x && targetPos.y < ghost.position.y then
                     { vertical = Up
@@ -256,7 +255,7 @@ getGhostNextDir game ghost =
                     , cVertical = Down
                     , cHorizontal = Right
                     }
-                    -- targetPos left down
+                    -- Target position left down
 
                 else if targetPos.x < ghost.position.x && targetPos.y > ghost.position.y then
                     { vertical = Down
@@ -302,7 +301,7 @@ getGhostNextDir game ghost =
                     , cHorizontal = None
                     }
 
-            -- save neares crosses
+            -- Save neares crosses
             nextHorizontalCross =
                 if getVectorLength (getNextCross ghost.position Left) targetPos > getVectorLength (getNextCross ghost.position Right) targetPos then
                     Left

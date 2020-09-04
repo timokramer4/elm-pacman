@@ -1,3 +1,3 @@
-# Pac-Man
+# GitHub page
 
-Pac-Man development in elm
+This branch is only for the integration of GitHub Pages. The content was created in Elm from the current master branch.

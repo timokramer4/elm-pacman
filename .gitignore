@@ -115,5 +115,6 @@ tmp/
 temp/
 
 src/Assets/elm.js
+settings.json
 
 # End of https://www.gitignore.io/api/elm,node

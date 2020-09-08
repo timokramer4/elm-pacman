@@ -103,10 +103,25 @@ checkEatable game =
                 fruitSettings.xpKey
     in
     -- Eat no pill and no item
-    if List.length game.pills == List.length localListPills && List.length game.items == List.length localListItems then
+    if
+        List.length game.pills
+            == List.length localListPills
+            && List.length game.items
+            == List.length localListItems
+    then
         -- Eat fruit
-        if game.pPosition == fruitSettings.position && game.fruitAvailable then
-            { game | mouthMovement = True, score = game.score + fruitXp, fruitAvailable = False, scoreMessage = setScoreMsg fruitSettings.position (String.fromInt fruitXp), showScoreMessage = True }
+        if
+            game.pPosition
+                == fruitSettings.position
+                && game.fruitAvailable
+        then
+            { game
+                | mouthMovement = True
+                , score = game.score + fruitXp
+                , fruitAvailable = False
+                , scoreMessage = setScoreMsg fruitSettings.position (String.fromInt fruitXp)
+                , showScoreMessage = True
+            }
             -- Eat nothing
 
         else
@@ -114,19 +129,64 @@ checkEatable game =
         -- Eat pill
 
     else if List.length game.pills /= List.length localListPills then
-        { game | mouthMovement = True, pills = localListPills, score = game.score + pillSettings.xp, pillSecondCounter = 0, pillActive = True, scoreMessage = setScoreMsg game.pPosition (String.fromInt pillSettings.xp), showScoreMessage = True, redGhost = changeGhostSrc game.redGhost Hunted, yellowGhost = changeGhostSrc game.yellowGhost Hunted, blueGhost = changeGhostSrc game.blueGhost Hunted, pinkGhost = changeGhostSrc game.pinkGhost Hunted }
+        { game
+            | mouthMovement = True
+            , pills = localListPills
+            , score = game.score + pillSettings.xp
+            , pillSecondCounter = 0
+            , pillActive = True
+            , scoreMessage = setScoreMsg game.pPosition (String.fromInt pillSettings.xp)
+            , showScoreMessage = True
+            , redGhost = changeGhostSrc game.redGhost Hunted
+            , yellowGhost = changeGhostSrc game.yellowGhost Hunted
+            , blueGhost = changeGhostSrc game.blueGhost Hunted
+            , pinkGhost = changeGhostSrc game.pinkGhost Hunted
+        }
         -- Eat fruit, if fruit availeble
 
-    else if game.pPosition == fruitSettings.position && game.fruitAvailable then
-        { game | mouthMovement = True, items = localListItems, score = game.score + fruitXp + itemSettings.xp, fruitAvailable = False, scoreMessage = setScoreMsg fruitSettings.position (String.fromInt fruitXp), showScoreMessage = True, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
+    else if
+        game.pPosition
+            == fruitSettings.position
+            && game.fruitAvailable
+    then
+        { game
+            | mouthMovement = True
+            , items = localListItems
+            , score = game.score + fruitXp + itemSettings.xp
+            , fruitAvailable = False
+            , scoreMessage = setScoreMsg fruitSettings.position (String.fromInt fruitXp)
+            , showScoreMessage = True
+            , eatItem = True
+            , eatItemSecondCounter = itemSettings.noEatingCooldownMs
+        }
         -- Eat item and unlock fruit
 
-    else if game.itemCounter == fruitSettings.itemNumber1 || game.itemCounter == fruitSettings.itemNumber2 then
-        { game | mouthMovement = True, items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, fruitAvailable = True, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
+    else if
+        game.itemCounter
+            == fruitSettings.itemNumber1
+            || game.itemCounter
+            == fruitSettings.itemNumber2
+    then
+        { game
+            | mouthMovement = True
+            , items = localListItems
+            , score = game.score + itemSettings.xp
+            , itemCounter = game.itemCounter + 1
+            , fruitAvailable = True
+            , eatItem = True
+            , eatItemSecondCounter = itemSettings.noEatingCooldownMs
+        }
         -- Eat  only item
 
     else
-        { game | mouthMovement = True, items = localListItems, score = game.score + itemSettings.xp, itemCounter = game.itemCounter + 1, eatItem = True, eatItemSecondCounter = itemSettings.noEatingCooldownMs }
+        { game
+            | mouthMovement = True
+            , items = localListItems
+            , score = game.score + itemSettings.xp
+            , itemCounter = game.itemCounter + 1
+            , eatItem = True
+            , eatItemSecondCounter = itemSettings.noEatingCooldownMs
+        }
 
 
 
@@ -213,7 +273,15 @@ createFruit available level =
                 "key"
     in
     if available then
-        [ image [ xlinkHref ("Assets/img/fruits/" ++ fruit ++ ".svg"), width (String.fromInt fruitSettings.ratio), height (String.fromInt fruitSettings.ratio), x (String.fromInt (fruitSettings.position.x - round (toFloat fruitSettings.ratio / 2))), y (String.fromInt (fruitSettings.position.y - round (toFloat fruitSettings.ratio / 2))) ] [] ]
+        [ image
+            [ xlinkHref ("Assets/img/fruits/" ++ fruit ++ ".svg")
+            , width (String.fromInt fruitSettings.ratio)
+            , height (String.fromInt fruitSettings.ratio)
+            , x (String.fromInt (fruitSettings.position.x - round (toFloat fruitSettings.ratio / 2)))
+            , y (String.fromInt (fruitSettings.position.y - round (toFloat fruitSettings.ratio / 2)))
+            ]
+            []
+        ]
 
     else
         []

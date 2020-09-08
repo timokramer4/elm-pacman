@@ -1,9 +1,34 @@
-module Types.Ghost exposing (changeGhostSrc, changeGoBackInPrison, checkGhoastEatingPacMan, getGhostNextDir, getGhostSrc, huntedColorChange, moveGhoastToPosition, moveGhost, setActiveState, setGhostRunning)
+module Types.Ghost exposing
+    ( changeGhostSrc
+    , changeGoBackInPrison
+    , checkGhoastEatingPacMan
+    , getGhostNextDir
+    , getGhostSrc
+    , huntedColorChange
+    , moveGhoastToPosition
+    , moveGhost
+    , setActiveState
+    , setGhostRunning
+    )
 
 import Arithmetic exposing (intSquareRoot)
 import Movement exposing (checkDir)
-import Settings exposing (getPoint, ghostSettings, movement, pacSettings)
-import Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), GhostName(..), State(..))
+import Settings
+    exposing
+        ( getPoint
+        , ghostSettings
+        , movement
+        , pacSettings
+        )
+import Types.GameModels
+    exposing
+        ( Direction(..)
+        , Game
+        , Ghost
+        , GhostColors(..)
+        , GhostName(..)
+        , State(..)
+        )
 import Types.Line exposing (LineType(..))
 import Types.Point exposing (Point)
 
@@ -42,10 +67,28 @@ moveGhost ghost dir =
                 ghost.active
     in
     if ghost.name == Blinky then
-        { name = ghost.name, color = ghost.color, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = getGhostSrc ghost.color dir, goBackInPrison = ghost.goBackInPrison, running = ghost.running }
+        { name = ghost.name
+        , color = ghost.color
+        , position = ghostNextPos
+        , dir = dir
+        , active = activeState
+        , offset = ghost.offset
+        , src = getGhostSrc ghost.color dir
+        , goBackInPrison = ghost.goBackInPrison
+        , running = ghost.running
+        }
 
     else
-        { name = ghost.name, color = ghost.color, position = ghostNextPos, dir = dir, active = activeState, offset = ghost.offset, src = getGhostSrc ghost.color dir, goBackInPrison = ghost.goBackInPrison, running = ghost.running }
+        { name = ghost.name
+        , color = ghost.color
+        , position = ghostNextPos
+        , dir = dir
+        , active = activeState
+        , offset = ghost.offset
+        , src = getGhostSrc ghost.color dir
+        , goBackInPrison = ghost.goBackInPrison
+        , running = ghost.running
+        }
 
 
 
@@ -56,22 +99,58 @@ moveGhost ghost dir =
 
 moveGhoastToPosition : Ghost -> Point -> Ghost
 moveGhoastToPosition ghost target =
-    { name = ghost.name, color = ghost.color, position = target, dir = ghost.dir, active = ghost.active, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison, running = ghost.running }
+    { name = ghost.name
+    , color = ghost.color
+    , position = target
+    , dir = ghost.dir
+    , active = ghost.active
+    , offset = ghost.offset
+    , src = ghost.src
+    , goBackInPrison = ghost.goBackInPrison
+    , running = ghost.running
+    }
 
 
 changeGoBackInPrison : Ghost -> Bool -> Ghost
 changeGoBackInPrison ghost value =
-    { name = ghost.name, color = ghost.color, position = ghost.position, dir = ghost.dir, active = ghost.active, offset = ghost.offset, src = ghost.src, goBackInPrison = value, running = ghost.running }
+    { name = ghost.name
+    , color = ghost.color
+    , position = ghost.position
+    , dir = ghost.dir
+    , active = ghost.active
+    , offset = ghost.offset
+    , src = ghost.src
+    , goBackInPrison = value
+    , running = ghost.running
+    }
 
 
 setGhostRunning : Ghost -> Ghost
 setGhostRunning ghost =
-    { name = ghost.name, color = ghost.color, position = ghost.position, dir = ghost.dir, active = ghost.active, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison, running = True }
+    { name = ghost.name
+    , color = ghost.color
+    , position = ghost.position
+    , dir = ghost.dir
+    , active = ghost.active
+    , offset = ghost.offset
+    , src = ghost.src
+    , goBackInPrison = ghost.goBackInPrison
+    , running = True
+    }
 
 
 setActiveState : Ghost -> Bool -> Ghost
 setActiveState ghost state =
-    { name = ghost.name, color = ghost.color, position = ghost.position, dir = ghost.dir, active = state, offset = ghost.offset, src = ghost.src, goBackInPrison = ghost.goBackInPrison, running = ghost.running }
+    { name = ghost.name
+    , color = ghost.color
+    , position = ghost.position
+    , dir = ghost.dir
+    , active = state
+    , offset = ghost.offset
+    , src = ghost.src
+    , goBackInPrison = ghost.goBackInPrison
+    , running = ghost.running
+    }
 
 
 
@@ -82,7 +161,16 @@ setActiveState ghost state =
 
 changeGhostSrc : Ghost -> GhostColors -> Ghost
 changeGhostSrc ghost color =
-    { name = ghost.name, color = color, position = ghost.position, dir = ghost.dir, active = ghost.active, offset = ghost.offset, src = getGhostSrc color ghost.dir, goBackInPrison = ghost.goBackInPrison, running = ghost.running }
+    { name = ghost.name
+    , color = color
+    , position = ghost.position
+    , dir = ghost.dir
+    , active = ghost.active
+    , offset = ghost.offset
+    , src = getGhostSrc color ghost.dir
+    , goBackInPrison = ghost.goBackInPrison
+    , running = ghost.running
+    }
 
 
 getGhostSrc : GhostColors -> Direction -> String
@@ -166,7 +254,15 @@ getGhostNextDir game ghost =
             if ghost.goBackInPrison then
                 ghostSettings.startPosition
 
-            else if ghost.name == Clyde && getVectorLength ghost.position game.pPosition > 8 * pacSettings.ratio && currentType /= GhostStartLine then
+            else if
+                ghost.name
+                    == Clyde
+                    && getVectorLength ghost.position game.pPosition
+                    > 8
+                    * pacSettings.ratio
+                    && currentType
+                    /= GhostStartLine
+            then
                 getPoint 44
 
             else if not ghost.active then
@@ -179,10 +275,16 @@ getGhostNextDir game ghost =
                             Left ->
                                 let
                                     pos =
-                                        { x = game.pPosition.x - ghost.offset * pacSettings.ratio, y = game.pPosition.y }
+                                        { x = game.pPosition.x - ghost.offset * pacSettings.ratio
+                                        , y = game.pPosition.y
+                                        }
                                 in
                                 if ghost.name == Inky then
-                                    { x = game.pPosition.x - getBlueGhoastOffset game.redGhost.position pos, y = game.pPosition.y }
+                                    { x =
+                                        game.pPosition.x
+                                            - getBlueGhoastOffset game.redGhost.position pos
+                                    , y = game.pPosition.y
+                                    }
 
                                 else
                                     pos
@@ -190,10 +292,16 @@ getGhostNextDir game ghost =
                             Right ->
                                 let
                                     pos =
-                                        { x = game.pPosition.x + ghost.offset * pacSettings.ratio, y = game.pPosition.y }
+                                        { x = game.pPosition.x + ghost.offset * pacSettings.ratio
+                                        , y = game.pPosition.y
+                                        }
                                 in
                                 if ghost.name == Inky then
-                                    { x = game.pPosition.x + getBlueGhoastOffset game.redGhost.position pos, y = game.pPosition.y }
+                                    { x =
+                                        game.pPosition.x
+                                            + getBlueGhoastOffset game.redGhost.position pos
+                                    , y = game.pPosition.y
+                                    }
 
                                 else
                                     pos
@@ -201,10 +309,19 @@ getGhostNextDir game ghost =
                             Down ->
                                 let
                                     pos =
-                                        { x = game.pPosition.x, y = game.pPosition.y + ghost.offset * pacSettings.ratio }
+                                        { x = game.pPosition.x
+                                        , y =
+                                            game.pPosition.y
+                                                + ghost.offset
+                                                * pacSettings.ratio
+                                        }
                                 in
                                 if ghost.name == Inky then
-                                    { x = game.pPosition.x, y = game.pPosition.y + getBlueGhoastOffset game.redGhost.position pos }
+                                    { x = game.pPosition.x
+                                    , y =
+                                        game.pPosition.y
+                                            + getBlueGhoastOffset game.redGhost.position pos
+                                    }
 
                                 else
                                     pos
@@ -212,10 +329,19 @@ getGhostNextDir game ghost =
                             Up ->
                                 let
                                     pos =
-                                        { x = game.pPosition.x, y = game.pPosition.y - ghost.offset * pacSettings.ratio }
+                                        { x = game.pPosition.x
+                                        , y =
+                                            game.pPosition.y
+                                                - ghost.offset
+                                                * pacSettings.ratio
+                                        }
                                 in
                                 if ghost.name == Inky then
-                                    { x = game.pPosition.x, y = game.pPosition.y - getBlueGhoastOffset game.redGhost.position pos }
+                                    { x = game.pPosition.x
+                                    , y =
+                                        game.pPosition.y
+                                            - getBlueGhoastOffset game.redGhost.position pos
+                                    }
 
                                 else
                                     pos
@@ -228,9 +354,27 @@ getGhostNextDir game ghost =
     in
     -- Only check if cross available
     -- false || ((true || false) && (false || false)) || ((false || false) && (true || true))
-    if ghost.dir == None || ((ghost.dir == Left || ghost.dir == Right) && (checkDir ghost.position Up currentType || checkDir ghost.position Down currentType)) || ((ghost.dir == Up || ghost.dir == Down) && (checkDir ghost.position Left currentType || checkDir ghost.position Right currentType)) then
+    if
+        ghost.dir
+            == None
+            || ((ghost.dir == Left || ghost.dir == Right)
+                    && (checkDir ghost.position Up currentType
+                            || checkDir ghost.position Down currentType
+                       )
+               )
+            || ((ghost.dir == Up || ghost.dir == Down)
+                    && (checkDir ghost.position Left currentType
+                            || checkDir ghost.position Right currentType
+                       )
+               )
+    then
         let
-            moveOptions : { vertical : Direction, horizontal : Direction, cVertical : Direction, cHorizontal : Direction }
+            moveOptions :
+                { vertical : Direction
+                , horizontal : Direction
+                , cVertical : Direction
+                , cHorizontal : Direction
+                }
             moveOptions =
                 -- Target position right down
                 if targetPos.x > ghost.position.x && targetPos.y > ghost.position.y then
@@ -303,14 +447,20 @@ getGhostNextDir game ghost =
 
             -- Save neares crosses
             nextHorizontalCross =
-                if getVectorLength (getNextCross ghost.position Left) targetPos > getVectorLength (getNextCross ghost.position Right) targetPos then
+                if
+                    getVectorLength (getNextCross ghost.position Left) targetPos
+                        > getVectorLength (getNextCross ghost.position Right) targetPos
+                then
                     Left
 
                 else
                     Right
 
             nextVerticalCross =
-                if getVectorLength (getNextCross ghost.position Up) targetPos > getVectorLength (getNextCross ghost.position Down) targetPos then
+                if
+                    getVectorLength (getNextCross ghost.position Up) targetPos
+                        > getVectorLength (getNextCross ghost.position Down) targetPos
+                then
                     Up
 
                 else
@@ -323,7 +473,16 @@ getGhostNextDir game ghost =
                 max targetPos.y ghost.position.y - min targetPos.y ghost.position.y
         in
         -- Both directions are available
-        if (checkDir ghost.position moveOptions.horizontal currentType && ghost.dir /= moveOptions.cHorizontal) && (checkDir ghost.position moveOptions.vertical currentType && ghost.dir /= moveOptions.cVertical) then
+        if
+            (checkDir ghost.position moveOptions.horizontal currentType
+                && ghost.dir
+                /= moveOptions.cHorizontal
+            )
+                && (checkDir ghost.position moveOptions.vertical currentType
+                        && ghost.dir
+                        /= moveOptions.cVertical
+                   )
+        then
             if xDif < yDif then
                 moveOptions.vertical
 
@@ -331,15 +490,32 @@ getGhostNextDir game ghost =
                 moveOptions.horizontal
             -- Only horizontal direction available
 
-        else if checkDir ghost.position moveOptions.horizontal currentType && ghost.dir /= moveOptions.cHorizontal then
+        else if
+            checkDir ghost.position moveOptions.horizontal currentType
+                && ghost.dir
+                /= moveOptions.cHorizontal
+        then
             moveOptions.horizontal
             -- Only vertical direction available
 
-        else if checkDir ghost.position moveOptions.vertical currentType && ghost.dir /= moveOptions.cVertical then
+        else if
+            checkDir ghost.position moveOptions.vertical currentType
+                && ghost.dir
+                /= moveOptions.cVertical
+        then
             moveOptions.vertical
             -- Both negative directions are available
 
-        else if (checkDir ghost.position moveOptions.cHorizontal currentType && ghost.dir /= moveOptions.horizontal) && (checkDir ghost.position moveOptions.cVertical currentType && ghost.dir /= moveOptions.vertical) then
+        else if
+            (checkDir ghost.position moveOptions.cHorizontal currentType
+                && ghost.dir
+                /= moveOptions.horizontal
+            )
+                && (checkDir ghost.position moveOptions.cVertical currentType
+                        && ghost.dir
+                        /= moveOptions.vertical
+                   )
+        then
             let
                 horizontalNextCross =
                     getNextCross ghost.position moveOptions.cHorizontal
@@ -348,7 +524,10 @@ getGhostNextDir game ghost =
                     getNextCross ghost.position moveOptions.cVertical
             in
             -- verticalNextCross near target pos then horizontalNextCross
-            if getVectorLength verticalNextCross targetPos < getVectorLength horizontalNextCross targetPos then
+            if
+                getVectorLength verticalNextCross targetPos
+                    < getVectorLength horizontalNextCross targetPos
+            then
                 moveOptions.cVertical
                 -- horizontalNextCross near target pos then verticalNextCross
 
@@ -356,11 +535,19 @@ getGhostNextDir game ghost =
                 moveOptions.cHorizontal
             -- Only negative horizontal direction available
 
-        else if checkDir ghost.position moveOptions.cHorizontal currentType && ghost.dir /= moveOptions.horizontal then
+        else if
+            checkDir ghost.position moveOptions.cHorizontal currentType
+                && ghost.dir
+                /= moveOptions.horizontal
+        then
             moveOptions.cHorizontal
             -- Only negative vertical direction available
 
-        else if checkDir ghost.position moveOptions.cVertical currentType && ghost.dir /= moveOptions.vertical then
+        else if
+            checkDir ghost.position moveOptions.cVertical currentType
+                && ghost.dir
+                /= moveOptions.vertical
+        then
             moveOptions.cVertical
 
         else
@@ -378,7 +565,25 @@ getGhostNextDir game ghost =
 
 getNextCross : Point -> Direction -> Point
 getNextCross pos dir =
-    if checkDir pos dir Types.Line.Ghost && (not (checkDir pos Right Types.Line.Ghost) && not (checkDir pos Up Types.Line.Ghost) && not (checkDir pos Down Types.Line.Ghost)) || (not (checkDir pos Left Types.Line.Ghost) && not (checkDir pos Right Types.Line.Ghost) && not (checkDir pos Down Types.Line.Ghost)) || (not (checkDir pos Left Types.Line.Ghost) && not (checkDir pos Up Types.Line.Ghost) && not (checkDir pos Down Types.Line.Ghost)) || (not (checkDir pos Left Types.Line.Ghost) && not (checkDir pos Right Types.Line.Ghost) && not (checkDir pos Up Types.Line.Ghost)) then
+    if
+        checkDir pos dir Types.Line.Ghost
+            && (not (checkDir pos Right Types.Line.Ghost)
+                    && not (checkDir pos Up Types.Line.Ghost)
+                    && not (checkDir pos Down Types.Line.Ghost)
+               )
+            || (not (checkDir pos Left Types.Line.Ghost)
+                    && not (checkDir pos Right Types.Line.Ghost)
+                    && not (checkDir pos Down Types.Line.Ghost)
+               )
+            || (not (checkDir pos Left Types.Line.Ghost)
+                    && not (checkDir pos Up Types.Line.Ghost)
+                    && not (checkDir pos Down Types.Line.Ghost)
+               )
+            || (not (checkDir pos Left Types.Line.Ghost)
+                    && not (checkDir pos Right Types.Line.Ghost)
+                    && not (checkDir pos Up Types.Line.Ghost)
+               )
+    then
         case dir of
             Left ->
                 getNextCross { x = pos.x + movement, y = pos.y } dir
@@ -433,4 +638,13 @@ getVectorLength p1 p2 =
 
 checkGhoastEatingPacMan : Point -> Point -> Bool
 checkGhoastEatingPacMan pacPos ghostPos =
-    pacPos /= ghostPos && { x = pacPos.x + 1, y = pacPos.y } /= ghostPos && { x = pacPos.x - 1, y = pacPos.y } /= ghostPos && { x = pacPos.x, y = pacPos.y + 1 } /= ghostPos && { x = pacPos.x, y = pacPos.y - 1 } /= ghostPos
+    pacPos
+        /= ghostPos
+        && { x = pacPos.x + 1, y = pacPos.y }
+        /= ghostPos
+        && { x = pacPos.x - 1, y = pacPos.y }
+        /= ghostPos
+        && { x = pacPos.x, y = pacPos.y + 1 }
+        /= ghostPos
+        && { x = pacPos.x, y = pacPos.y - 1 }
+        /= ghostPos

@@ -1,4 +1,17 @@
-module Settings exposing (fieldSettings, fruitSettings, gameMessages, getPoint, ghostSettings, itemSettings, movement, pacSettings, pillSettings, pillsList, pointMesh, runMesh)
+module Settings exposing
+    ( fieldSettings
+    , fruitSettings
+    , gameMessages
+    , getPoint
+    , ghostSettings
+    , itemSettings
+    , movement
+    , pacSettings
+    , pillSettings
+    , pillsList
+    , pointMesh
+    , runMesh
+    )
 
 import Dict exposing (Dict, get)
 import Types.Line exposing (Line, LineType(..))
@@ -11,7 +24,11 @@ import Types.Point exposing (Point)
 -----------------------
 
 
-fieldSettings : { width : Int, height : Int, borderColor : String }
+fieldSettings :
+    { width : Int
+    , height : Int
+    , borderColor : String
+    }
 fieldSettings =
     { width = 500
     , height = 500
@@ -19,7 +36,12 @@ fieldSettings =
     }
 
 
-pacSettings : { ratio : Int, startPosition : Point, openedMouthSrc : String, closedMouthSrc : String }
+pacSettings :
+    { ratio : Int
+    , startPosition : Point
+    , openedMouthSrc : String
+    , closedMouthSrc : String
+    }
 pacSettings =
     { ratio = 22
     , startPosition = { x = 247, y = 370 }
@@ -28,7 +50,13 @@ pacSettings =
     }
 
 
-ghostSettings : { ratio : Int, startPosition : Point, blueStartPos : Point, yellowStartPos : Point, pinkStartPos : Point }
+ghostSettings :
+    { ratio : Int
+    , startPosition : Point
+    , blueStartPos : Point
+    , yellowStartPos : Point
+    , pinkStartPos : Point
+    }
 ghostSettings =
     { ratio = pacSettings.ratio
     , startPosition = { x = 250, y = 190 }
@@ -43,7 +71,13 @@ movement =
     1
 
 
-itemSettings : { fill : String, step : Int, size : Int, xp : Int, noEatingCooldownMs : Int }
+itemSettings :
+    { fill : String
+    , step : Int
+    , size : Int
+    , xp : Int
+    , noEatingCooldownMs : Int
+    }
 itemSettings =
     { fill = "#FFAAA5"
     , step = 15
@@ -53,7 +87,11 @@ itemSettings =
     }
 
 
-pillSettings : { fill : String, radius : Int, xp : Int }
+pillSettings :
+    { fill : String
+    , radius : Int
+    , xp : Int
+    }
 pillSettings =
     { fill = "#FFAAA5"
     , radius = 6
@@ -61,7 +99,20 @@ pillSettings =
     }
 
 
-fruitSettings : { position : Point, ratio : Int, xpCherry : Int, xpStrawberry : Int, xpOrange : Int, xpApple : Int, xpGrape : Int, xpSpacechip : Int, xpKey : Int, xpBell : Int, itemNumber1 : Int, itemNumber2 : Int }
+fruitSettings :
+    { position : Point
+    , ratio : Int
+    , xpCherry : Int
+    , xpStrawberry : Int
+    , xpOrange : Int
+    , xpApple : Int
+    , xpGrape : Int
+    , xpSpacechip : Int
+    , xpKey : Int
+    , xpBell : Int
+    , itemNumber1 : Int
+    , itemNumber2 : Int
+    }
 fruitSettings =
     { position = { x = 250, y = 280 }
     , ratio = 20
@@ -78,11 +129,16 @@ fruitSettings =
     }
 
 
-gameMessages : { gameOver : String, ready : String, pause : String, noText : String }
+gameMessages :
+    { gameOver : String
+    , ready : String
+    , pause : String
+    , noText : String
+    }
 gameMessages =
     { gameOver = "GAME OVER!"
     , ready = "READY!"
-    , pause ="PAUSE"
+    , pause = "PAUSE"
     , noText = ""
     }
 

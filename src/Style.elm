@@ -1,4 +1,15 @@
-module Style exposing (addMsgText, gameChildCss, gameCss, ghostSvgCss, headlineCss, messageCss, pacmanSvgCss, styleContents, textCss, wrapperCss)
+module Style exposing
+    ( addMsgText
+    , gameChildCss
+    , gameCss
+    , ghostSvgCss
+    , headlineCss
+    , messageCss
+    , pacmanSvgCss
+    , styleContents
+    , textCss
+    , wrapperCss
+    )
 
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (id, style)

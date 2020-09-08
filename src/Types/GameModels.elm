@@ -1,4 +1,16 @@
-module Types.GameModels exposing (Direction(..), Game, Ghost, GhostColors(..), GhostName(..), Msg(..), ScoreMessage, SoundModel(..), SoundState(..), StartMode(..), State(..))
+module Types.GameModels exposing
+    ( Direction(..)
+    , Game
+    , Ghost
+    , GhostColors(..)
+    , GhostName(..)
+    , Msg(..)
+    , ScoreMessage
+    , SoundModel(..)
+    , SoundState(..)
+    , StartMode(..)
+    , State(..)
+    )
 
 import Audio
 import Time

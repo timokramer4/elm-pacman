@@ -635,7 +635,8 @@ getVectorLength p1 p2 =
 -------- Check if ghost eat pacMan  -------
 -------------------------------------------
 
-
+-- True: when pacMan and ghost not at the same position
+-- False: when pacMan and ghost at the same position
 checkGhoastEatingPacMan : Point -> Point -> Bool
 checkGhoastEatingPacMan pacPos ghostPos =
     pacPos

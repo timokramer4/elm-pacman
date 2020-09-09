@@ -808,7 +808,15 @@ update msg game =
                     )
 
                 else
-                    ( game, Cmd.none, Audio.cmdNone )
+                    ( { game
+                            | redGhost = newRedGhost
+                            , blueGhost = newBlueGhost
+                            , yellowGhost = newYellowGhost
+                            , pinkGhost = newPinkGhost
+                          }
+                        , Cmd.none
+                        , Audio.cmdNone
+                        )
 
         -- Changes the color of a ghost
         ChangeColor ->
@@ -1402,7 +1410,7 @@ resetGame newLife newScore prevItemList prevPillsList prevItemCounter prevLevel 
     , pRotation = 0
     , lifes = newLife
     , score = newScore
-    , items = newItemList
+    , items =  newItemList
     , totalItemCount = length getFullItemList
     , message = gameMessages.ready
     , pills = newPillsList

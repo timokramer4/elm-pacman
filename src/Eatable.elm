@@ -69,14 +69,17 @@ checkEatable game =
                     else
                         x :: checkCurrentPoint xs
 
+        -- Remove current point from item list
         localListItems : List Point
         localListItems =
             checkCurrentPoint game.items
 
+        -- Remove current point from pill list
         localListPills : List Point
         localListPills =
             checkCurrentPoint game.pills
 
+        -- Check current level for fruit xp
         fruitXp =
             if game.level == 1 then
                 fruitSettings.xpCherry
@@ -102,14 +105,14 @@ checkEatable game =
             else
                 fruitSettings.xpKey
     in
-    -- Eat no pill and no item
+    -- When pacman eat no pill and no item
     if
         List.length game.pills
             == List.length localListPills
             && List.length game.items
             == List.length localListItems
     then
-        -- Eat fruit
+        -- When pacMan eat fruit
         if
             game.pPosition
                 == fruitSettings.position
@@ -122,11 +125,11 @@ checkEatable game =
                 , scoreMessage = setScoreMsg fruitSettings.position (String.fromInt fruitXp)
                 , showScoreMessage = True
             }
-            -- Eat nothing
+            -- When pacMan eat nothing
 
         else
             game
-        -- Eat pill
+        -- When pacMan eat pill
 
     else if List.length game.pills /= List.length localListPills then
         { game
@@ -142,7 +145,7 @@ checkEatable game =
             , blueGhost = changeGhostSrc game.blueGhost Hunted
             , pinkGhost = changeGhostSrc game.pinkGhost Hunted
         }
-        -- Eat fruit, if fruit availeble
+        -- When pacMan eat fruit and item, if fruit availeble
 
     else if
         game.pPosition
@@ -159,7 +162,7 @@ checkEatable game =
             , eatItem = True
             , eatItemSecondCounter = itemSettings.noEatingCooldownMs
         }
-        -- Eat item and unlock fruit
+        -- When pacMan eat item and unlock fruit
 
     else if
         game.itemCounter
@@ -176,7 +179,7 @@ checkEatable game =
             , eatItem = True
             , eatItemSecondCounter = itemSettings.noEatingCooldownMs
         }
-        -- Eat  only item
+        -- When pacMan eat only item
 
     else
         { game

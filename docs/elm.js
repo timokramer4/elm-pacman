@@ -9369,7 +9369,12 @@ var $author$project$Main$update = F2(
 										a9: true
 									}),
 								$elm$core$Platform$Cmd$none,
-								$MartinSStewart$elm_audio$Audio$cmdNone) : _Utils_Tuple3(game, $elm$core$Platform$Cmd$none, $MartinSStewart$elm_audio$Audio$cmdNone))));
+								$MartinSStewart$elm_audio$Audio$cmdNone) : _Utils_Tuple3(
+								_Utils_update(
+									game,
+									{bf: newBlueGhost, bF: newPinkGhost, bL: newRedGhost, b4: newYellowGhost}),
+								$elm$core$Platform$Cmd$none,
+								$MartinSStewart$elm_audio$Audio$cmdNone))));
 						}
 					}
 				case 7:
